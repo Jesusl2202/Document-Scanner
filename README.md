@@ -175,6 +175,22 @@ Las principales métricas propuestas son:
 - Sebastián Rojas
 - Jesús López
 
+## Implementación y documentación técnica
+
+El proyecto se desarrolla de forma incremental durante las seis semanas
+del curso. Este README presenta el problema, los objetivos, los datos,
+la arquitectura y los criterios de éxito.
+
+Las instrucciones para instalar el entorno y ejecutar el código de
+Semana 2 se encuentran en la
+[Guía de instalación y ejecución](docs/GUIA_EJECUCION.md).
+
+El diseño inicial puede consultarse en el
+[Pseudocódigo del pipeline](src/pseudocodigo_pipeline.md).
+
+La información de las fuentes de datos se encuentra en
+[Referencias de datasets](docs/datasets.md).
+
 ## Estado del proyecto
 
 Proyecto académico en desarrollo.
