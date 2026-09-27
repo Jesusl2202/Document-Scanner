@@ -1,7 +1,1 @@
-pandas
-numpy
-opencv-python
-pytesseract
-Pillow
-pdf2image
-scikit-learn
+-e .
