@@ -35,12 +35,39 @@ def extract(ocr, config):
             if field == 'tax' and re.search(KEYS['tax_id'], key):
                 continue
             tail = key[match.end():].strip(' :#')
+            total_score = 3
+            if field == 'total':
+                # Excluir descuentos, cantidades y totales sin impuestos.
+                if re.search(r'\b(discount|descuento|items?|count|qty|quantity|change|cambio|ahorro|savings)\b|\bexcl\w*|\bsin\s+impuestos\b', key):
+                    continue
+
+                # Priorizar el monto final después de ajustes.
+                if re.search(r'\bafter\s+adj\w*|\btotal\s+final\b', key):
+                    total_score = 6
+                elif re.search(r'\bgrand\s+total\b|\bamount\s+due\b|\btotal\s+due\b|\bincl\w*|\binel\b', key):
+                    total_score = 5
+
+                # Recuperar dos decimales separados al final de la línea.
+                tail = re.sub(
+                    r'(?<![\w.,])([+-]?\d+)[.,]\s+(\d{2})(?=\s*$)',
+                    r'\1.\2', tail
+                )
+                tail = re.sub(
+                    r'(?<![\w.,])([+-]?\d+)\s+(\d{2})(?=\s*$)',
+                    r'\1.\2', tail
+                )
+
+                # No adivinar cifras en montos como "4B 54".
+                if re.search(r'\b\d+[a-z]+\b', tail):
+                    continue
             if field in MONEY:
                 # Rechaza tasas porcentuales y no confunde el 1 de TAX1 con un valor.
                 amounts = [m.group().strip() for m in AMOUNT.finditer(tail)
                            if not tail[m.end():].lstrip().startswith('%') and money(m.group(), norm['decimal_separator']) is not None]
+                if field == 'total' and len(amounts) > 1:
+                    continue
                 if amounts:
-                    candidates[field].append({'value': amounts[-1], 'score': 3, 'box': line['box'], 'text': text, 'rule': 'label_same_line'})
+                    candidates[field].append({'value': amounts[-1], 'score': total_score if field == 'total' else 3, 'box': line['box'], 'text': text, 'rule': 'label_same_line'})
                 elif i + 1 < len(ls):
                     following = ls[i+1]
                     # Solo siguiente línea próxima con importe único y sin otra etiqueta.
