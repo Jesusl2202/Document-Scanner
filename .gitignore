@@ -1,14 +1,22 @@
-__pycache__/
-*.pyc
+# Entornos y archivos temporales de Python
 .venv/
 venv/
-.env
+__pycache__/
+*.pyc
+*.egg-info/
 .ipynb_checkpoints/
-data/
+
+# Configuración privada y credenciales
+.env
+credentials*.json
+service-account*.json
+
+# Datasets completos y datos procesados
+data/raw/
+data/processed/
+data/processed_*/
 datasets/
+
+# Caché y resultados locales de ejecución
+artifacts/
 outputs/
-*.pdf
-*.jpg
-*.jpeg
-*.png
-!docs/*.png
