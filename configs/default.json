@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "validation_fraction": 0.2,
+  "ocr": {"executable": "tesseract", "language": "eng", "psm": 6, "oem": 1, "timeout_seconds": 90, "grayscale": true, "autocontrast": true},
+  "normalization": {"date_order": "auto", "decimal_separator": "auto"},
+  "validation": {"check_amount_balance": false, "amount_tolerance": "0.02", "tax_id_pattern": null},
+  "google": {"location": "us", "processor_resource": "", "timeout_seconds": 120,
+    "entity_map": {"supplier_tax_id": "tax_id", "invoice_date": "date", "receipt_date": "date", "invoice_id": "document_number", "net_amount": "subtotal", "total_tax_amount": "tax", "total_amount": "total"}}
+}

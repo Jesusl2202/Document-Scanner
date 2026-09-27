@@ -1,0 +1,9 @@
+# Versiones utilizadas en la ejecución adjunta (Python 3.12.14, Linux).
+# Instalar después de crear el entorno: pip install -r requirements-repro.txt
+# Después: pip install -e . --no-deps
+# El ejecutable Tesseract 5.3.4 es una dependencia del sistema, no de pip.
+Pillow==12.3.0
+numpy==2.3.5
+pandas==2.2.3
+matplotlib==3.10.8
+pypdfium2==5.3.0
