@@ -1,0 +1,12 @@
+{
+  "synthetic": true,
+  "not_a_dataset_sample": true,
+  "fields": {
+    "tax_id": "1234567890",
+    "date": "2026-09-27",
+    "document_number": "001-002-000123",
+    "subtotal": "100.00",
+    "tax": "12.00",
+    "total": "112.00"
+  }
+}
