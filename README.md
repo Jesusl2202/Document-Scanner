@@ -1,26 +1,50 @@
-# Sistema de Extracción y Validación de Datos de Comprobantes de Compra Ecuatorianos
+# Sistema de Extracción y Validación de Datos de Facturas y Comprobantes de Compra mediante OCR y Document AI
 
 Proyecto integrador de la Maestría en Inteligencia Artificial.
 
 ## Descripción
 
-Este proyecto desarrolla un prototipo para extraer y validar automáticamente información de comprobantes de compra ecuatorianos mediante OCR y técnicas de Document AI.
+Este proyecto desarrolla un prototipo para extraer y validar
+automáticamente información de facturas y comprobantes de compra
+mediante OCR y herramientas de Document AI.
 
-El sistema procesa fotografías o archivos PDF de representaciones impresas de facturas electrónicas (RIDE) y busca estructurar seis campos principales:
+El sistema procesa fotografías o archivos PDF y busca estructurar
+seis campos principales:
 
-- RUC del emisor
-- Fecha de emisión
-- Número de comprobante
-- Subtotal
-- IVA
-- Total
+- Identificador fiscal del emisor.
+- Fecha de emisión.
+- Número de comprobante.
+- Subtotal.
+- Impuesto.
+- Total.
 
-El flujo general contempla preprocesamiento del documento, OCR, extracción de campos, validación de reglas y generación de una salida estructurada.
+El alcance contempla documentos de distintos formatos y procedencias.
+Cuando corresponda a un comprobante ecuatoriano, el identificador
+fiscal y el impuesto podrán representar el RUC y el IVA, respectivamente.
+
+La base principal de desarrollo y evaluación combina SROIE y
+WildReceipt. Se complementará con una muestra propia de comprobantes
+para evaluar la generalización a documentos no utilizados durante
+el desarrollo.
+
+El flujo general contempla preprocesamiento, OCR, extracción de
+campos, normalización, validaciones configurables y generación de
+una salida estructurada.
 
 ## Objetivo general
 
-Desarrollar, durante seis semanas, un pipeline de software que extraiga y valide automáticamente los campos clave de al menos 30 comprobantes de compra ecuatorianos, alcanzando una exactitud mínima de extracción del 70% y aplicando reglas de validación fiscal específicas del SRI.
+Desarrollar, durante seis semanas y con un equipo de dos integrantes,
+un pipeline de software que extraiga y valide automáticamente el
+identificador fiscal del emisor, la fecha, el número de comprobante,
+el subtotal, el impuesto y el total de facturas o recibos recibidos
+como fotografías o archivos PDF.
 
+El proyecto busca evaluar el sistema sobre al menos 30 documentos
+de prueba, alcanzar una exactitud de extracción mínima del 70%
+y aplicar reglas configurables de validación de negocio.
+
+Estos valores corresponden a objetivos del proyecto y no a resultados
+ya alcanzados.
 ## Arquitectura propuesta
 
 ```text
@@ -54,7 +78,7 @@ Evaluación
 ## Datasets considerados
 
 ### 1. SROIE
-Dataset base para el desarrollo y evaluación inicial del pipeline OCR y de extracción.
+Forma parte de la base principal junto con WildReceipt. Se utiliza para desarrollar y evaluar el OCR y la extracción de fecha y total, de acuerdo con sus anotaciones disponibles.
 
 Campos especialmente útiles para este proyecto:
 
@@ -68,7 +92,7 @@ Referencia:
 - Recurso de apoyo: https://huggingface.co/datasets/jsdnrs/ICDAR2019-SROIE
 
 ### 2. WildReceipt
-Dataset complementario para evaluar extracción de información y generalización ante formatos no vistos.
+Forma parte de la base principal junto con SROIE. Aporta variedad de formatos y anotaciones de fecha, subtotal, impuesto y total. Los campos se evalúan únicamente cuando existe una referencia utilizable.
 
 Etiquetas de interés para el proyecto:
 
@@ -84,13 +108,13 @@ Referencia:
 **Nota:** antes de redistribuir muestras de WildReceipt dentro de este repositorio debe verificarse la licencia específica del dataset.
 
 ### 3. DocILE
-Se utilizará principalmente como referencia metodológica para evaluación de facturas y generalización a plantillas no vistas.
+Se utiliza como referencia metodológica para evaluar generalización entre formatos. Se considera como plan B para ampliar los datos de desarrollo y evaluación si las bases principales resultan insuficientes.
 
 Referencia:
 - https://github.com/rossumai/docile
 
 ### 4. CORD
-Dataset complementario / Plan B para revisar parsing de subtotal, impuestos, total e ítems de línea.
+Se utiliza como recurso complementario para estudiar la estructura de montos e ítems de línea. No constituye la base principal de evaluación.
 
 Campos de interés:
 
@@ -106,7 +130,18 @@ Referencia:
 Licencia reportada por el proyecto: CC BY 4.0.
 
 ### 5. Muestra propia RIDE
-Se construirá una muestra local de aproximadamente 30 a 50 comprobantes ecuatorianos anonimizados.
+Se reunirá una muestra de aproximadamente 30 a 50 documentos,
+procedentes de al menos tres emisores distintos, para la evaluación
+final de generalización.
+
+Esta muestra podrá incluir comprobantes ecuatorianos y se mantendrá
+separada de los documentos utilizados para ajustar las reglas.
+
+Se revisarán manualmente los seis campos del proyecto, indicando
+cuándo un valor está presente, ausente o resulta ilegible o ambiguo.
+
+Los documentos reales no se publicarán sin la anonimización
+y autorización correspondientes.
 
 Campos esperados:
 
@@ -134,6 +169,22 @@ lector_facturas_ecuador/
 └── docs/
     └── datasets.md
 ```
+
+### Disponibilidad de anotaciones
+
+Los datasets no contienen necesariamente anotaciones de los seis
+campos del proyecto.
+
+SROIE permite evaluar directamente fecha y total. WildReceipt
+aporta referencias de fecha, subtotal, impuesto y total, según
+el documento.
+
+El nombre del comercio no se considera equivalente al identificador
+fiscal. Tampoco se supone que estas bases incluyan una etiqueta
+estándar de número de comprobante.
+
+Los campos sin anotación se excluyen de las métricas correspondientes;
+no se contabilizan automáticamente como aciertos o errores.
 
 ## Pseudocódigo
 
