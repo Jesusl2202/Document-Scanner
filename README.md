@@ -242,6 +242,13 @@ El diseño inicial puede consultarse en el
 La información de las fuentes de datos se encuentra en
 [Referencias de datasets](docs/datasets.md).
 
+- [Notebook del avance](notebooks/Avance_Semana2.ipynb)
+- [Arquitectura y justificación](docs/ARQUITECTURA_Y_JUSTIFICACION.md)
+- [Comparación de técnicas](docs/COMPARATIVA_TECNICAS.md)
+- [Descarga y documentación de datos](docs/DATOS_Y_LICENCIAS.md)
+- [Reporte de la ejecución de referencia](reports/AVANCE_EJECUTADO.md)
+- [Ejemplos sintéticos](data/samples/)
+
 ## Estado del proyecto
 
 Proyecto académico en desarrollo.
