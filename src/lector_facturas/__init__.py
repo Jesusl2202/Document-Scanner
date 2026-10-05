@@ -1,2 +1,2 @@
-"""Extracción reproducible de comprobantes. No constituye validación fiscal."""
-__version__ = "0.2.0"
+"""Lector definitivo de recibos con Tesseract preentrenado."""
+__version__="1.0.0"

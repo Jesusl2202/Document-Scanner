@@ -1,1 +1,5 @@
--e .
+Pillow>=10,<13
+numpy>=1.24,<3
+pandas>=2,<4
+matplotlib>=3.7,<4
+pypdfium2>=4.25,<6

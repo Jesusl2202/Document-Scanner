@@ -1,254 +1,64 @@
-# Sistema de Extracción y Validación de Datos de Facturas y Comprobantes de Compra mediante OCR y Document AI
+# Document Scanner — lector de facturas con Tesseract
 
-Proyecto integrador de la Maestría en Inteligencia Artificial.
+Proyecto integrador: extracción de fecha, identificador fiscal, número de comprobante, subtotal, impuesto y total desde imágenes o PDF. Usa Tesseract preentrenado en CPU y consenso de cinco lecturas. No entrena pesos ni requiere servicios de pago.
 
-## Descripción
+## Empezar en Colab
 
-Este proyecto desarrolla un prototipo para extraer y validar
-automáticamente información de facturas y comprobantes de compra
-mediante OCR y herramientas de Document AI.
+[Abrir notebook](https://colab.research.google.com/github/Jesusl2202/Document-Scanner/blob/main/notebooks/01_lector_definitivo.ipynb)
 
-El sistema procesa fotografías o archivos PDF y busca estructurar
-seis campos principales:
+Ejecutar las celdas en orden. El notebook descarga el código de este repositorio y registra el commit. Para probar una rama antes de integrarla a main, cambia `RAMA` en la primera celda. La lectura de una imagen/PDF propio está en la sección 5. El test final está activado por defecto (50 documentos por base); desactiva `EVALUAR_TEST_FINAL` si solo quieres leer archivos propios. No hace falta descargar ninguna versión anterior.
 
-- Identificador fiscal del emisor.
-- Fecha de emisión.
-- Número de comprobante.
-- Subtotal.
-- Impuesto.
-- Total.
+## Ejecutar localmente
 
-El alcance contempla documentos de distintos formatos y procedencias.
-Cuando corresponda a un comprobante ecuatoriano, el identificador
-fiscal y el impuesto podrán representar el RUC y el IVA, respectivamente.
+Requisitos: Python 3.10 o superior y Tesseract instalado y disponible en PATH (`tesseract --version`). En Ubuntu/Colab: `sudo apt-get install tesseract-ocr`. En Windows instalar Tesseract y agregar su carpeta a PATH antes de ejecutar Python.
 
-La base principal de desarrollo y evaluación combina SROIE y
-WildReceipt. Se complementará con una muestra propia de comprobantes
-para evaluar la generalización a documentos no utilizados durante
-el desarrollo.
+Desde la raíz del repositorio:
 
-El flujo general contempla preprocesamiento, OCR, extracción de
-campos, normalización, validaciones configurables y generación de
-una salida estructurada.
-
-## Objetivo general
-
-Desarrollar, durante seis semanas y con un equipo de dos integrantes,
-un pipeline de software que extraiga y valide automáticamente el
-identificador fiscal del emisor, la fecha, el número de comprobante,
-el subtotal, el impuesto y el total de facturas o recibos recibidos
-como fotografías o archivos PDF.
-
-El proyecto busca evaluar el sistema sobre al menos 30 documentos
-de prueba, alcanzar una exactitud de extracción mínima del 70%
-y aplicar reglas configurables de validación de negocio.
-
-Estos valores corresponden a objetivos del proyecto y no a resultados
-ya alcanzados.
-## Arquitectura propuesta
-
-```text
-Imagen / PDF
-    |
-    v
-Preprocesamiento
-(corrección de perspectiva, contraste, limpieza)
-    |
-    v
-OCR
-(Tesseract / Document AI)
-    |
-    v
-Extracción de campos
-(regex + reglas + posición del texto)
-    |
-    v
-Validación
-(RUC, fecha, subtotal + IVA = total)
-    |
-    v
-Salida estructurada
-(JSON / CSV)
-    |
-    v
-Evaluación
-(Accuracy, Precision, Recall, F1, CER, tiempo)
+```bash
+python -m venv .venv
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Linux/macOS: source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/leer_documento.py samples/synthetic_receipt.png --out outputs/ejemplo
+python scripts/leer_documento.py mi_factura.pdf --out outputs/mi_factura
 ```
 
-## Datasets considerados
+La primera lectura descarga los pesos ingleses oficiales (unos 4 MB) y verifica su SHA-256. Necesita Internet para esa descarga. Las imágenes se procesan localmente. `resultado.json` conserva texto, cajas, campos y alertas; `campos.csv` conserva una fila por imagen/página. No se fusionan páginas automáticamente. Si aparece `total:from_subtotal`, revisar el total: la ausencia de un impuesto detectado no demuestra que no exista.
 
-### 1. SROIE
-Forma parte de la base principal junto con WildReceipt. Se utiliza para desarrollar y evaluar el OCR y la extracción de fecha y total, de acuerdo con sus anotaciones disponibles.
+## Resultados y meta
 
-Campos especialmente útiles para este proyecto:
+La implementación elegida obtuvo 111/153 (72,55 %) en una muestra y 102/149 (68,46 %) al reproducir la extracción sobre el OCR guardado de otra. Son 213/302 (70,53 %) en 120 documentos distintos. Se usaron para seleccionar esta versión: no son una garantía sobre documentos nuevos. El test final independiente está pendiente. La segunda cifra no mide de nuevo tiempo OCR.
 
-- `company`
-- `date`
-- `address`
-- `total`
+Metas: exactitud global >=70 % y procesamiento >=90 %. Fecha/total se evalúan en SROIE; fecha/subtotal/impuesto/total en WildReceipt. Identificador fiscal y número de comprobante requieren una muestra propia. Ver [resultados y limitaciones](docs/resultados.md).
 
-Referencia:
-- ICDAR 2019 Robust Reading Challenge on Scanned Receipts OCR and Information Extraction.
-- Recurso de apoyo: https://huggingface.co/datasets/jsdnrs/ICDAR2019-SROIE
-
-### 2. WildReceipt
-Forma parte de la base principal junto con SROIE. Aporta variedad de formatos y anotaciones de fecha, subtotal, impuesto y total. Los campos se evalúan únicamente cuando existe una referencia utilizable.
-
-Etiquetas de interés para el proyecto:
-
-- `Date_value`
-- `Subtotal_value`
-- `Tax_value`
-- `Total_value`
-
-Referencia:
-- H. Sun et al., *Spatial Dual-Modality Graph Reasoning for Key Information Extraction*, 2021.
-- Recurso de apoyo: https://github.com/open-mmlab/mmocr
-
-**Nota:** antes de redistribuir muestras de WildReceipt dentro de este repositorio debe verificarse la licencia específica del dataset.
-
-### 3. DocILE
-Se utiliza como referencia metodológica para evaluar generalización entre formatos. Se considera como plan B para ampliar los datos de desarrollo y evaluación si las bases principales resultan insuficientes.
-
-Referencia:
-- https://github.com/rossumai/docile
-
-### 4. CORD
-Se utiliza como recurso complementario para estudiar la estructura de montos e ítems de línea. No constituye la base principal de evaluación.
-
-Campos de interés:
-
-- `menu.nm`
-- `menu.price`
-- `subtotal.subtotal_price`
-- `subtotal.tax_price`
-- `total.total_price`
-
-Referencia:
-- https://github.com/clovaai/cord
-
-Licencia reportada por el proyecto: CC BY 4.0.
-
-### 5. Muestra propia RIDE
-Se reunirá una muestra de aproximadamente 30 a 50 documentos,
-procedentes de al menos tres emisores distintos, para la evaluación
-final de generalización.
-
-Esta muestra podrá incluir comprobantes ecuatorianos y se mantendrá
-separada de los documentos utilizados para ajustar las reglas.
-
-Se revisarán manualmente los seis campos del proyecto, indicando
-cuándo un valor está presente, ausente o resulta ilegible o ambiguo.
-
-Los documentos reales no se publicarán sin la anonimización
-y autorización correspondientes.
-
-Campos esperados:
-
-- `ruc_emisor`
-- `fecha_emision`
-- `numero_comprobante`
-- `subtotal`
-- `iva`
-- `total`
-
-Los comprobantes reales no deben publicarse sin anonimización y autorización para su uso.
-
-## Estructura del repositorio
+## Estructura
 
 ```text
-lector_facturas_ecuador/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── LICENSE_NOTES.md
-├── src/
-│   └── pseudocodigo_pipeline.md
-├── samples/
-│   └── README.md
-└── docs/
-    └── datasets.md
+configs/       Configuración fija y hashes de documentos revisados
+docs/          Diseño, resultados, datos y anotación propia
+notebooks/     Un notebook que utiliza el código de src/
+samples/       Imagen/PDF y referencia sintéticos para comprobar la instalación
+scripts/       Entrada de lectura, descarga de datos y generador sintético
+src/lector_facturas/  OCR, extracción, validación y evaluación
+tests/         Pruebas de la implementación activa
 ```
 
-### Disponibilidad de anotaciones
+Una única implementación se expone desde `extraction.py`. `candidate_rules.py` y `consensus.py` son etapas complementarias, no versiones alternativas. Las etapas anteriores siguen disponibles en el historial Git, no como carpetas duplicadas.
 
-Los datasets no contienen necesariamente anotaciones de los seis
-campos del proyecto.
+## Pruebas
 
-SROIE permite evaluar directamente fecha y total. WildReceipt
-aporta referencias de fecha, subtotal, impuesto y total, según
-el documento.
+```bash
+python -m pip install -e .
+python -m unittest discover -s tests -v
+```
 
-El nombre del comercio no se considera equivalente al identificador
-fiscal. Tampoco se supone que estas bases incluyan una etiqueta
-estándar de número de comprobante.
+La instalación editable permite importar el paquete y usar `lector archivo.pdf --out outputs/lectura`. Las pruebas simuladas de OCR verifican el funcionamiento del código, no acreditan su exactitud en documentos reales.
 
-Los campos sin anotación se excluyen de las métricas correspondientes;
-no se contabilizan automáticamente como aciertos o errores.
+## Documentación
 
-## Pseudocódigo
+- [Diseño y alcance académico](docs/diseno.md)
+- [Resultados medidos](docs/resultados.md)
+- [Datos y licencias](docs/datos_y_licencias.md)
+- [Anotación de documentos propios](docs/anotacion_propia.md)
 
-El pseudocódigo inicial se encuentra en:
-
-`src/pseudocodigo_pipeline.md`
-
-## Tecnologías previstas
-
-- Python
-- OpenCV
-- Tesseract OCR
-- pytesseract
-- pandas
-- expresiones regulares
-- Google Colab
-- Google Document AI o AWS Textract para comparación puntual
-
-## Métricas
-
-Las principales métricas propuestas son:
-
-- Accuracy por campo
-- Precision por campo
-- Recall por campo
-- F1-score por campo
-- Character Error Rate (CER)
-- Tiempo de procesamiento por comprobante
-
-## Criterios iniciales de éxito
-
-- Procesar sin errores al menos el 90% de los comprobantes de prueba.
-- Alcanzar al menos 70% de exactitud de extracción en los campos clave.
-- Implementar pruebas para validación de RUC y cuadre de montos.
-- Mantener documentación reproducible del pipeline.
-
-## Autores
-
-- Sebastián Rojas
-- Jesús López
-
-## Implementación y documentación técnica
-
-El proyecto se desarrolla de forma incremental durante las seis semanas
-del curso. Este README presenta el problema, los objetivos, los datos,
-la arquitectura y los criterios de éxito.
-
-Las instrucciones para instalar el entorno y ejecutar el código de
-Semana 2 se encuentran en la
-[Guía de instalación y ejecución](docs/GUIA_EJECUCION.md).
-
-El diseño inicial puede consultarse en el
-[Pseudocódigo del pipeline](src/pseudocodigo_pipeline.md).
-
-La información de las fuentes de datos se encuentra en
-[Referencias de datasets](docs/datasets.md).
-
-- [Notebook del avance](notebooks/Avance_Semana2.ipynb)
-- [Arquitectura y justificación](docs/ARQUITECTURA_Y_JUSTIFICACION.md)
-- [Comparación de técnicas](docs/COMPARATIVA_TECNICAS.md)
-- [Descarga y documentación de datos](docs/DATOS_Y_LICENCIAS.md)
-- [Reporte de la ejecución de referencia](reports/AVANCE_EJECUTADO.md)
-- [Ejemplos sintéticos](data/samples/)
-
-## Estado del proyecto
-
-Proyecto académico en desarrollo.
+No subir datasets, pesos, credenciales, cachés o facturas personales. `.gitignore` excluye sus carpetas habituales. Se conservan únicamente ejemplos sintéticos. La licencia del código del equipo sigue pendiente de elección; no se atribuyen licencias de terceros a los datos.

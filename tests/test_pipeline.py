@@ -8,11 +8,9 @@ from lector_facturas.common import FIELDS, gold_empty, money, normalize_date, wr
 from lector_facturas.datasets import sroie, wildreceipt, prepare
 from lector_facturas.extraction import extract, validate
 from lector_facturas.evaluation import evaluate
-from lector_facturas.google_ai import parse_entities
-from lector_facturas.cli import compare
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG = json.loads((ROOT/'configs/default.json').read_text())
+CONFIG = json.loads((ROOT/'configs/definitivo.json').read_text())
 
 
 def ocr_lines(texts):
@@ -53,7 +51,7 @@ class NormalizationTests(unittest.TestCase):
     def test_abstains_conflicting_totals(self):
         result=extract(ocr_lines(['TOTAL 20.00','TOTAL 30.00']),CONFIG)
         self.assertIsNone(result['fields']['total'])
-        self.assertIn('total:ambiguous_candidates',result['alerts'])
+        self.assertIn('total:ambiguous_consensus',result['alerts'])
 
     def test_tax_id_is_not_tax_amount(self):
         result=extract(ocr_lines(['TAX ID 12345678','INVOICE NO: 001-002-000123']),CONFIG)
@@ -94,16 +92,7 @@ class EvaluationTests(unittest.TestCase):
             self.assertEqual(s['execution_success_rate'],0)
             self.assertEqual(s['micro_exact_match'],0)
 
-    def test_google_entities_ambiguous(self):
-        entities=[{'type_':'total_amount','mention_text':'100'},{'type_':'total_amount','mention_text':'200'}]
-        self.assertIsNone(parse_entities(entities,CONFIG)['fields']['total'])
 
-    def test_compare_requires_same_documents(self):
-        with tempfile.TemporaryDirectory() as td:
-            a,b=Path(td)/'a',Path(td)/'b'
-            write_jsonl(a/'evaluation_manifest.jsonl',[{'id':'x','sha256':'a','gold':{}}])
-            write_jsonl(b/'evaluation_manifest.jsonl',[{'id':'y','sha256':'a','gold':{}}])
-            with self.assertRaises(ValueError):compare(a,b,Path(td)/'out')
 
 
 class AdapterTests(unittest.TestCase):

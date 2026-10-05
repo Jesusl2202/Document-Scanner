@@ -9,6 +9,7 @@ import time
 import hashlib
 from PIL import Image, ImageOps
 from .common import digest, write_json
+from .preprocessing import prepare_image, original_box
 
 
 def environment(executable='tesseract'):
@@ -23,7 +24,7 @@ def transcribe(image, options, cache_dir=None):
     if missing:
         raise ValueError('Idiomas Tesseract no instalados: ' + ', '.join(sorted(missing)))
     source_hash = digest(image)
-    key = hashlib.sha256(json.dumps([source_hash, options, env['version']], sort_keys=True).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps([source_hash, options, env['version'], digest(__file__), digest(Path(__file__).with_name('preprocessing.py'))], sort_keys=True).encode()).hexdigest()
     cache = Path(cache_dir) / (key + '.json') if cache_dir else None
     if cache and cache.exists():
         result = json.loads(cache.read_text(encoding='utf-8'))
@@ -31,12 +32,8 @@ def transcribe(image, options, cache_dir=None):
         return result
     start = time.perf_counter()
     with Image.open(image) as im:
-        # No EXIF transpose, rotación ni redimensionamiento implícitos:
-        # las cajas de referencia permanecen en el sistema de la imagen original.
-        im = im.convert('L' if options.get('grayscale', True) else 'RGB')
-        if options.get('autocontrast', True):
-            im = ImageOps.autocontrast(im)
         width, height = im.size
+        im, transform = prepare_image(im, options)
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / 'input.png'
             im.save(path)
@@ -49,11 +46,11 @@ def transcribe(image, options, cache_dir=None):
         text = r.get('text', '').strip()
         if r.get('level') == '5' and text:
             x, y, w, h = (int(r[k]) for k in ('left', 'top', 'width', 'height'))
-            words.append({'text': text, 'box': [x, y, x + w, y + h], 'confidence': float(r['conf']),
+            words.append({'text': text, 'box': original_box([x, y, x + w, y + h], transform), 'confidence': float(r['conf']),
                           'line_id': ':'.join(r[k] for k in ('page_num', 'block_num', 'par_num', 'line_num'))})
     result = {'width': width, 'height': height, 'words': words, 'text': '\n'.join(l['text'] for l in lines(words)),
               'ocr_seconds': time.perf_counter() - start, 'cache_hit': False, 'source_sha256': source_hash,
-              'engine': env['version'], 'options': options}
+              'engine': env['version'], 'options': options, 'transform': transform}
     if cache:
         write_json(cache, result)
     return result
@@ -90,4 +87,26 @@ def render_pdf(path, output_dir, dpi=200, max_pages=20):
             image.close()
             bitmap.close()
             page.close()
+    return result
+
+# Varias lecturas de la MISMA imagen, sin acceder a etiquetas de evaluación.
+_single_transcribe = transcribe
+def transcribe(image,options,cache_dir=None):
+    if not options.get('ensemble_views'):
+        return _single_transcribe(image,options,cache_dir)
+    views=[];errors=[]
+    for spec in options['ensemble_views']:
+        opts={k:v for k,v in options.items() if k!='ensemble_views'}
+        opts.update(spec)
+        try:
+            view=_single_transcribe(image,opts,cache_dir)
+            if view['words']:views.append(view)
+            else:errors.append({'view':spec,'error':'OCR sin palabras'})
+        except Exception as exc:errors.append({'view':spec,'error':str(exc)})
+    if not views:raise RuntimeError('Ninguna lectura OCR útil: '+str(errors))
+    # El CER corresponde solo a esta lectura primaria, no al consenso de campos.
+    primary=next((v for v in views if v.get('options',{}).get('preprocess')=='resize' and v.get('options',{}).get('psm')==6),views[0])
+    result=dict(primary,views=views,view_errors=errors,requested_views=len(options['ensemble_views']))
+    result['cache_hit']=any(v.get('cache_hit',False) for v in views)
+    result['ocr_seconds']=sum(v.get('ocr_seconds',0) for v in views)
     return result

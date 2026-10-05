@@ -1,0 +1,53 @@
+{
+  "seed": 42,
+  "validation_fraction": 0.2,
+  "ocr": {
+    "executable": "tesseract",
+    "language": "eng",
+    "psm": 6,
+    "oem": 1,
+    "timeout_seconds": 90,
+    "grayscale": true,
+    "autocontrast": true,
+    "preprocess": "resize",
+    "target_long_edge": 2200,
+    "max_scale": 3,
+    "border": 20,
+    "max_pixels": 25000000,
+    "model_sha256": {
+      "/usr/share/tesseract-ocr/5/tessdata/eng.traineddata": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+    },
+    "ensemble_views": [
+      {
+        "preprocess": "original",
+        "psm": 6
+      },
+      {
+        "preprocess": "resize",
+        "psm": 6
+      },
+      {
+        "preprocess": "otsu",
+        "psm": 6
+      },
+      {
+        "preprocess": "resize",
+        "psm": 3
+      },
+      {
+        "preprocess": "resize",
+        "psm": 11
+      }
+    ]
+  },
+  "normalization": {
+    "date_order": "auto",
+    "decimal_separator": "auto"
+  },
+  "validation": {
+    "check_amount_balance": false,
+    "amount_tolerance": "0.02",
+    "tax_id_pattern": null
+  },
+  "extractor": "v7"
+}

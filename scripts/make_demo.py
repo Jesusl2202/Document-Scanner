@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 from PIL import Image, ImageDraw, ImageFont
 root=Path(__file__).resolve().parents[1]
-out=root/'data/samples';out.mkdir(parents=True,exist_ok=True)
+out=root/'samples';out.mkdir(parents=True,exist_ok=True)
 font=None
 for name in ['DejaVuSans.ttf','Arial.ttf','LiberationSans-Regular.ttf']:
     try:

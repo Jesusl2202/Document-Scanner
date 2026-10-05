@@ -56,8 +56,10 @@ def money(s, decimal_separator="auto"):
     if '%' in t:
         return None
     negative = t.startswith('(') and t.endswith(')')
-    t = re.sub(r"(?i)\b(?:usd|eur|gbp|rm|idr|rp)\b", "", t)
+    t = re.sub(r"(?i)\b(?:usd|eur|gbp|rm|idr|rp|rs)(?=\d|\s|[.:+-]|$)[.:]?", "", t)
     t = re.sub(r"[$€£¥\s()]", "", t)
+    # Admite .00 y ,00 sin inventar decimales en enteros.
+    t = re.sub(r'^([+-]?)([.,])(?=\d{1,2}$)', r'\g<1>0\2', t)
     if not re.fullmatch(r"[+-]?\d[\d.,]*", t):
         return None
     if decimal_separator in ('.', ','):
@@ -85,7 +87,7 @@ def money(s, decimal_separator="auto"):
         return None
 
 
-def normalize_date(s, date_order="auto"):
+def _numeric_date(s, date_order="auto"):
     if s is None:
         return None
     t = text_key(s)
@@ -111,6 +113,30 @@ def normalize_date(s, date_order="auto"):
     except ValueError:
         return None
 
+
+
+def normalize_date(s, date_order="auto"):
+    numeric = _numeric_date(s, date_order)
+    if numeric is not None or s is None:
+        return numeric
+    text = text_key(s)
+    months = {name:i+1 for i,name in enumerate(['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'])}
+    month = r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*'
+    match = re.search(r'\b(\d{1,2})[\s./\-]*'+month+r'[\s,./\'’°\-]*(\d{2,4})\b',text)
+    if match:
+        day, mon, year = match.groups()
+    else:
+        match = re.search(r'\b'+month+r'[\s./\-]*(\d{1,2})[\s,./\'’°\-]+(\d{2,4})\b',text)
+        if not match:
+            return None
+        mon, day, year = match.groups()
+    year = int(year)
+    if year < 100:
+        year += 2000 if year < 70 else 1900
+    try:
+        return date(year,months[mon],int(day)).isoformat()
+    except ValueError:
+        return None
 
 def normalize(field, value, config=None):
     if value is None or str(value).strip() == '':

@@ -1,22 +1,27 @@
-# Entornos y archivos temporales de Python
+# Entornos y compilación
 .venv/
 venv/
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
+build/
+dist/
 .ipynb_checkpoints/
-
-# Configuración privada y credenciales
+# Datos y salidas locales
+data/
+datasets/
+modelos/
+modelos_preentrenados/
+outputs/
+artifacts/
+cache_ocr/
+*.traineddata
+*_resultados.zip
+# Credenciales y documentos personales
 .env
+.env.*
 credentials*.json
 service-account*.json
-
-# Datasets completos y datos procesados
-data/raw/
-data/processed/
-data/processed_*/
-datasets/
-
-# Caché y resultados locales de ejecución
-artifacts/
-outputs/
+documentos_privados/
+.DS_Store
+Thumbs.db
