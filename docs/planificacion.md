@@ -3,7 +3,7 @@
 **Proyecto:** Lector de Facturas — extracción y validación de datos de facturas y comprobantes de compra con OCR
 **Equipo:** Sebastián Rojas y Jesús Antonio López Barahona
 **Curso:** MIAR0545 – Proyecto Integrador en IA · Docente: Gladys María Villegas Rugel
-**Última actualización:** 20/10/2026
+**Última actualización:** 21/10/2026
 
 Este documento resume cómo planificamos el proyecto y cómo se ejecutó en la práctica. Parte del Documento de Alcance (Semana 1), la Ficha de Decisión Técnica (Semana 2) y el Reporte de Diagnóstico de Overfitting (Semana 3), y lo contrasta con lo que hoy está en el repositorio.
 
@@ -78,8 +78,8 @@ Métricas secundarias: precisión y recall por campo, CER del OCR y tiempo de pr
 ### 4.1 Qué incluye
 
 - Lectura de facturas y recibos en **imagen (JPG/PNG) o PDF** (cada página se procesa por separado).
-- Preprocesamiento de imagen (escala de grises, autocontraste, ampliación, binarización Otsu) y OCR con **Tesseract 5 preentrenado**.
-- Extracción de los **seis campos** clave con reglas, agrupación espacial de palabras y consenso entre cinco lecturas del OCR.
+- Preprocesamiento de imagen (escala de grises, autocontraste, ampliación, binarización Otsu y local, corrección de iluminación) y OCR con **Tesseract 5 preentrenado** (pesos `fast`, `best` y español).
+- Extracción de los **seis campos** clave con reglas, agrupación espacial de palabras, resumen contable observado y consenso entre 10 lecturas del OCR (más un rescate adaptativo).
 - **Validaciones configurables**: cuadre de montos, fechas válidas y patrón del identificador fiscal.
 - Salida estructurada en **JSON y CSV** con el texto de origen, la posición y las alertas de cada campo.
 - Evaluación con métricas por campo sobre **SROIE** y **WildReceipt**, y diseño de una muestra propia de 30–50 comprobantes para el test final.
@@ -88,7 +88,7 @@ Métricas secundarias: precisión y recall por campo, CER del OCR y tiempo de pr
 
 ### 4.2 Qué NO incluye
 
-- Documentos **manuscritos**.
+- Documentos **manuscritos** o comprobantes impresos con **campos completados a mano** (fecha, montos o RUC escritos con bolígrafo): el OCR no los reconoce de forma confiable.
 - Integración con sistemas contables reales o despliegue en producción.
 - **Entrenar** una red de deep learning desde cero (se usan modelos preentrenados).
 - Lectura de archivos **XML firmados** de comprobantes electrónicos; solo se trabaja con la imagen o el PDF.
@@ -123,17 +123,18 @@ gantt
 |---|---|---|---|---|
 | **S1 · Sprint 1** | Estado del arte, datasets descargados y arquitectura definida. | Documento de Alcance con 24 referencias, análisis de SROIE, WildReceipt, DocILE y CORD, y diagrama del pipeline. Estructura inicial del repositorio (21/09). | ✅ Cumplido | Documento de Semana 1; commit `281a046` |
 | **S2 · Sprint 2** | OCR funcionando y primer módulo de extracción (≥ 4 de 6 campos). | Pipeline inicial con Tesseract 5.3.4, adaptadores de SROIE y WildReceipt, EDA de 2.712 documentos, 14 pruebas unitarias y línea base: **35,0 %** de exactitud (36/103) en 40 documentos de validación. Ficha técnica con la elección Tesseract + reglas, LayoutLMv3 como comparación y Document AI como referencia. | ✅ Cumplido, por debajo de la meta | Ficha Semana 2; commits `24d7375`, `1c643f7` |
-| **S3 · Sprint 3** | Reglas de validación, comparación de OCR e integración de extremo a extremo. | Diagnóstico de overfitting/underfitting con un clasificador de líneas (versión reducida de LayoutLMv3). Mejora iterativa del extractor (versiones V1 a V7) y consolidación del **lector definitivo V7**: consenso de cinco lecturas, **70,53 %** (213/302) en 120 documentos usados para seleccionar la versión. Limpieza del repositorio (05/10). | ⚠️ Parcial | Reporte Semana 3; commit `1636f65`; `docs/resultados.md` |
-| **S4–S5 · Sprint 3 (cont.)** | Comparación Tesseract vs. Document AI y pipeline integrado. | Pipeline integrado en `src/` con CLI y notebook único. Carpeta `data/` documentada con inventario de 350 documentos ya vistos (19/10). La comparación con Document AI y LayoutLMv3 se reprogramó para el cierre del proyecto. | ⚠️ Parcial | commit `9dbe8b2` |
-| **S6 · Sprint 4** | Métricas finales, documentación y presentación. | En curso: documentación de `docs/`, comparación con Document AI y LayoutLMv3, test final congelado, interfaz de usuario y videos. | 🔄 En curso | Este documento |
+| **S3 · Sprint 3** | Reglas de validación, comparación de OCR e integración de extremo a extremo. | Diagnóstico de overfitting/underfitting con un clasificador de líneas (versión reducida de LayoutLMv3). Mejora iterativa del extractor (versiones V1 a V7) y consolidación del **lector definitivo V7**: consenso de cinco lecturas, **70,53 %** (213/302) en 120 documentos usados para seleccionar la versión. Limpieza del repositorio (05/10). | ⚠️ Parcial | Reporte Semana 3; commit `1636f65`; [`resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md) |
+| **S4–S5 · Sprint 3 (cont.)** | Comparación Tesseract vs. Document AI y pipeline integrado. | Pipeline integrado en `src/` con CLI y notebook único. Carpeta `data/` documentada (19/10). Nuevas versiones del extractor hasta el modelo **resumen contable**: pesos `best`, rescate adaptativo y contabilidad observada; en tres grupos del test con reutilización pasó de 74,6–77,1 % a 75,0–77,6 % frente a la misma versión sin resumen contable. La comparación con Document AI y LayoutLMv3 se reprogramó para el cierre del proyecto. | ⚠️ Parcial | commit `9dbe8b2`; [`resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md) |
+| **S6 · Sprint 4** | Métricas finales, documentación y presentación. | Modelo **resumen contable** integrado (10 vistas, rescate adaptativo, contabilidad observada; 120 pruebas). Repositorio reorganizado con la estructura final, notebooks 01–05 y los seis documentos de `docs/` (21/10). En curso: ejecución de 04 y 05 en Colab, interfaz de usuario y videos. | 🔄 En curso | Este documento; [`results/`](../results/) |
 
 ### 5.3 Desviaciones y por qué ocurrieron
 
 | Desviación | Causa | Decisión tomada |
 |---|---|---|
-| La línea base quedó en 35 % frente a una meta de 70 %. | Reglas de cercanía muy simples y abstención cuando había varios totales o fechas candidatas. | Se iteró sobre las reglas con datos de desarrollo y se agregó el consenso de cinco lecturas OCR (V7). |
+| La línea base quedó en 35 % frente a una meta de 70 %. | Reglas de cercanía muy simples y abstención cuando había varios totales o fechas candidatas. | Se iteró sobre las reglas con datos de desarrollo: consenso de cinco lecturas OCR (V7) y luego 10 lecturas con resumen contable observado. |
 | La comparación con Google Document AI y LayoutLMv3 se movió al último sprint. | Se priorizó llevar la ruta principal (Tesseract + reglas) hasta la meta de exactitud. En Semana 3 se trabajó con un clasificador reducido para practicar el diagnóstico de curvas antes de ajustar LayoutLMv3. | La comparación se ejecuta en el Sprint 4 sobre los mismos documentos que la ruta principal. |
-| La muestra propia (30–50 comprobantes) aún no tiene adaptador automático. | Se priorizaron SROIE y WildReceipt, que ya tenían etiquetas. | Se dejó definido el formato de anotación en `docs/ANOTACION_PROPIA.md`. |
+| La muestra propia (30–50 comprobantes) se incorporó tarde. | Se priorizaron SROIE y WildReceipt, que ya tenían etiquetas. | Se definió el formato de anotación y el ZIP de prueba externa en [`anotacion_propia.md`](anotacion_propia.md); el notebook 05 la evalúa por separado. |
+| El test oficial dejó de ser inédito. | Para mejorar fecha, subtotal e impuesto se revisaron grupos aleatorios del test (1.461 documentos registrados en total). | Se declara en el README y en 05; la evidencia de generalización pasa a ser la prueba externa anotada. |
 | La interfaz no estaba en el plan de Semana 1. | El Alcance original se limitaba al pipeline; la entrega final del curso exige interfaz. | Se agrega como entregable del Sprint 4. |
 
 ## 6. Recursos necesarios
@@ -152,7 +153,7 @@ gantt
 
 | Recurso | Uso |
 |---|---|
-| Google Colab (CPU) | Ejecución del notebook definitivo y evaluación |
+| Google Colab (CPU) | Ejecución de los notebooks 01–05 y evaluación |
 | Google Colab (GPU T4 gratuita) | Experimentos puntuales de Semana 3 |
 | Computadoras personales del equipo | Desarrollo local y pruebas |
 
@@ -162,13 +163,14 @@ El sistema final **no necesita GPU**: Tesseract corre en CPU.
 
 | Herramienta | Versión verificada | Uso |
 |---|---|---|
-| Python | 3.12 (requiere ≥ 3.10) | Lenguaje principal |
-| Tesseract OCR | 5.3.4, modelo `eng` de `tessdata_fast` (SHA-256 fijado) | Reconocimiento de texto |
-| Pillow | 12.3.0 | Preprocesamiento de imagen |
-| NumPy | 2.3.5 | Binarización Otsu y cálculos |
-| pandas | 2.2.3 | Tablas de métricas |
-| matplotlib | 3.10.8 | Gráficos |
-| pypdfium2 | 5.3.0 | Conversión de PDF a imagen |
+| Python | 3.12 y 3.13 (requiere ≥ 3.10) | Lenguaje principal |
+| Tesseract OCR | 5.3.4, pesos `eng` de `tessdata_fast` y `tessdata_best` y `spa` de `tessdata_fast` (SHA-256 fijado) | Reconocimiento de texto |
+| Pillow | 12.3 | Preprocesamiento de imagen |
+| NumPy | 2.x | Binarización, iluminación y cálculos |
+| pandas | 2.x y 3.0 | Tablas de métricas |
+| matplotlib | 3.10–3.11 | Gráficos |
+| pypdfium2 | 5.x | Conversión de PDF a imagen |
+| scikit-learn | 1.x | Sustituto, PDP e importancia en la optimización |
 | Git / GitHub | — | Control de versiones |
 
 ### 6.4 Recursos humanos y financieros
@@ -182,21 +184,22 @@ Probabilidad e impacto: A = alta, M = media, B = baja.
 
 | # | Riesgo | Prob. | Impacto | Mitigación | Estado al cierre |
 |---|---|:-:|:-:|---|---|
-| R1 | Los datasets públicos no representan las facturas reales del equipo (formatos ecuatorianos, RUC, IVA). | A | A | Reservar una muestra propia de 30–50 comprobantes solo para el test final. | Abierto: formato de anotación listo, adaptador pendiente. |
-| R2 | Las reglas se ajustan demasiado a los documentos que vimos (sobreajuste de reglas). | A | A | Separar desarrollo, selección y test; inventario por hash de los 350 documentos ya vistos; test congelado antes de ver resultados. | Mitigado en el diseño; falta ejecutar el test final. |
-| R3 | Errores del OCR se propagan a la extracción. | A | A | Preprocesamiento, cinco lecturas con distintas configuraciones y consenso entre ellas; alertas cuando algo no cuadra. | Mitigado parcialmente. |
-| R4 | No alcanzar la meta de 70 %. | M | A | Iterar sobre datos de desarrollo y reportar el resultado real del test sin cambiar el modelo para forzar la meta. | Resultado de selección 70,53 %; test final pendiente. |
+| R1 | Los datasets públicos no representan las facturas reales del equipo (formatos ecuatorianos, RUC, IVA). | A | A | Reservar una muestra propia de 30–50 comprobantes solo para el test final. | Abierto: formato de anotación y evaluación externa listos en 05; falta reunir la muestra completa. |
+| R2 | Las reglas se ajustan demasiado a los documentos que vimos (sobreajuste de reglas). | A | A | Separar optimización, control y test; inventario por hash de los documentos ya vistos; configuración congelada antes de leer. | Ocurrió en parte: 1.461 documentos revisados, incluido casi todo el test oficial. Se reporta así y se usa la prueba externa. |
+| R3 | Errores del OCR se propagan a la extracción. | A | A | Preprocesamiento, 10 lecturas con distintas configuraciones y pesos, rescate adaptativo y consenso; alertas cuando algo no cuadra. | Mitigado parcialmente. |
+| R4 | No alcanzar la meta de 70 %. | M | A | Iterar sobre datos de desarrollo y reportar el resultado real del test sin cambiar el modelo para forzar la meta. | En desarrollo, 75,0–77,6 % en tres grupos del test con reutilización; medición final en 05. |
 | R5 | Fuga de datos entre entrenamiento y prueba. | M | A | Partición por SHA-256 con semilla fija (42); duplicados a cuarentena; test oficial nunca explorado. | Mitigado. |
 | R6 | Límites de la capa gratuita de Colab o de las APIs. | M | M | Lotes pequeños y caché de OCR; Document AI limitado a un lote. | Abierto hasta ejecutar la comparación. |
 | R7 | Falta de tiempo por compromisos laborales de ambos integrantes. | A | M | Dividir el trabajo por frentes (OCR / extracción y evaluación) y documentar desde el Sprint 1. | Ocurrió: la comparación con Document AI y LayoutLMv3 se movió al último sprint. |
 | R8 | Publicar datos personales de facturas reales. | M | A | No versionar imágenes ni facturas; `.gitignore` excluye datos, credenciales y documentos privados. | Mitigado. |
 | R9 | Licencias de los datasets no permiten redistribuir imágenes. | M | M | No subir imágenes de terceros; cada usuario descarga desde la fuente original. | Mitigado. |
+| R10 | Usuarios suben comprobantes con campos escritos a mano y confían en la lectura. | M | A | Declararlo fuera de alcance en README, manual e interfaz; alertas de revisión y cobertura; nunca rellenar un campo sin evidencia leída. | Mitigado con advertencias; el modelo no lo resuelve. |
 
 ## 8. Lecciones de planificación
 
 - **La línea base temprana fue lo más útil del plan.** Tener el 35 % en la Semana 2 nos mostró a tiempo que el problema estaba en la selección de campos y no solo en el OCR.
 - **Las comparaciones toman más tiempo del previsto.** Tres rutas (reglas, LayoutLMv3 y Document AI) para dos personas a tiempo parcial obligaron a mover parte del trabajo al último sprint.
-- **Separar los datos desde el inicio ahorra problemas.** El inventario de documentos vistos y la semilla fija permiten defender que el test final es independiente.
+- **Separar los datos desde el inicio ahorra problemas, y hay que cuidar esa separación hasta el final.** El inventario de documentos vistos permitió detectar que, al mejorar el modelo, se había revisado casi todo el test oficial; por eso la prueba externa debió reservarse desde el Sprint 1.
 - **La interfaz debió estar en el backlog desde el Sprint 1**, porque es parte de la entrega final del curso.
 
 ---

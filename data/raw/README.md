@@ -37,4 +37,4 @@ Si tu descarga quedó en otra ruta, indícala con `DATOS_MANUAL` en la primera c
 ## Reglas
 
 - No editar, renombrar ni borrar archivos originales: el manifiesto identifica cada documento por su ruta y su SHA-256.
-- No guardar aquí documentos propios o privados. Los comprobantes reales (muestra RIDE) se manejan fuera del repositorio, anonimizados y con autorización; ver [`docs/ANOTACION_PROPIA.md`](../../docs/ANOTACION_PROPIA.md).
+- No guardar aquí documentos propios o privados. Los comprobantes reales (muestra RIDE) se manejan fuera del repositorio, anonimizados y con autorización; ver [`docs/anotacion_propia.md`](../../docs/anotacion_propia.md).

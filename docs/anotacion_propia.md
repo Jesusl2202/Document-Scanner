@@ -10,6 +10,21 @@ Crear una tabla de referencia revisada por dos integrantes con columnas:
 
 Para cada status usar `annotated` (valor legible confirmado), `absent` (ausencia confirmada), `unannotated` (sin revisar) o `ambiguous` (ilegible o múltiples interpretaciones). Un vacío no debe convertirse automáticamente en ausencia.
 
+Usar solo comprobantes **impresos o digitales**. Si la fecha, los montos, el RUC o el número están escritos a mano, el documento queda fuera de la muestra: el sistema no está diseñado para texto manuscrito y medirlo mezclaría dos problemas distintos.
+
 Conservar identificadores como texto para no perder ceros iniciales. Definir moneda y separadores por documento. No convertir nombre del emisor en identificación tributaria. No publicar números o documentos privados sin revisar anonimización y autorización.
 
 El adaptador automático de esta tabla propia queda para la siguiente iteración; actualmente los adaptadores productivos son SROIE y WildReceipt. La extracción de documentos individuales ya funciona con `extract` y permite revisar sus evidencias.
+
+
+## ZIP de test nuevo para la evaluación aleatoria
+
+En la raíz del ZIP: `anotaciones.jsonl` y una carpeta `imagenes/`. Una línea JSON por factura. Ejemplo de FORMATO, no datos reales de evaluación:
+
+```json
+{"id":"factura_001","image":"imagenes/factura_001.png","gold":{"date":{"status":"annotated","value":"21/10/2026"},"subtotal":{"status":"annotated","value":"100.00"},"tax":{"status":"annotated","value":"15.00"},"total":{"status":"annotated","value":"115.00"}}}
+```
+
+Sustituye todos los valores por los que realmente se ven en cada imagen y verifica la transcripción manualmente. `annotated` significa valor verificado; `absent` exige `value:null` y significa que realmente no aparece; `unannotated` significa no evaluado. Los campos omitidos quedan no anotados. No declares ausente un dato que simplemente cuesta leer. Usa imágenes PNG/JPEG; para PDF, anota por página tras convertirlas a imágenes. No incluyas documentos usados para ajustar las reglas. El identificador debe ser único, pero renombrar no evita el control por SHA256.
+
+La etiqueta `externas` se informa separada de SROIE/WildReceipt. Su rendimiento no se atribuye a WildReceipt. El porcentaje depende del soporte anotado; para medir los campos débiles, verifica subtotal, impuesto y total cuando sean visibles.

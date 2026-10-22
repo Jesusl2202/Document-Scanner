@@ -5,12 +5,22 @@ Salidas derivadas de `data/raw/`. Para no filtrar contenido de terceros, **solo 
 | Archivo | Versionado | Contenido |
 |---|---|---|
 | `README.md` | sí | Este documento |
-| `documentos_revisados.csv` | sí | Inventario de los 350 documentos ya usados en desarrollo y selección: `dataset`, `source_split`, `document_id`, `sha256` |
+| `documentos_revisados.csv` | sí | Inventario de los 1.461 documentos ya revisados durante el desarrollo: `dataset`, `source_split`, `document_id`, `sha256` |
 | `manifest.jsonl`, `manifest_metadata.json`, EDA | no | Se generan al ejecutar el pipeline (ver abajo) |
 
 ## documentos_revisados.csv
 
-Contiene 350 documentos del entrenamiento oficial: 179 de SROIE y 171 de WildReceipt. Son los documentos cuya imagen ya se observó mientras se desarrollaba y seleccionaba el extractor, así que **se excluyen de la muestra de test final** (por id y por hash). No contiene imágenes ni anotaciones, solo identificadores y hashes.
+Contiene los 1.461 documentos cuya imagen ya se observó mientras se desarrollaba y seleccionaba el extractor:
+
+| Dataset | Partición de origen | Documentos |
+|---|---|---:|
+| SROIE | train | 329 |
+| SROIE | test | 337 |
+| WildReceipt | train | 321 |
+| WildReceipt | test | 472 |
+| Externos | development / printed_reviewed | 2 |
+
+Sirve para declarar con honestidad qué evaluaciones no son inéditas (el notebook 05 informa cuántos documentos de su muestra ya estaban aquí) y para excluir esas imágenes de la prueba externa. No contiene imágenes ni anotaciones, solo identificadores y hashes; el documento externo `printed_reviewed` no tiene `document_id`.
 
 Se genera a partir de [`configs/documentos_revisados.json`](../../configs/documentos_revisados.json):
 
@@ -20,7 +30,7 @@ python scripts/exportar_documentos_revisados.py
 
 ## Lo que genera el pipeline
 
-El notebook [`01_lector_definitivo.ipynb`](../../notebooks/01_lector_definitivo.ipynb) llama a `prepare()` y `run_eda()` y escribe sus salidas en `outputs/experimentos/<sesión>/`. Si quieres conservarlas junto a los datos, cópialas a esta carpeta; no se subirán a Git.
+Los notebooks de [`notebooks/`](../../notebooks/) llaman a `prepare()` (todos) y `run_eda()` ([`01_exploracion.ipynb`](../../notebooks/01_exploracion.ipynb)) y escriben sus salidas en `outputs/experimentos/notebooks/` (o en Drive con `USAR_DRIVE = True`). Si quieres conservarlas junto a los datos, cópialas a esta carpeta; no se subirán a Git.
 
 ### manifest.jsonl (una línea JSON por documento)
 

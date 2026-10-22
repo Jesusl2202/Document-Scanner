@@ -7,21 +7,36 @@ __pycache__/
 build/
 dist/
 .ipynb_checkpoints/
-# Datos y salidas locales
-data/
+
+# Datos: solo se versiona la documentación y el inventario de hashes, nunca los datasets
+data/raw/*
+!data/raw/README.md
+data/processed/*
+!data/processed/README.md
+!data/processed/documentos_revisados.csv
 datasets/
+
+# Pesos, salidas y cachés locales (los pesos de Tesseract se descargan y verifican por SHA-256)
 modelos/
 modelos_preentrenados/
+models/fast/
+models/best/
 outputs/
 artifacts/
 cache_ocr/
 *.traineddata
 *_resultados.zip
+results/**/predictions.jsonl
+
 # Credenciales y documentos personales
 .env
 .env.*
 credentials*.json
 service-account*.json
 documentos_privados/
+documento_privado/
+.streamlit/secrets.toml
+
+# Sistema operativo
 .DS_Store
 Thumbs.db

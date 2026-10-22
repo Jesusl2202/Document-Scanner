@@ -3,13 +3,14 @@ import argparse,json,csv,time
 from pathlib import Path
 from .ocr import transcribe,render_pdf
 from .extraction import extract,validate
-from .frozen_runtime import ensure_model,review_notes
+from .frozen_runtime import bind_models,review_notes,extraction_status
 
 def predict(image,engine,config,cache_dir=None):
     if engine!='tesseract':raise ValueError('Este proyecto utiliza Tesseract')
     started=time.perf_counter();ocr=transcribe(image,config['ocr'],cache_dir)
     result=extract(ocr,config)
     result.update(text=ocr['text'],ocr=ocr,cache_hit=ocr['cache_hit'],status='ok',validation=validate(result['fields'],config),elapsed_seconds=time.perf_counter()-started)
+    result['quality']=extraction_status(result['fields'])
     return result
 
 def main():
@@ -21,7 +22,8 @@ def main():
     if not source.is_file():raise FileNotFoundError(source)
     out.mkdir(parents=True,exist_ok=True)
     config=json.loads(Path(args.config).read_text(encoding='utf8'))
-    model=ensure_model(root/'modelos/eng_fijado')
+    config=bind_models(config,root/'models')
+    model={'engine':'tesseract','configuration':config}
     pages=render_pdf(source,out/'paginas') if source.suffix.lower()=='.pdf' else [source]
     results=[]
     for i,page in enumerate(pages,1):

@@ -28,7 +28,7 @@ def cer_text(s):
     return ' '.join(s.upper().split())
 
 
-def evaluate(rows, predictions, config, out):
+def evaluate(rows, predictions, config, out, calculate_cer=True):
     expected = {r['id'] for r in rows}
     if len(expected) != len(rows):
         raise ValueError('IDs duplicados en evaluación')
@@ -58,7 +58,7 @@ def evaluate(rows, predictions, config, out):
                             'gold': gold['value'], 'predicted': p.get('fields', {}).get(field),
                             'gold_normalized': truth, 'predicted_normalized': predicted,
                             'correct': int(correct), 'tp': tp, 'fp': fp, 'fn': fn, 'execution_ok': ok})
-        reference = cer_reference(r)
+        reference = cer_reference(r) if calculate_cer else None
         if reference:
             ref = cer_text(reference)
             hyp = cer_text(p.get('text', '')) if ok else ''
@@ -78,7 +78,7 @@ def evaluate(rows, predictions, config, out):
                             'f1': 2*tp/(2*tp+fp+fn) if 2*tp+fp+fn else (0.0 if support else None),
                             'tp': tp, 'fp': fp, 'fn': fn})
     completed = sum(x['ok'] for x in doc_rows)
-    times = sorted(x['seconds'] for x in doc_rows if x['seconds'] is not None and not x['cache_hit'])
+    times = sorted(x['seconds'] for x in doc_rows if x['ok'] and x['seconds'] is not None and not x['cache_hit'])
     micro_total = len(details)
     summary = {'documents': len(rows), 'successful_executions': completed,
                'execution_success_rate': completed/len(rows) if rows else None,
@@ -92,6 +92,8 @@ def evaluate(rows, predictions, config, out):
                'notes': ['CER usa orden geométrico de referencia y orden OCR; no es puntuación oficial SROIE.',
                          'Sin soporte no se reporta cero: queda null.', 'Métricas de extracción no acreditan validez fiscal.',
                          'Micro global tiene distinta cobertura por dataset; comparar también fecha y total por separado.']}
+    if not calculate_cer:
+        summary['notes'].append('CER no recalculado: replay de extracción sobre el mismo OCR archivado.')
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     for name, content in [('metrics', metrics), ('errors', details), ('cer', ocr_errors), ('documents', doc_rows)]:

@@ -2,7 +2,7 @@
 import statistics
 from .common import text_key
 
-def grouped(ocr):
+def _grouped(ocr):
     """Alineación visual; no depende del número de línea asignado por Tesseract."""
     rows=[]
     words=[w for w in ocr.get('words',[]) if str(w.get('text','')).strip() and len(w.get('box',[]))==4]
@@ -23,3 +23,27 @@ def grouped(ocr):
         b=[min(w['box'][0] for w in r),min(w['box'][1] for w in r),max(w['box'][2] for w in r),max(w['box'][3] for w in r)]
         result.append({'text':' '.join(parts),'spans':spans,'box':b})
     return sorted(result,key=lambda r:r['box'][1])
+
+
+# Cache lives only within one extraction, never across documents or mutations.
+from contextvars import ContextVar
+from contextlib import contextmanager
+_ROW_CACHE = ContextVar('ocr_row_cache', default=None)
+
+@contextmanager
+def row_cache():
+    token = _ROW_CACHE.set({})
+    try:
+        yield
+    finally:
+        _ROW_CACHE.reset(token)
+
+def grouped(ocr):
+    cache = _ROW_CACHE.get()
+    if cache is None:
+        return _grouped(ocr)
+    key = id(ocr)
+    if key not in cache:
+        cache[key] = (ocr, _grouped(ocr))
+    # Consumers may append rows: protect the cached list itself.
+    return list(cache[key][1])

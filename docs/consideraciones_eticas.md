@@ -2,7 +2,7 @@
 
 **Proyecto:** Lector de Facturas — extracción y validación de datos de facturas y comprobantes de compra con OCR
 **Equipo:** Sebastián Rojas y Jesús Antonio López Barahona
-**Última actualización:** 20/10/2026
+**Última actualización:** 21/10/2026
 
 Este documento analiza los riesgos éticos del sistema, qué medidas ya están implementadas en el repositorio y qué límites de uso deben conocer quienes lo usen.
 
@@ -49,10 +49,11 @@ Los datos no tienen variables demográficas (edad, género, etnia), así que no 
 | Sesgo | Evidencia | Fuente |
 |---|---|---|
 | **Geográfico** | SROIE son recibos de Malasia; WildReceipt son imágenes en inglés obtenidas con buscadores. Ninguno tiene comprobantes ecuatorianos ni latinoamericanos. | [Análisis de datos](analisis_datos.md), sección 1 |
-| **Idioma** | El OCR usa el modelo `eng` y la mayoría de las reglas busca etiquetas en inglés (`TOTAL`, `TAX`, `AMOUNT DUE`). | [Arquitectura](arquitectura.md), sección 3 |
+| **Idioma** | El OCR usa sobre todo modelos `eng` (solo una de las 10 vistas añade español) y la mayoría de las reglas busca etiquetas en inglés (`TOTAL`, `TAX`, `AMOUNT DUE`). | [Arquitectura](arquitectura.md), sección 3 |
 | **Tipo de documento** | Ambos datasets son recibos de comercio minorista; casi no hay facturas formales entre empresas. | Documento de Alcance, sección 3 |
 | **Calidad de captura** | El CER mediano de las fotos de WildReceipt (0,48) es más del doble que el de los escaneos de SROIE (0,19). | Línea base de Semana 2 |
 | **Formato de fecha** | En 32,3 % de los recibos de SROIE no se distingue día de mes sin saber el país. | [Análisis de datos](analisis_datos.md), sección 5.2 |
+| **Escritura** | Los dos datasets y los pesos de Tesseract son de texto **impreso**. Los comprobantes completados a mano (frecuentes en negocios pequeños con talonarios) quedan fuera. | [Análisis de datos](analisis_datos.md), sección 8 |
 
 ### 1.2 ¿Cómo afectan las predicciones?
 
@@ -61,10 +62,11 @@ El sistema funcionará peor con:
 - Facturas en **español** u otros idiomas con etiquetas que las reglas no conocen, o con letras como `ñ` y tildes.
 - **Fotos tomadas con celulares** de baja resolución o con mala luz, frente a escaneos limpios.
 - Formatos de **fecha** de un país distinto al configurado.
+- Comprobantes con **campos escritos a mano** (fecha, montos o RUC completados con bolígrafo): el OCR no los reconoce de forma confiable.
 
 ### 1.3 ¿Quiénes podrían salir perjudicados?
 
-No hay un grupo de personas perjudicado por una decisión del modelo. El perjuicio posible es **operativo**: un negocio pequeño que fotografía sus facturas con un celular sencillo, o que recibe facturas en español, tendrá más campos vacíos o errados y tendrá que corregir más a mano. Es un costo de tiempo, no una exclusión, porque el sistema no reemplaza la revisión humana.
+No hay un grupo de personas perjudicado por una decisión del modelo. El perjuicio posible es **operativo**: un negocio pequeño que fotografía sus facturas con un celular sencillo, que recibe facturas en español o que todavía usa talonarios llenados a mano tendrá más campos vacíos o errados y tendrá que corregir más a mano. Es un costo de tiempo, no una exclusión, porque el sistema no reemplaza la revisión humana.
 
 ## 2. Equidad y fairness
 
@@ -83,11 +85,12 @@ Usamos el dataset como grupo de comparación (escaneo vs. foto) y reportamos las
 
 *Línea base de Semana 2 sobre 40 documentos de validación. Es una muestra pequeña: sirve para ver la dirección de la diferencia, no para medirla con precisión.*
 
-La brecha en la lectura de fechas (80 % vs. 44 %) muestra que la calidad de la imagen sí cambia el resultado.
+La brecha en la lectura de fechas (80 % vs. 44 %) muestra que la calidad de la imagen sí cambia el resultado. La brecha persistió durante el desarrollo: con V6 la fecha se acertó en 80,0 % de SROIE frente a 53,8 % de WildReceipt, y con el modelo actual los campos más débiles siguen siendo subtotal, impuesto y fecha de WildReceipt ([resultados de desarrollo](../results/reports/resultados_desarrollo.md)). El notebook 05 reporta la exactitud **por dataset, por tamaño de imagen y por calidad del OCR** (sección 7.1) para vigilar esa diferencia.
 
 ### 2.3 Estrategias para reducir la diferencia
 
-- **Ampliar las imágenes pequeñas** a 2.200 px y leer cada documento cinco veces con distintas configuraciones, pensado justamente para las fotos de baja resolución.
+- **Ampliar las imágenes pequeñas** a 2.200 px, corregir la iluminación y leer cada documento 10 veces con distintas configuraciones y pesos (más un rescate con binarización local si la lectura es dudosa), pensado justamente para las fotos de baja resolución o con sombras.
+- **Una vista en inglés + español**, para reducir el sesgo de idioma con facturas locales.
 - **Reportar por dataset y por campo**, para que un promedio alto no esconda un grupo de documentos que funciona mal.
 - **Muestra propia** de 30–50 comprobantes de al menos tres emisores para medir el desempeño en facturas reales del contexto local.
 - **Reglas configurables por país**: orden de fecha, separador decimal y patrón del identificador fiscal.
@@ -113,12 +116,12 @@ Además, el sistema guarda en `resultado.json` el **texto completo** leído por 
 | Medida | Dónde |
 |---|---|
 | **Procesamiento local.** Tesseract corre en la máquina del usuario; las imágenes no se envían a ningún servicio externo. La única conexión a Internet es para descargar una vez los pesos del modelo. | `README.md`, `frozen_runtime.py` |
-| **No se versionan datos.** `.gitignore` excluye `data/`, `datasets/`, `outputs/`, `cache_ocr/`, `documentos_privados/`, `.env` y archivos de credenciales. | `.gitignore` |
+| **No se versionan datos.** `.gitignore` excluye el contenido de `data/raw/` y `data/processed/` (salvo su documentación), `datasets/`, `outputs/`, los pesos de `models/`, `cache_ocr/`, `documentos_privados/`, `.env` y archivos de credenciales. | `.gitignore` |
 | **No se redistribuyen imágenes** de terceros: cada persona descarga los datasets de la fuente original. | `data/README.md` |
 | **El inventario de documentos vistos solo guarda hashes**, no imágenes ni texto. | `data/processed/documentos_revisados.csv` |
 | **Los ejemplos del repositorio son sintéticos**, con datos inventados (`RUC 1234567890`). | `samples/` |
-| **El notebook separa los documentos propios**: los guarda en `documento_privado/` y los **excluye del ZIP** de resultados junto con la caché de OCR. | `notebooks/01_lector_definitivo.ipynb`, sección 7 |
-| **Anotación propia con anonimización**: no se publican números ni documentos privados sin revisar anonimización y autorización. | `docs/ANOTACION_PROPIA.md` |
+| **El notebook de evaluación separa los documentos propios**: los guarda en `documento_privado/` y los **excluye del ZIP** de resultados, junto con la caché de OCR y las predicciones con texto. De la prueba externa solo se exportan métricas. | [`notebooks/05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb), secciones 8–10 |
+| **Anotación propia con anonimización**: no se publican números ni documentos privados sin revisar anonimización y autorización. | [`docs/anotacion_propia.md`](anotacion_propia.md) |
 
 **Recomendaciones para quien use el sistema:**
 
@@ -153,8 +156,10 @@ Cada campo extraído viene con su **evidencia** en `resultado.json`:
 | `rule` | `visual_label`, `arithmetic_row`, `cash_minus_change` | Qué regla lo encontró. |
 | `score` | `8` | Qué tan confiable es esa regla. |
 | `box` | `[402, 1310, 512, 1342]` | En qué parte de la imagen está. |
-| `view` | `1` | Cuál de las cinco lecturas lo produjo. |
-| `alerts` | `total:from_subtotal` | Por qué conviene revisarlo. |
+| `view` | `1` | Cuál de las lecturas lo produjo. |
+| `alerts` | `total:observed_accounting_selection` | Por qué conviene revisarlo. |
+| `accounting_summary` | `{"previous_value": "74.50", "adjustments": {...}}` | Si el resumen contable corrigió un valor, cuál era el anterior y con qué ajustes visibles. |
+| `quality` | `lectura_parcial` | Cuántos campos se encontraron; aclara que cobertura no es exactitud. |
 
 ### 4.3 Técnicas de explicabilidad
 
@@ -173,7 +178,7 @@ SHAP y LIME están pensados para explicar modelos entrenados que asignan pesos a
 
 - **Exposición de datos personales** si los resultados se comparten o se guardan sin cuidado (sección 3).
 - **Confianza excesiva**: un usuario podría registrar los valores sin revisarlos y arrastrar un error a la contabilidad o a una declaración de impuestos.
-- **Desplazamiento de tareas**: en un uso real, la digitación manual podría reducirse. Con la exactitud actual (cerca de 70 % por campo) el sistema **asiste** a la persona, no la reemplaza.
+- **Desplazamiento de tareas**: en un uso real, la digitación manual podría reducirse. Con la exactitud actual (alrededor de 75 % por campo en desarrollo) el sistema **asiste** a la persona, no la reemplaza.
 
 ### 5.3 ¿Quiénes se benefician y quiénes podrían salir perjudicados?
 
@@ -198,13 +203,14 @@ El sistema es un **prototipo académico**. Los valores que entrega son **sugeren
 ### 6.2 Mecanismos de accountability
 
 - **Trazabilidad completa**: evidencia por campo, versión del código (hash de cada archivo de `src/`), configuración congelada y SHA-256 de los pesos del modelo guardados en cada ejecución del notebook.
-- **El sistema prefiere dejar vacío antes que adivinar**: ante un empate devuelve el campo vacío con alerta, y nunca inventa un monto que no leyó.
+- **El sistema prefiere dejar vacío antes que adivinar**: ante un empate devuelve el campo vacío con alerta, nunca inventa un monto que no leyó y, desde el modelo «resumen contable», **ya no supone que el total es igual al subtotal** cuando no ve un impuesto. Las correcciones del resumen contable y el rescate por confianza conservan el valor anterior y la evidencia.
 - **Historial en Git** de todas las versiones del extractor.
-- **Resultados reportados tal como salen**: el notebook indica que, si el test final no alcanza la meta, se reporta el resultado sin cambiar el modelo para forzarla.
+- **Resultados reportados tal como salen**: el notebook 05 congela la configuración antes de leer el test y reporta el resultado sin cambiar el modelo para forzar la meta. También declara cuántos documentos del test ya se habían revisado durante el desarrollo.
+- **Optimización con regla fijada de antemano**: el notebook 04 solo adopta una configuración nueva si mejora en una muestra de control con un intervalo de confianza favorable.
 
 ### 6.3 Plan de monitoreo y actualización
 
-1. Ejecutar el **test final congelado** y publicar el resultado aunque esté por debajo de la meta.
+1. Ejecutar la evaluación final (notebook 05) y la **prueba externa anotada**, y publicar el resultado aunque esté por debajo de la meta.
 2. Revisar periódicamente los casos con alertas y los errores reportados por usuarios para encontrar formatos nuevos.
 3. Antes de cambiar una regla, medirla en documentos de **desarrollo**, nunca en el test, y registrar el cambio en Git.
 4. Ampliar la muestra propia con facturas de nuevos emisores para revisar si el desempeño se mantiene.
@@ -240,16 +246,17 @@ Sí, y el riesgo está ligado a la privacidad:
 
 ### 8.1 ¿En qué casos NO debe usarse?
 
-- Documentos **manuscritos**.
+- Documentos **manuscritos** o comprobantes impresos con **campos completados a mano** (fecha, montos, RUC o número escritos con bolígrafo). El OCR está entrenado con texto impreso y esos valores se leen mal o no se leen; el sistema no lo detecta por sí solo.
 - Facturas de **varias páginas** que deban leerse como un solo documento (cada página sale por separado).
 - Documentos en idiomas con **otro alfabeto**, porque el modelo OCR es en inglés.
 - Cuando se necesita una **certeza legal** sobre el comprobante (para eso están los servicios de la autoridad tributaria y los XML firmados de la factura electrónica).
 
 ### 8.2 Advertencias para los usuarios
 
-- La exactitud medida es de **70,53 % por campo** sobre 120 documentos usados para elegir la versión. Es una cifra **retrospectiva**: el test independiente está pendiente y el resultado en documentos nuevos puede ser menor.
+- La exactitud medida en desarrollo es de **75,0–77,6 % por campo** en tres grupos aleatorios del test oficial que ya se habían revisado al mejorar el modelo. No es una medida en documentos nuevos: el resultado con facturas propias puede ser menor (ver la prueba externa del notebook 05).
 - `tax_id` y `document_number` **no se han podido medir** con los datasets públicos porque no traen esas etiquetas.
-- Revisar siempre los campos con alertas, en especial `total:from_subtotal`.
+- Revisar siempre los campos con alertas, en especial `total:subtotal_no_confirma_total`, `observed_accounting_selection` y `confidence_gap_recovery`.
+- Usar solo comprobantes **impresos o digitales**; si algún campo está escrito a mano, digitarlo manualmente.
 - Los archivos de salida contienen el texto completo de la factura: **guárdelos con cuidado**.
 
 ### 8.3 Casos límite donde el sistema no es confiable
@@ -260,7 +267,9 @@ Sí, y el riesgo está ligado a la privacidad:
 | Recibos con varios montos iguales (total, efectivo, total redondeado) | Las reglas pueden confundir cuál es el total. |
 | Fechas como `05/03/18` sin país configurado | No se sabe si es 5 de marzo o 3 de mayo; queda marcada como ambigua. |
 | Recibos sin la palabra "total" o con etiquetas poco comunes | Ninguna regla encuentra el campo. |
-| Facturas sin impuesto desglosado | Puede activarse `total:from_subtotal` y tomar un total que no corresponde. |
+| Facturas sin impuesto desglosado | El total queda vacío (`total:subtotal_no_confirma_total`) para que una persona lo confirme. |
+| Campos escritos a mano | Tesseract está entrenado con texto impreso; la letra manuscrita produce lecturas erradas o vacías. |
+| Descuentos, propinas o cargos que no se leen bien | El resumen contable no cuadra y el sistema conserva los valores leídos con una nota de revisión. |
 | Montos como `1.234` | No se sabe si el punto es decimal o de miles; se trata como ambiguo. |
 
 ---

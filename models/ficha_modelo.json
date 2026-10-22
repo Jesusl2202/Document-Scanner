@@ -1,0 +1,78 @@
+{
+  "modelo": "Resumen contable",
+  "descripcion": "Tesseract 5 preentrenado (sin entrenamiento) + extractor de reglas, geometría y consenso de 10 vistas, con rescate OCR adaptativo, resumen contable observado y rescate de campos vacíos por confianza.",
+  "version": "1.0.0",
+  "fecha": "2026-10-21",
+  "pesos_ocr": [
+    {
+      "pesos": "tessdata_fast",
+      "idiomas": [
+        "eng",
+        "spa"
+      ],
+      "revision": "87416418657359cb625c412a48b6e1d6d41c29bd",
+      "sha256_eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+      "red_vgsl": "[1,36,0,1 Ct3,3,16 Mp3,3 Lfys48 Lfx96 Lrx96 Lfx192 O1c1]"
+    },
+    {
+      "pesos": "tessdata_best",
+      "idiomas": [
+        "eng"
+      ],
+      "revision": "e12c65a915945e4c28e237a9b52bc4a8f39a0cec",
+      "sha256_eng": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba",
+      "red_vgsl": "[1,36,0,1 Ct3,3,16 Mp3,3 Lfys64 Lfx96 Lrx96 Lfx512 O1c1]"
+    }
+  ],
+  "configuracion": "configs/definitivo.json",
+  "configuracion_sha256": "19743ab391cec8c3212cfaafc940dd5b32f9803a97dc6012188dff8434b5cd4f",
+  "vistas_ocr": 10,
+  "vistas_rescate": 2,
+  "etapas_activas": [
+    "printed_improvements",
+    "accounting_improvements",
+    "amount_context",
+    "spatial_amounts",
+    "semantic_amounts",
+    "document_consistency",
+    "structured_fields",
+    "observed_accounting",
+    "confidence_rescue"
+  ],
+  "codigo_sha256": {
+    "__init__.py": "c06ca29eebb6166ea027d94f3a4b735aada4734ee9ef81eca21cc609a3515114",
+    "__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+    "candidate_rules.py": "8fe76564424b92b858ff0925b88fdaf3bd11ee212795f82c88127d052156cb22",
+    "cli.py": "af7cb23edbf858657990abc369ad957a8ed8c0e59c77655067d37bf0ccd537f0",
+    "common.py": "2ffe0cb353b8dc3db43d1a38c12f33abd0db5c487a1197acaeef005da0febff8",
+    "consensus.py": "0e39954284cf85529c5f181501638c33c1d5e823ff26c383596b47e6d85282e1",
+    "datasets.py": "5fbf809d62ba571e67462a2a9053f44289a3b46f5c88ea4117137827b55aefb2",
+    "eda.py": "3d9077ed0b958c3d9cd3fc3a3338424464415835272113372dd4add5d03ed24d",
+    "evaluation.py": "8bb724b78771d732439dd37af793e64ef99ca669561de4b657cbe61c0bc33fd2",
+    "experiments.py": "08d472b57f8af6e8dd1499e23e7095919ecbbc04a0bc2a7e90e61cbffbd086e4",
+    "extraction.py": "be7e1cd9ab6be8321bba935605cdb744c74d7d3862fa2e55651856e88e6c9ba2",
+    "frozen_runtime.py": "3c59ef3b41a801a13c0f40efbf6dbe2767fd8e51dbd31e6685923d7e9f79af97",
+    "geometry.py": "7e45c1613d05bc057e164d3e290896e33d496642689a5f829908a5cdc756a261",
+    "ocr.py": "324a1780ad6bc736bb7b8690e47a0e68f835b9e3c22df6fd1690d9f0c321607f",
+    "preprocessing.py": "24b74b8a500b3d6367f5528ea1335ff9785a12a4033a11d5a597c7e4a9f378b4"
+  },
+  "resultados_desarrollo": {
+    "grupos_test_con_reutilizacion": [
+      "184/241 (76,35 %)",
+      "189/252 (75,00 %)",
+      "349/450 (77,56 %)"
+    ],
+    "nota": "Reextracción sobre OCR archivado; no es evaluación independiente. Ver results/reports/resultados_desarrollo.md"
+  },
+  "uso_previsto": "Asistir la digitación de facturas y recibos impresos o digitales, con revisión humana.",
+  "fuera_de_alcance": [
+    "campos escritos a mano",
+    "validez tributaria o autenticidad",
+    "decisiones automáticas sin revisión"
+  ],
+  "version_anterior": {
+    "modelo": "V7 (cinco vistas fast)",
+    "commit": "1636f65",
+    "resultado": "213/302 (70,53 %), retrospectivo"
+  }
+}

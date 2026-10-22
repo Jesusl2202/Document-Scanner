@@ -31,3 +31,18 @@ class FrozenTests(unittest.TestCase):
         p={'fields':{'total':'12.00'},'alerts':['total:from_subtotal']};before=copy.deepcopy(p)
         self.assertTrue(any('confirmar' in s for s in review_notes(p)))
         self.assertEqual(p,before)
+
+
+class UnseenInventoryTests(unittest.TestCase):
+    def test_uses_all_remaining_and_excludes_seen_hashes_and_train_duplicates(self):
+        from lector_facturas.experiments import unseen_test_inventory
+        def row(i,h,split='test',dataset='sroie'):
+            return {'id':i,'sha256':h,'source_split':split,'split':split,'dataset':dataset}
+        rows=[row('train','trainhash','train'),row('old','oldhash'),row('copy','oldhash'),row('leak','trainhash'),row('a','a'),row('b','b','test','wildreceipt'),row('bcopy','b','test','wildreceipt')]
+        selected,excluded=unseen_test_inventory(rows,{'old':'oldhash'})
+        self.assertEqual({r['id'] for r in selected},{'a','b'})
+        self.assertEqual(len(excluded),4)
+
+    def test_empty_independent_test_is_an_error(self):
+        from lector_facturas.experiments import unseen_test_inventory
+        with self.assertRaises(ValueError):unseen_test_inventory([],{})
