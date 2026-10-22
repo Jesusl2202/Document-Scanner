@@ -39,6 +39,45 @@ def final_sample(rows,n_per_dataset,seen_ids=(),seen_hashes=(),seed=42):
 def review_notes(prediction):
     """Recomendación de revisión, sin modificar los campos usados para medir."""
     notes=list(prediction.get('alerts',[]))
+    if prediction.get('accounting_summary',{}).get('observed_only'):
+        notes.append('Resumen comprobado con descuentos/cargos observados: '+str(prediction['accounting_summary']['adjustments']))
+    elif prediction.get('validation',{}).get('amount_balance')=='inconsistent_review':notes.append('Subtotal + impuesto no coincide con total: revisar descuentos, cargos o datos del documento; los valores leídos se conservan.')
     if prediction.get('ocr',{}).get('view_errors'):notes.append('Una o varias lecturas OCR fallaron')
     if 'total:from_subtotal' in notes:notes.append('Total supuesto a partir del subtotal: confirmar impuesto, cargos y descuentos')
     return notes
+
+
+def bind_models(config,directory):
+    """Configurar pesos locales. Solo descargas públicas de Tesseract; nunca subir facturas."""
+    import copy
+    config=copy.deepcopy(config);root=Path(directory)
+    specs={'fast':('tessdata_fast','87416418657359cb625c412a48b6e1d6d41c29bd',MODEL_SHA),
+           'best':('tessdata_best','e12c65a915945e4c28e237a9b52bc4a8f39a0cec','8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba')}
+    def download(name,language):
+        repo,revision,expected=specs[name];folder=root/name;folder.mkdir(parents=True,exist_ok=True)
+        path=folder/(language+'.traineddata')
+        valid=path.exists() and (language!='eng' or hashlib.sha256(path.read_bytes()).hexdigest()==expected)
+        if not valid:
+            url=f'https://raw.githubusercontent.com/tesseract-ocr/{repo}/{revision}/{language}.traineddata'
+            part=folder/(language+'.download')
+            with urllib.request.urlopen(url,timeout=120) as source,part.open('wb') as target:shutil.copyfileobj(source,target)
+            if language=='eng' and hashlib.sha256(part.read_bytes()).hexdigest()!=expected:raise ValueError('Pesos incompletos: '+name)
+            if part.stat().st_size<100000:raise ValueError('Descarga incompleta: '+language)
+            part.replace(path)
+        return folder
+    for view in config['ocr']['ensemble_views']+config['ocr'].get('rescue_views',[]):
+        name=view.pop('model','best' if view.get('expected_model_sha256')==specs['best'][2] else 'fast');folder=download(name,'eng')
+        view.update(tessdata_dir=str(folder.resolve()),expected_model_sha256=specs[name][2])
+    if config['ocr'].get('include_spanish') or config['ocr'].get('focused_reading',{}).get('enabled'):
+        folder=download('fast','spa')
+        if not any(v.get('language')=='eng+spa' for v in config['ocr']['ensemble_views']):
+            config['ocr']['ensemble_views'].append({'preprocess':'denoise','psm':6,'language':'eng+spa',
+                'tessdata_dir':str(folder.resolve()),'expected_model_sha256':MODEL_SHA})
+    return config
+
+
+def extraction_status(fields):
+    count=sum(fields.get(f) not in (None,'') for f in ('date','subtotal','tax','total'))
+    return {'fields_found':count,'fields_requested':4,
+            'reading_status':'sin_campos' if count==0 else ('lectura_parcial' if count<4 else 'lectura_por_verificar'),
+            'note':'Cobertura no es exactitud; dato ausente no equivale a cero.'}

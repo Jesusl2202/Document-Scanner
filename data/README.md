@@ -11,7 +11,7 @@ data/
 │   └── README.md                     #   Cómo obtenerlos y qué estructura esperan los scripts
 └── processed/                        # Datos procesados
     ├── README.md                     #   Esquema de lo que genera el pipeline y qué se versiona
-    └── documentos_revisados.csv      #   Inventario (id + SHA-256) de los 350 documentos ya usados
+    └── documentos_revisados.csv      #   Inventario (id + SHA-256) de los 1.461 documentos ya revisados
 ```
 
 Las imágenes de los datasets **no están en el repositorio**: se descargan con `scripts/download_data.py` y `.gitignore` las excluye. Lo que sí se versiona es la documentación y el inventario de hashes, que no contiene fotografías ni anotaciones.
@@ -25,7 +25,7 @@ Las imágenes de los datasets **no están en el repositorio**: se descargan con 
 | **Muestra propia (RIDE)** | Prueba final de generalización (pendiente) | 30–50 documentos, ≥ 3 emisores | los seis campos |
 | **Ejemplos sintéticos** (`samples/`) | Comprobar la instalación | 1 imagen + 1 PDF | los seis campos (no es evidencia de precisión) |
 
-Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del emisor), `date`, `document_number`, `subtotal`, `tax` y `total`. **Ninguna de las dos bases públicas anota `tax_id` ni `document_number`**, por lo que su precisión solo puede acreditarse con la muestra propia (ver [`docs/ANOTACION_PROPIA.md`](../docs/ANOTACION_PROPIA.md)). Los campos sin anotación quedan fuera de las métricas; no se cuentan como acierto ni como error.
+Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del emisor), `date`, `document_number`, `subtotal`, `tax` y `total`. **Ninguna de las dos bases públicas anota `tax_id` ni `document_number`**, por lo que su precisión solo puede acreditarse con la muestra propia (ver [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Los campos sin anotación quedan fuera de las métricas; no se cuentan como acierto ni como error.
 
 ## 1. SROIE
 
@@ -44,13 +44,20 @@ Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del em
 
 ## 3. Muestra propia (RIDE)
 
-Conjunto de 30–50 comprobantes de al menos tres emisores, reservado como **prueba final** y mantenido separado de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/ANOTACION_PROPIA.md`](../docs/ANOTACION_PROPIA.md)).
+Conjunto de 30–50 comprobantes de al menos tres emisores, reservado como **prueba final** y mantenido separado de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
 
-**Estado:** el adaptador automático de esta tabla aún no está implementado. Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
+**Estado:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) ya evalúa esta muestra como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`); falta reunir los documentos. Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
 
-## 4. Modelo preentrenado (no es un dataset)
+## 4. Modelos preentrenados (no son datasets)
 
-El OCR usa los pesos ingleses de Tesseract (`tessdata_fast`, revisión fijada) descargados y verificados por hash en la primera lectura; no se entrena nada. Referencia: <https://github.com/tesseract-ocr/tessdata_fast/tree/87416418657359cb625c412a48b6e1d6d41c29bd>. SHA-256 de `eng.traineddata`: `7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2`. Los pesos no se versionan.
+El OCR usa pesos oficiales de Tesseract, descargados de revisiones fijas en la primera lectura (`frozen_runtime.bind_models`) y verificados por hash; no se entrena nada. Los pesos no se versionan (quedan en `models/fast/` y `models/best/`, ignoradas por Git).
+
+| Pesos | Revisión | SHA-256 de `eng.traineddata` |
+|---|---|---|
+| `eng` y `spa` de [`tessdata_fast`](https://github.com/tesseract-ocr/tessdata_fast/tree/87416418657359cb625c412a48b6e1d6d41c29bd) | `87416418` | `7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2` |
+| `eng` de [`tessdata_best`](https://github.com/tesseract-ocr/tessdata_best/tree/e12c65a915945e4c28e237a9b52bc4a8f39a0cec) | `e12c65a9` | `8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba` |
+
+Tesseract y sus repositorios de pesos se distribuyen con licencia Apache 2.0.
 
 ## 5. Licencias y condiciones de uso
 
@@ -59,9 +66,9 @@ El OCR usa los pesos ingleses de Tesseract (`tessdata_fast`, revisión fijada) d
 | SROIE | No se verificó una licencia de redistribución. Revisar las condiciones del reto ICDAR 2019 y de la página de Kaggle antes de compartir imágenes. |
 | WildReceipt | La documentación de MMOCR no declara licencia para los datos, y las imágenes provienen de búsquedas en internet. La licencia del software MMOCR no implica una licencia sobre las imágenes. |
 | Muestra propia | Datos privados; requieren anonimización y autorización antes de cualquier publicación. |
-| Código del equipo | Licencia pendiente de elección (la estructura exigida por el curso incluye un archivo `LICENSE`). |
+| Código del equipo | MIT ([`LICENSE`](../LICENSE)). Cubre solo el código y la documentación del equipo, no los datasets. |
 
-Por esta razón el repositorio **no redistribuye** imágenes, anotaciones ni textos de los datasets: cada persona los descarga de su fuente original. El script `download_data.py` guarda en `<dataset>_download.json` la URL, el SHA-256, el tamaño en bytes y la fecha de descarga, y aclara que el hash registra la descarga pero no implica permiso de redistribución. Más detalle en [`docs/DATOS_Y_LICENCIAS.md`](../docs/DATOS_Y_LICENCIAS.md).
+Por esta razón el repositorio **no redistribuye** imágenes, anotaciones ni textos de los datasets: cada persona los descarga de su fuente original. El script `download_data.py` guarda en `<dataset>_download.json` la URL, el SHA-256, el tamaño en bytes y la fecha de descarga, y aclara que el hash registra la descarga pero no implica permiso de redistribución.
 
 ## 6. Particiones y control de fuga de datos
 
@@ -69,12 +76,14 @@ La preparación (`prepare` en `datasets.py`) construye un manifiesto y asigna ca
 
 | `split` | Significado |
 |---|---|
-| `test` | Test oficial de cada dataset. Se reserva: no se usa para diseñar reglas ni se exploran sus etiquetas. |
+| `test` | Test oficial de cada dataset. El EDA no explora sus etiquetas y la optimización no lo usa; se reserva para la evaluación (ver la nota sobre documentos ya revisados). |
 | `validation` | ~20 % de los documentos de entrenamiento oficial (`validation_fraction = 0.2`), elegido de forma determinista por hash de imagen con `seed = 42`. |
 | `train` | Resto del entrenamiento oficial. |
 | `quarantine` | Imágenes duplicadas (mismo SHA-256) o presentes también en el test oficial. Se excluyen de la evaluación. |
 
-La evaluación final toma 50 documentos por base del test oficial, por selección determinista con la semilla fijada y excluyendo hashes ya vistos (los 350 de [`processed/documentos_revisados.csv`](processed/documentos_revisados.csv)). Si se ajustan reglas mirando esa muestra, deja de ser independiente.
+**Documentos ya revisados.** [`processed/documentos_revisados.csv`](processed/documentos_revisados.csv) registra por id y hash los **1.461** documentos que se miraron durante el desarrollo: 650 de entrenamiento, **809 del test oficial** (337 de SROIE y 472 de WildReceipt) y 2 externos. En la entrega V7 eran 350, todos de entrenamiento; para mejorar los campos débiles se revisaron después grupos aleatorios del test.
+
+Consecuencia: el test oficial **ya no es inédito**. El notebook 05 sigue tomando 50 documentos por base del test (sin duplicados con desarrollo) para medir y comparar versiones, declara cuántos ya se habían revisado y deja la evidencia de generalización a la **prueba externa** con la muestra propia. La optimización (notebook 04) usa solo `validation`, separada por hash en optimización y control y sin imágenes del test.
 
 ## 7. Limitaciones conocidas de los datos
 
@@ -82,6 +91,7 @@ La evaluación final toma 50 documentos por base del test oficial, por selecció
 - **Duplicados:** solo se detectan por SHA-256; imágenes casi idénticas pasan desapercibidas.
 - **Cobertura de anotación ≠ exactitud:** que un campo esté anotado no dice nada sobre si el extractor lo lee bien; `coverage.csv` mide cobertura de etiquetas.
 - **Sesgo de origen:** ninguna de las dos bases públicas se construyó con comprobantes ecuatorianos y el OCR se ejecuta con el modelo inglés (`eng`). El proyecto apunta también a comprobantes ecuatorianos (RUC, IVA), que solo la muestra propia representa. Los resultados en las bases públicas no garantizan el mismo desempeño en esos documentos.
+- **Solo texto impreso:** ninguna de las bases contiene comprobantes llenados a mano; el sistema no se evaluó (ni se recomienda) con campos manuscritos.
 - **Datos personales:** los recibos pueden mostrar nombres de comercios, direcciones, teléfonos o fragmentos de tarjetas. Por eso no se publican imágenes ni textos transcritos.
 
 ## 8. Cómo obtener y preparar los datos
@@ -94,7 +104,7 @@ python scripts/download_data.py wildreceipt --out data/raw
 python scripts/download_data.py sroie --out data/raw
 ```
 
-El flujo completo (descarga si faltan, manifiesto, EDA, evaluación) está en [`notebooks/01_lector_definitivo.ipynb`](../notebooks/01_lector_definitivo.ipynb). Detalle de las rutas en [`raw/README.md`](raw/README.md) y del esquema de salida en [`processed/README.md`](processed/README.md).
+Los notebooks [`01`](../notebooks/01_exploracion.ipynb)–[`05`](../notebooks/05_evaluacion.ipynb) descargan los datos si faltan, preparan el manifiesto y hacen el EDA, el preprocesamiento, el modelado, la optimización y la evaluación. Detalle de las rutas en [`raw/README.md`](raw/README.md) y del esquema de salida en [`processed/README.md`](processed/README.md).
 
 ## Referencias
 

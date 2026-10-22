@@ -63,6 +63,7 @@ class NormalizationTests(unittest.TestCase):
         from copy import deepcopy
         cfg=deepcopy(CONFIG)
         values={'subtotal':'100','tax':'12','total':'112'}
+        cfg['validation']['check_amount_balance']=False
         self.assertEqual(validate(values,cfg)['amount_balance'],'not_applicable')
         cfg['validation']['check_amount_balance']=True
         self.assertEqual(validate(values,cfg)['amount_balance'],'consistent')
@@ -130,3 +131,91 @@ class AdapterTests(unittest.TestCase):
             with self.assertRaises(ValueError):inside(td,'../outside.jpg')
 
 if __name__=='__main__':unittest.main()
+
+
+class PrintedInvoiceTests(unittest.TestCase):
+    def test_currency_equivalence_without_changing_digits(self):
+        self.assertEqual(money('USD$25.23'),'25.23')
+        self.assertEqual(money('￡3.79'),'3.79')
+        self.assertIsNone(money('1.827.76'))
+
+    def test_issuer_not_recipient_and_commercial_not_fiscal_folio(self):
+        o=ocr_lines(['FACTURA FOLIO Y SERIE: AB123','FOLIO FISCAL: 12345678-ABCD',
+                     'EMISOR:','RFC: ABC900101XY1','RECEPTOR:','RFC: XYZ800202ZZ2'])
+        f=extract(o,CONFIG)['fields']
+        self.assertEqual(f['tax_id'],'ABC900101XY1')
+        self.assertEqual(f['document_number'],'AB123')
+
+    def test_recipient_rfc_is_not_issuer(self):
+        o=ocr_lines(['RECEPTOR:','RFC: XYZ800202ZZ2'])
+        self.assertIsNone(extract(o,CONFIG)['fields']['tax_id'])
+
+    def test_tax_total_is_not_invoice_total(self):
+        f=extract(ocr_lines(['HST TOTAL 6.24','CASH 54.24']),CONFIG)['fields']
+        self.assertEqual(f['total'],'54.24')
+
+    def test_subtotal_punctuation(self):
+        self.assertEqual(extract(ocr_lines(['Sub, Total $14.58']),CONFIG)['fields']['subtotal'],'$14.58')
+
+    def test_balance_warning_preserves_recognized_values(self):
+        values=dict(date=None,tax_id=None,document_number=None,subtotal='10.00',tax='9.00',total='12.00')
+        before=values.copy()
+        self.assertEqual(validate(values,CONFIG)['amount_balance'],'inconsistent_review')
+        self.assertEqual(values,before)
+
+    def test_full_year_with_trailing_slash(self):
+        from lector_facturas.common import normalize
+        value=extract(ocr_lines(['Date 30. 07. 2007/']),CONFIG)['fields']['date']
+        self.assertEqual(normalize('date',value,CONFIG['normalization']),'2007-07-30')
+
+class UnseenRandomTests(unittest.TestCase):
+    def test_persisted_reservation_never_repeats_ids_or_hashes(self):
+        from lector_facturas.experiments import reserve_random_unseen
+        rows=[dict(id=str(i),dataset='sroie',sha256=str(i),source_split='test',split='test') for i in range(6)]
+        rows.append(dict(id='alias',dataset='sroie',sha256='0',source_split='test',split='test'))
+        with tempfile.TemporaryDirectory() as td:
+            ledger=Path(td)/'history.json'
+            a,_=reserve_random_unseen(rows,{},ledger,3,seed=19)
+            b,_=reserve_random_unseen(rows,{},ledger,3,seed=19)
+            self.assertEqual(len(a),3);self.assertEqual(len(b),3)
+            self.assertFalse({r['sha256'] for r in a}&{r['sha256'] for r in b})
+            c,report=reserve_random_unseen(rows,{},ledger,3,seed=19)
+            self.assertEqual(c,[]);self.assertEqual(report['status'],'sin_test_inedito')
+
+    def test_random_test_excludes_training_duplicates(self):
+        from lector_facturas.experiments import reserve_random_unseen
+        rows=[dict(id='train',dataset='sroie',sha256='same',source_split='train',split='train'),
+              dict(id='test',dataset='sroie',sha256='same',source_split='test',split='test')]
+        with tempfile.TemporaryDirectory() as td:
+            chosen,_=reserve_random_unseen(rows,{},Path(td)/'h.json',1)
+            self.assertEqual(chosen,[])
+
+    def test_existing_history_blocks_renamed_image(self):
+        from lector_facturas.experiments import reserve_random_unseen
+        row=dict(id='newname',dataset='sroie',sha256='seen',source_split='test',split='test')
+        with tempfile.TemporaryDirectory() as td:
+            chosen,_=reserve_random_unseen([row],{'oldname':'seen'},Path(td)/'h.json',1)
+            self.assertEqual(chosen,[])
+
+class RandomKnownTests(unittest.TestCase):
+    def test_same_seed_cannot_repeat_previous_group_if_alternatives_exist(self):
+        from lector_facturas.experiments import random_known_sample
+        rows=[dict(id=str(i),dataset='sroie',sha256=str(i),source_split='test',split='test') for i in range(8)]
+        first,_=random_known_sample(rows,3,seed=10)
+        second,plan=random_known_sample(rows,3,seed=10,previous_ids=[r['id'] for r in first])
+        self.assertNotEqual({r['id'] for r in first},{r['id'] for r in second})
+        self.assertEqual(len(second),3);self.assertFalse(plan['independent_test'])
+
+    def test_duplicate_images_and_training_duplicates_still_excluded(self):
+        from lector_facturas.experiments import random_known_sample
+        rows=[dict(id='a',dataset='sroie',sha256='1',source_split='test',split='test'),
+              dict(id='alias',dataset='sroie',sha256='1',source_split='test',split='test'),
+              dict(id='b',dataset='sroie',sha256='2',source_split='test',split='test'),
+              dict(id='train',dataset='sroie',sha256='2',source_split='train',split='train')]
+        selected,_=random_known_sample(rows,50,seed=2)
+        self.assertEqual(len(selected),1);self.assertEqual(selected[0]['sha256'],'1')
+
+    def test_full_pool_cannot_claim_different_group(self):
+        from lector_facturas.experiments import random_known_sample
+        rows=[dict(id='a',dataset='sroie',sha256='1',source_split='test',split='test')]
+        with self.assertRaises(ValueError):random_known_sample(rows,50,previous_ids=['a'])

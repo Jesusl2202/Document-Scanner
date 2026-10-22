@@ -29,7 +29,9 @@ def main():
     filas = []
     for identificador, sha256 in registros.items():
         # El id tiene la forma <dataset>/<split_origen>/<documento>; el documento puede contener "/".
-        dataset, split_origen, documento = identificador.split("/", 2)
+        # Algunos documentos externos solo tienen <dataset>/<grupo>: su document_id queda vacío.
+        partes = identificador.split("/", 2) + ["", ""]
+        dataset, split_origen, documento = partes[:3]
         filas.append((dataset, split_origen, documento, sha256))
     filas.sort()
 

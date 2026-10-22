@@ -2,11 +2,13 @@
 
 **Proyecto:** Lector de Facturas — extracción y validación de datos de facturas y comprobantes de compra con OCR
 **Equipo:** Sebastián Rojas y Jesús Antonio López Barahona
-**Última actualización:** 20/10/2026
+**Última actualización:** 21/10/2026
 
-Este documento describe los datos del proyecto, lo que encontramos al explorarlos y cómo eso guió las decisiones de preprocesamiento. Las cifras salen de la ejecución del EDA de Semana 2 (`run_eda` en `src/lector_facturas/eda.py`, commit `1c643f7`), de la línea base evaluada esa misma semana y del Reporte de Diagnóstico de Semana 3. La descripción de fuentes, formatos y licencias está también en [`data/README.md`](../data/README.md).
+Este documento describe los datos del proyecto, lo que encontramos al explorarlos y cómo eso guió las decisiones de preprocesamiento. Las cifras salen de la ejecución del EDA ([`notebooks/01_exploracion.ipynb`](../notebooks/01_exploracion.ipynb), que usa `run_eda` de `src/lector_facturas/eda.py`), de la línea base de Semana 2 y del Reporte de Diagnóstico de Semana 3. Las figuras están en [`results/figures/eda/`](../results/figures/eda/). La descripción de fuentes, formatos y licencias está también en [`data/README.md`](../data/README.md).
 
-> **Regla que seguimos en todo el EDA:** solo exploramos los documentos de **entrenamiento y validación**. Del test oficial únicamente revisamos integridad y duplicados; nunca miramos sus etiquetas, para que la evaluación final siga siendo independiente.
+> **Regla que seguimos en todo el EDA:** solo exploramos los documentos de **entrenamiento y validación**. Del test oficial únicamente revisamos integridad y duplicados; nunca miramos sus etiquetas.
+>
+> Esa regla se cumplió en el EDA, pero no durante todo el desarrollo: para mejorar el modelo se revisaron grupos aleatorios del test oficial (sección 2). Por eso la evaluación final se complementa con una prueba externa anotada.
 
 ## Contenido
 
@@ -74,7 +76,7 @@ Descargamos **2.712 documentos**: 973 de SROIE (626 de entrenamiento y 347 de pr
 2. Del entrenamiento oficial, cerca del **20 % pasa a validación**. La asignación depende del SHA-256 de la imagen con semilla fija (`seed = 42`), así que siempre da el mismo resultado.
 3. Las imágenes **duplicadas** (mismo hash) o que también aparecen en el test oficial van a **cuarentena** y no se usan.
 
-![Partición de los datos](img/analisis_datos/01_particiones.png)
+![Partición de los datos](../results/figures/eda/01_particiones.png)
 
 | Partición | SROIE | WildReceipt | Total |
 |---|---:|---:|---:|
@@ -86,7 +88,7 @@ Descargamos **2.712 documentos**: 973 de SROIE (626 de entrenamiento y 347 de pr
 
 Los **1.881 documentos de desarrollo** (entrenamiento + validación) son la base de todo el análisis que sigue. Los 15 documentos en cuarentena son todos de SROIE; 7 de ellos además estaban repetidos en su test oficial, lo que habría sido una fuga de datos si no se controlaba.
 
-Además, `data/processed/documentos_revisados.csv` lista por hash los **350 documentos** (179 SROIE y 171 WildReceipt) que ya se miraron mientras se ajustaban las reglas. Esos documentos se excluyen de la muestra del test final.
+Además, [`data/processed/documentos_revisados.csv`](../data/processed/documentos_revisados.csv) lista por hash los documentos que ya se miraron mientras se ajustaban las reglas. En la entrega V7 eran **350** (179 SROIE y 171 WildReceipt, todos de entrenamiento). Con el modelo «resumen contable» son **1.461**: 650 de entrenamiento, **809 del test oficial** (337 SROIE y 472 WildReceipt) y 2 externos. El test oficial ya no es inédito y así se reporta en la [evaluación](../notebooks/05_evaluacion.ipynb).
 
 ## 3. Estadísticas descriptivas
 
@@ -128,7 +130,7 @@ Además, `data/processed/documentos_revisados.csv` lista por hash los **350 docu
 
 ### 4.1 Resolución de las imágenes
 
-![Resolución de las imágenes](img/analisis_datos/02_resolucion.png)
+![Resolución de las imágenes](../results/figures/eda/02_resolucion.png)
 
 Los dos datasets son muy distintos. SROIE son escaneos altos y angostos (mediana 815 × 1.687 px), mientras que la mitad de las fotos de WildReceipt mide menos de 412 × 480 px, es decir, apenas 0,2 megapíxeles. Para un OCR eso es poco, sobre todo en recibos con letra pequeña.
 
@@ -136,13 +138,17 @@ Los dos datasets son muy distintos. SROIE son escaneos altos y angostos (mediana
 
 ### 4.2 Cantidad de texto por recibo
 
-![Regiones de texto por recibo](img/analisis_datos/03_regiones.png)
+![Regiones de texto por recibo](../results/figures/eda/03_regiones.png)
 
 Un recibo típico tiene entre 30 y 63 regiones de texto, pero hay recibos largos con más de 150. Casi todo ese texto no es ninguno de los seis campos: son productos, direcciones, teléfonos y mensajes. El problema es encontrar 4 o 6 valores entre unas 50 líneas.
 
+![Ejemplos de recibos con sus regiones](../results/figures/eda/ejemplos_regiones.png)
+
+*Recibos de entrenamiento con sus regiones de texto; en color, las que corresponden a fecha, subtotal, impuesto y total.*
+
 ### 4.3 Qué campos se pueden evaluar
 
-![Cobertura de etiquetas](img/analisis_datos/04_cobertura.png)
+![Cobertura de etiquetas](../results/figures/eda/04_cobertura.png)
 
 Este fue el hallazgo más importante del EDA: **ninguno de los dos datasets anota el identificador fiscal ni el número de comprobante**. SROIE solo permite evaluar fecha y total; WildReceipt suma subtotal e impuesto, aunque con menos cobertura (60–69 %).
 
@@ -150,7 +156,7 @@ Este fue el hallazgo más importante del EDA: **ninguno de los dos datasets anot
 
 ### 4.4 Desbalance entre texto útil y texto de relleno
 
-![Desbalance de clases por línea](img/analisis_datos/05_desbalance_lineas.png)
+*(Figura 5 del Reporte de Diagnóstico de Semana 3; no se regenera en los notebooks porque viene del clasificador de líneas de esa semana.)*
 
 En el diagnóstico de Semana 3 etiquetamos cada línea leída en los 438 recibos de entrenamiento de SROIE. **El 86,3 % de las líneas no es ningún campo**, y la fecha y el nombre de la empresa no llegan al 2,5 % cada uno.
 
@@ -158,15 +164,15 @@ En el diagnóstico de Semana 3 etiquetamos cada línea leída en los 438 recibos
 
 ### 4.5 La calidad del OCR depende del tamaño de la imagen
 
-![CER vs resolución](img/analisis_datos/06_cer_vs_resolucion.png)
+![CER vs resolución](../results/figures/preprocesamiento/06_cer_vs_resolucion.png)
 
-Para la línea base pasamos 40 documentos de validación (20 por dataset) por Tesseract y comparamos su texto con la transcripción anotada (CER, porcentaje de caracteres errados). El CER mediano de WildReceipt (0,48) es más del doble que el de SROIE (0,19), y en los 40 documentos el CER baja a medida que la imagen es más grande (ρ de Spearman = −0,47; −0,57 si se usa solo el alto). Algunas fotos de WildReceipt superan un CER de 1: el OCR produjo más caracteres errados que los que tenía el texto.
+Para la línea base pasamos 40 documentos de validación (20 por dataset) por Tesseract y comparamos su texto con la transcripción anotada (CER, porcentaje de caracteres errados). El CER mediano de WildReceipt (0,48) es más del doble que el de SROIE (0,19), y en los 40 documentos el CER baja a medida que la imagen es más grande (ρ de Spearman = −0,47; −0,57 si se usa solo el alto). La figura repite la medición en el notebook 02 con otros 30 documentos de validación y la vista principal: CER mediano 0,22 en SROIE y 0,47 en WildReceipt, con la misma tendencia. Algunas fotos de WildReceipt superan un CER de 1: el OCR produjo más caracteres errados que los que tenía el texto.
 
 **Qué decidimos:** esto confirma que vale la pena ampliar las imágenes pequeñas y probar varias formas de leer la misma imagen.
 
 ### 4.6 Dónde falla la línea base
 
-![Errores de la línea base](img/analisis_datos/07_errores_linea_base.png)
+*(Figura de la Ficha de Semana 2. Los notebooks 03 y 05 generan la misma figura, `07_errores_linea_base.png`, para el modelo final.)*
 
 La primera versión del extractor acertó 36 de 103 campos anotados (35,0 %), procesó 40/40 documentos sin error de ejecución y tardó una mediana de 0,70 s por documento. Al separar los errores encontramos que:
 
@@ -174,13 +180,13 @@ La primera versión del extractor acertó 36 de 103 campos anotados (35,0 %), pr
 - Solo 11 fueron valores equivocados.
 - La fecha de SROIE ya funcionaba bien (16/20), pero el total de SROIE se omitió en 15 de 20 recibos.
 
-**Qué decidimos:** el problema principal era de **recall**, no de precisión. Por eso el extractor final genera más candidatos, lee la imagen de cinco formas distintas y combina los resultados, en vez de abstenerse ante la primera duda.
+**Qué decidimos:** el problema principal era de **recall**, no de precisión. Por eso el extractor final genera más candidatos, lee la imagen de 10 formas distintas (más un rescate cuando la lectura es dudosa) y combina los resultados, en vez de abstenerse ante la primera duda.
 
 ## 5. Patrones, correlaciones y outliers
 
 ### 5.1 Correlaciones
 
-![Correlaciones](img/analisis_datos/08_correlaciones.png)
+![Correlaciones](../results/figures/eda/08_correlaciones.png)
 
 - **Ancho, alto y megapíxeles están muy correlacionados** (ρ entre 0,76 y 0,95), lo esperado porque los recibos tienen formas parecidas dentro de cada dataset. Por eso basta un solo parámetro de escala (el lado más largo de la imagen) para controlar la resolución.
 - **El tamaño de la imagen casi no dice cuánto texto tiene** (ρ entre −0,05 y 0,27): un recibo grande puede ser solo un escaneo con mayor resolución.
@@ -191,13 +197,19 @@ La primera versión del extractor acertó 36 de 103 campos anotados (35,0 %), pr
 
 - **Fechas en muchos formatos.** En las etiquetas de los 626 recibos de entrenamiento oficial de SROIE encontramos **17 formatos distintos** (Figura 9): `25/12/2018`, `12-01-19`, `23-01-2019`, `05 MAR 2018`, `2018-03-23`, `20180304`, `OCT 3, 2016`, entre otros. Además, **202 recibos (32,3 %)** tienen una fecha numérica en la que el día y el mes son ambos ≤ 12, como `05/03/18`: solo con el texto no se sabe si es 5 de marzo o 3 de mayo. El normalizador no adivina; la marca como `AMBIGUOUS` salvo que se configure el orden (`date_order`).
 
-  ![Formatos de fecha](img/analisis_datos/09_formatos_fecha.png)
+  En los 1.881 documentos de desarrollo el notebook 01 encuentra el mismo patrón: 17 formatos en SROIE y 92 en WildReceipt, con 32,7 % y 27,1 % de fechas numéricas ambiguas; solo 0,5 % y 4,6 % de las fechas de referencia no se pueden normalizar.
 
-  *Para esta figura usamos las etiquetas de entrenamiento de SROIE del repositorio público `zzzDavid/ICDAR-2019-SROIE`, el mismo que usamos en Semana 3. El test oficial no se incluye.*
+  *La Figura 9 del Reporte de Semana 3 usó las etiquetas de entrenamiento de SROIE del repositorio público `zzzDavid/ICDAR-2019-SROIE`; el test oficial no se incluyó.*
 
 - **Montos con distintos separadores y prefijos de moneda.** SROIE usa ringgit (`RM`) y punto decimal; en otros países se usa coma decimal o punto de miles. Por eso el normalizador acepta formatos como `43.90`, `43,90` o `1,234.50` y trata como ambiguo un separador seguido de exactamente tres dígitos (`1.234` puede ser mil doscientos o uno punto dos).
+- **Los montos suelen cuadrar, pero no siempre.** En los 571 recibos de WildReceipt con subtotal, impuesto y total anotados, **460 (80,6 %) cumplen subtotal + impuesto = total** (±0,02) y en 82,8 % la razón impuesto/subtotal está entre 0,02 y 0,30. El 19 % restante tiene descuentos, propinas, cargos o impuestos incluidos: por eso el modelo final premia el cuadre pero solo corrige un importe con el **resumen contable observado** (ajustes visibles y corroborados), nunca forzando la ecuación.
+
+  ![Razón impuesto/subtotal en WildReceipt](../results/figures/eda/razon_impuesto_subtotal.png)
+
 - **El mismo monto aparece varias veces:** total, efectivo pagado, total redondeado. En Semana 3 esto fue lo que más bajó el F1 del total (0,545), porque todas esas líneas tienen el mismo número.
-- **Posición:** en SROIE el nombre de la empresa y la dirección están arriba al centro y el total abajo a la derecha (Figura 1 del Reporte de Semana 3). La posición ayuda, pero no basta para separar un monto de otro.
+- **Posición:** en SROIE el nombre de la empresa y la dirección están arriba al centro y el total abajo a la derecha (Figura 1 del Reporte de Semana 3). En WildReceipt la fecha aparece en la mitad superior (posición vertical mediana 0,35) y subtotal, impuesto y total abajo a la derecha (0,64, 0,67 y 0,70; horizontal ≈ 0,74). La posición ayuda, pero no basta para separar un monto de otro; por eso el modelo asocia cada importe con la etiqueta más cercana por geometría.
+
+  ![Posición de los campos](../results/figures/eda/posicion_campos.png)
 
 ### 5.3 Outliers
 
@@ -260,7 +272,9 @@ El extractor final no se entrena, así que no aplicamos sobremuestreo ni pesos p
 | Tope de tamaño | 25 millones de píxeles | Hay escaneos de hasta 34,8 MP; se limitan en vez de descartarlos. |
 | Borde blanco | 20 px | Tesseract puede perder texto que queda pegado al borde de la imagen. |
 | Binarización Otsu (como una de las lecturas) | Umbral automático | Ayuda en fotos con fondo gris o sombras; no se aplica a todas porque puede borrar texto tenue. |
-| Varias lecturas de la misma imagen | 5 combinaciones de preprocesamiento y modo de página (PSM 3, 6 y 11) | Las omisiones fueron el 84 % de los errores de la línea base; más lecturas dan más candidatos. |
+| Corrección de iluminación y filtro de ruido (una lectura cada uno) | Fondo estimado con desenfoque gaussiano; mediana 3×3 | Fotos con sombras y recibos térmicos con grano. |
+| Varias lecturas de la misma imagen | 10 combinaciones de preprocesamiento, modo de página (PSM 3, 6 y 11) y pesos (`fast`, `best`, español) | Las omisiones fueron el 84 % de los errores de la línea base; más lecturas dan más candidatos. |
+| Rescate con binarización local | 2 lecturas extra (Sauvola, 2.800 px) solo si la lectura base es dudosa | Papel arrugado o manchado, sin pagar ese costo en todos los documentos. |
 | Coordenadas en tamaño original | Se deshace la escala y el borde | Permite mostrar al usuario de qué parte de la imagen salió cada valor. |
 | PDF a imagen | 200 dpi, una imagen por página, máximo 20 páginas | El sistema recibe PDF; no se unen páginas para no mezclar documentos. |
 | Fechas | `date_order: auto`; ambiguas se marcan | 17 formatos en SROIE y 32,3 % de fechas en las que no se distingue día de mes. |
@@ -274,6 +288,7 @@ El extractor final no se entrena, así que no aplicamos sobremuestreo ni pesos p
 - **Partición por imagen, no por emisor.** Recibos de un mismo comercio pueden quedar en entrenamiento y en validación, lo que hace que la validación se vea mejor de lo que será con emisores nuevos.
 - **Duplicados solo exactos.** El hash no detecta fotos casi iguales del mismo recibo.
 - **CER con muestra pequeña.** La correlación entre CER y tamaño se calculó con 40 documentos; es una señal útil, no una medición definitiva.
+- **Sin texto manuscrito.** Ambos datasets son recibos impresos. El sistema no se diseñó ni se evaluó para campos escritos a mano, y no debe usarse con ellos.
 - **Datos personales.** Algunos recibos muestran nombres de comercios, direcciones, teléfonos o parte de números de tarjeta. Por eso no se publican imágenes ni textos transcritos en el repositorio (ver [Consideraciones éticas](consideraciones_eticas.md)).
 
 ---
@@ -281,8 +296,8 @@ El extractor final no se entrena, así que no aplicamos sobremuestreo ni pesos p
 ### Cómo reproducir este análisis
 
 1. Descargar los datos: `python scripts/download_data.py wildreceipt --out data/raw` y `python scripts/download_data.py sroie --out data/raw`.
-2. Ejecutar la sección 6 de [`notebooks/01_lector_definitivo.ipynb`](../notebooks/01_lector_definitivo.ipynb), que llama a `prepare()` y `run_eda()` y genera `documents.csv`, `coverage.csv`, `incidents.csv` y `summary.json`.
-3. Los gráficos de este documento se generaron a partir de esos archivos (y de las etiquetas de entrenamiento de SROIE para la Figura 9) y están en `docs/img/analisis_datos/`.
+2. Ejecutar [`notebooks/01_exploracion.ipynb`](../notebooks/01_exploracion.ipynb), que llama a `prepare()` y `run_eda()`, genera `documents.csv`, `coverage.csv`, `incidents.csv` y `summary.json`, y dibuja las figuras.
+3. Copiar las figuras del ZIP `figuras_eda.zip` a [`results/figures/eda/`](../results/figures/eda/). La Figura 6 sale del notebook 02 ([`results/figures/preprocesamiento/`](../results/figures/preprocesamiento/)).
 
 ### Referencias
 

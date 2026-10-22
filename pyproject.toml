@@ -5,8 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lector-facturas"
 version = "1.0.0"
-description = "Lector de recibos con Tesseract preentrenado y consenso de cinco lecturas"
+description = "Lector de facturas y recibos con Tesseract preentrenado, consenso de 10 lecturas y resumen contable observado"
 requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [{name = "Sebastián Rojas"}, {name = "Jesús López"}]
 dynamic = ["dependencies"]
 
 [project.scripts]

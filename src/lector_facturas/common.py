@@ -52,11 +52,13 @@ def money(s, decimal_separator="auto"):
     """Decimal conservador. Un separador con tres cifras finales es ambiguo en auto."""
     if s is None:
         return None
-    t = str(s).strip()
+    t = unicodedata.normalize("NFKC", str(s)).strip()
     if '%' in t:
         return None
     negative = t.startswith('(') and t.endswith(')')
-    t = re.sub(r"(?i)\b(?:usd|eur|gbp|rm|idr|rp|rs)(?=\d|\s|[.:+-]|$)[.:]?", "", t)
+    # Currency suffixes are units, not part of the numeric value.
+    t = re.sub(r'(?i)(?<=\d)\s*(?:usd|eur|gbp|rm|idr|rp|rs)\s*$', '', t)
+    t = re.sub(r"(?i)\b(?:usd|eur|gbp|rm|idr|rp|rs)(?=\d|\s|[$€£¥.:+-]|$)[.:]?", "", t)
     t = re.sub(r"[$€£¥\s()]", "", t)
     # Admite .00 y ,00 sin inventar decimales en enteros.
     t = re.sub(r'^([+-]?)([.,])(?=\d{1,2}$)', r'\g<1>0\2', t)
@@ -120,6 +122,8 @@ def normalize_date(s, date_order="auto"):
     if numeric is not None or s is None:
         return numeric
     text = text_key(s)
+    aliases={'janvier':'jan','fevrier':'feb','fevr':'feb','mars':'mar','avril':'apr','avr':'apr','mai':'may','juin':'jun','juillet':'jul','juil':'jul','aout':'aug','septembre':'sep','octobre':'oct','novembre':'nov','decembre':'dec','enero':'jan','ene':'jan','febrero':'feb','marzo':'mar','abril':'apr','abr':'apr','mayo':'may','junio':'jun','julio':'jul','agosto':'aug','ago':'aug','septiembre':'sep','octubre':'oct','noviembre':'nov','diciembre':'dec','dic':'dec'}
+    text=re.sub(r'(?<![a-z])('+'|'.join(sorted(aliases,key=len,reverse=True))+r')(?![a-z])',lambda m:aliases[m.group()],text)
     months = {name:i+1 for i,name in enumerate(['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'])}
     month = r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*'
     match = re.search(r'\b(\d{1,2})[\s./\-]*'+month+r'[\s,./\'’°\-]*(\d{2,4})\b',text)
