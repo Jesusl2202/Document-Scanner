@@ -1,0 +1,7 @@
+version,muestra,aciertos,campos,exactitud_pct,independiente
+Línea base V1,40 docs de validación,36,103,34.95,no
+V5.1,60 docs de validación,79,153,51.63,no
+V6 consenso,60 docs de validación,96,153,62.75,no
+V7 cinco vistas,120 docs de selección,213,302,70.53,no
+Actual sin resumen contable,grupo de test 20261022 (reutilizado),183,241,75.93,no
+Resumen contable (final),grupo de test 20261022 (reutilizado),184,241,76.35,no

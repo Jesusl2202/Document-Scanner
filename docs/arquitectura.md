@@ -359,6 +359,22 @@ La evaluación compara cada campo normalizado con la referencia. Un valor equivo
 
 ## 5. Organización del código
 
+El código tiene dos capas. La **interfaz pública** (`src/*.py`) sigue la estructura del curso, cumple PEP 8 y es lo que usan la app, los scripts y las pruebas; el **motor** (`src/lector_facturas/`) es el modelo tal como se desarrolló y evaluó, y la interfaz lo envuelve sin cambiar su comportamiento.
+
+```text
+src/
+├── __init__.py          # Versión y uso mínimo
+├── data_processing.py   # Validación de entrada (formato, tamaño, páginas), PDF → imágenes, preprocesamiento,
+│                        # normalización, preparación y localización de datasets
+├── model.py             # LectorFacturas: carga (Tesseract + pesos), lectura por página, confianza por campo,
+│                        # exportación JSON/CSV, «Acerca de»; comando `python -m src.model`
+├── train.py             # Optimización de los hiperparámetros del consenso en validación (no hay pesos que entrenar)
+├── evaluate.py          # Test oficial, prueba externa, cumplimiento de metas, importación a results/ y reporte
+└── utils.py             # config.yaml + .env, rutas relativas a la raíz, logging, excepciones con mensajes de usuario
+```
+
+El motor:
+
 ```text
 src/lector_facturas/
 ├── cli.py               # Entrada: predict() y comando `lector archivo --out carpeta`
@@ -376,7 +392,9 @@ src/lector_facturas/
 └── frozen_runtime.py    # Pesos fijados por hash, notas de revisión y cobertura
 ```
 
-`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **120 pruebas unitarias** en [`tests/`](../tests/) (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador).
+`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **153 pruebas unitarias** en [`tests/`](../tests/): 120 del motor (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador) y 33 de la interfaz pública (`test_data_processing.py`, `test_model.py`, `test_app.py`), incluida una lectura real con Tesseract. Detalle en [`tests/README.md`](../tests/README.md).
+
+**Configuración y errores.** Las rutas, límites de entrada, metas, semillas y umbrales están en [`configs/config.yaml`](../configs/config.yaml) (sobreescribibles con `.env`); el modelo, en `configs/definitivo.json`. Los errores esperables se lanzan como `ErrorEntrada`, `ErrorModelo` o `ErrorConfiguracion` con un mensaje para el usuario, y una página que falla no detiene el resto del documento. Los eventos se registran con `logging` en consola y en `outputs/lector.log`.
 
 ## 6. Tecnologías y versiones
 
@@ -390,11 +408,12 @@ src/lector_facturas/
 | pandas | ≥ 2, < 4 | Métricas y tablas |
 | matplotlib | ≥ 3.7, < 4 | Gráficos |
 | pypdfium2 | ≥ 4.25, < 6 | PDF → imagen |
+| PyYAML | ≥ 6, < 7 | Lectura de `configs/config.yaml` |
 | scikit-learn | ≥ 1.3, < 2 | Sustituto Random Forest, PDP e importancia (solo notebook 04) |
 | setuptools | ≥ 68 | Instalación del paquete (`pyproject.toml`) |
 | Google Colab | CPU | Ejecución de los notebooks |
 
-Los rangos vienen de [`requirements.txt`](../requirements.txt). Las 120 pruebas y los cinco notebooks se ejecutaron de punta a punta en un entorno con Python 3.13, Tesseract 5.3.4, Pillow 12.3, NumPy 2.5, pandas 3.0, matplotlib 3.11, pypdfium2 5.13 y scikit-learn 1.9 (los notebooks, con un dataset sintético de prueba).
+Los rangos vienen de [`requirements.txt`](../requirements.txt). Las 153 pruebas y los cinco notebooks se ejecutaron de punta a punta en un entorno con Python 3.13, Tesseract 5.3.4, Pillow 12.3, NumPy 2.5, pandas 3.0, matplotlib 3.11, pypdfium2 5.13 y scikit-learn 1.9 (los notebooks, con un dataset sintético de prueba).
 
 ## 7. Reproducibilidad
 

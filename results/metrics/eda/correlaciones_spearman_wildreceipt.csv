@@ -1,0 +1,6 @@
+variable,width,height,mpx,regions,aspect
+width,1.0,0.8,0.93,0.08,-0.09
+height,0.8,1.0,0.94,0.27,0.42
+mpx,0.93,0.94,1.0,0.19,0.15
+regions,0.08,0.27,0.19,1.0,0.35
+aspect,-0.09,0.42,0.15,0.35,1.0

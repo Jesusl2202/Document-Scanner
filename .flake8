@@ -1,0 +1,6 @@
+[flake8]
+# Estilo PEP 8 para la interfaz pública (src/*.py) y las pruebas nuevas.
+max-line-length = 120
+exclude = .git,__pycache__,outputs,src/lector_facturas,notebooks
+per-file-ignores =
+    tests/test_consensus.py,tests/test_frozen_runtime.py,tests/test_ocr.py,tests/test_pipeline.py,tests/test_preprocessing.py: E,W,F

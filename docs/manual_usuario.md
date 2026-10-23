@@ -61,11 +61,13 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 
 # Probar con el recibo sintético del repositorio
-python scripts/leer_documento.py samples/synthetic_receipt.png --out outputs/ejemplo
+python -m src.model samples/synthetic_receipt.png --salida outputs/ejemplo
 
 # Leer tu factura
-python scripts/leer_documento.py ruta/a/mi_factura.pdf --out outputs/mi_factura
+python -m src.model ruta/a/mi_factura.pdf --salida outputs/mi_factura
 ```
+
+En la terminal verás cada campo con su **nivel de confianza** (`alta`, `media`, `baja` o `sin_valor`), que indica cuántas de las lecturas OCR coincidieron en ese valor (no es una probabilidad). También funciona el comando anterior, `python scripts/leer_documento.py archivo --out carpeta`, con la misma salida en archivos.
 
 La primera lectura descarga los pesos de Tesseract (`eng` fast y best, `spa`; unos 22 MB) en `models/fast/` y `models/best/` y verifica su SHA-256; necesita Internet solo esa vez. Las imágenes se procesan en tu equipo.
 
