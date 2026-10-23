@@ -1,27 +1,42 @@
 # results/ — resultados y visualizaciones
 
-Salidas de los notebooks que sí se versionan: figuras, tablas de métricas y reportes. **Nunca** se suben imágenes de facturas, texto OCR ni predicciones de documentos propios.
+Salidas que sí se versionan: figuras, tablas de métricas y reportes. **Nunca** se suben imágenes de facturas, texto OCR, predicciones ni documentos propios: el importador los excluye.
 
 ```text
 results/
 ├── figures/
-│   ├── eda/                 # 01_exploracion.ipynb (figuras ya incluidas)
-│   ├── preprocesamiento/    # 02_preprocesamiento.ipynb
-│   ├── optimizacion/        # 04_optimizacion.ipynb (sensibilidad, PDP, importancia, interacciones, costo)
-│   └── evaluacion/          # 05_evaluacion.ipynb (comparación de modelos, errores)
-├── metrics/                 # Tablas CSV/JSON de 03, 04 y 05
+│   ├── desarrollo/        # evolucion_exactitud.png (versiones V1 → resumen contable)
+│   ├── eda/               # 01_exploracion.ipynb: particiones, resolución, regiones, cobertura, correlaciones…
+│   ├── preprocesamiento/  # 02_preprocesamiento.ipynb: CER frente al tamaño de la imagen
+│   ├── optimizacion/      # 04_optimizacion.ipynb: sensibilidad, PDP, importancia, interacciones, costo (⏳)
+│   └── evaluacion/        # 05_evaluacion.ipynb: comparación de modelos y errores (⏳)
+├── metrics/
+│   ├── desarrollo/        # resultados_desarrollo.csv, grupos_test_resumen_contable.csv
+│   ├── eda/               # particiones, cobertura, estadísticas, correlaciones, fechas, outliers, incidencias
+│   ├── optimizacion/      # (⏳ al importar el ZIP de 04)
+│   └── evaluacion/        # (⏳ al importar el ZIP de 05)
 └── reports/
-    └── resultados_desarrollo.md   # Mediciones usadas para elegir el modelo
+    ├── resultados_desarrollo.md   # Mediciones usadas para elegir el modelo, con su contexto
+    └── reporte_resultados.md      # Reporte generado a partir de metrics/ (se regenera con un comando)
 ```
 
-## Cómo llenarla
+## Qué hay ahora
 
-| Notebook | ZIP que descarga | Copiar a |
-|---|---|---|
-| 01 | `figuras_eda.zip` | `figures/eda/` |
-| 02 | carpeta `figuras/` (`cer_por_vista.png`, `06_cer_vs_resolucion.png`) | `figures/preprocesamiento/` |
-| 03 | `modelado/` (`ablacion.csv`, `M*/evaluation/metrics.csv`, `modelo_final.json`) y figuras | `metrics/modelado/`, `figures/modelado/`, `models/` |
-| 04 | `optimizacion_resultados.zip` | CSV/JSON → `metrics/optimizacion/`; PNG → `figures/optimizacion/` |
-| 05 | `evaluacion_<fecha>.zip` | CSV/JSON → `metrics/evaluacion/`; PNG → `figures/evaluacion/` |
+| Contenido | Origen |
+|---|---|
+| `figures/eda/`, `metrics/eda/` | Ejecución en Colab de `01_exploracion.ipynb` sobre SROIE y WildReceipt (1.881 documentos de desarrollo). Las tablas se extrajeron de las salidas guardadas del notebook. |
+| `figures/preprocesamiento/06_cer_vs_resolucion.png` | Ejecución de `02_preprocesamiento.ipynb` (30 documentos de validación). |
+| `figures/desarrollo/`, `metrics/desarrollo/` | Resultados de desarrollo registrados en `reports/resultados_desarrollo.md`. Cada versión se midió en una muestra distinta; no es una evaluación independiente. |
+| `reports/reporte_resultados.md` | Generado con `python -m src.evaluate reporte`. Las secciones de optimización y evaluación quedan pendientes hasta importar los ZIP de 04 y 05. |
 
-Las figuras de `eda/` y `preprocesamiento/06_cer_vs_resolucion.png` salen de la ejecución en Colab de los notebooks 01 y 02 sobre los datos reales. Los demás resultados se agregan al ejecutar 03–05 con el modelo actual.
+## Cómo agregar los resultados de 04 y 05
+
+Cuando los notebooks terminen y descargues sus ZIP, desde la raíz del repositorio:
+
+```bash
+python -m src.evaluate importar ruta/optimizacion_resultados.zip ruta/evaluacion_<fecha>.zip
+```
+
+El comando reconoce de qué notebook viene cada ZIP, copia las figuras a `figures/<tipo>/` y las tablas a `metrics/<tipo>/`, omite predicciones y carpetas privadas, y regenera `reports/reporte_resultados.md`. Después revisa el reporte, completa los ⏳ de [`docs/optimizacion.md`](../docs/optimizacion.md) y sube los cambios.
+
+También sirve para el ZIP de 01 (`figuras_eda.zip`). Para 03, comprime la carpeta `modelado/` que genera el notebook e impórtala con `--tipo modelado`.

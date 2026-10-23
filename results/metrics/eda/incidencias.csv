@@ -1,0 +1,8 @@
+dataset,issue,documentos
+sroie,duplicate_image_hash,15
+sroie,duplicate_in_official_test,7
+sroie,encoding_fallback_cp1252,1
+sroie,invalid_box,1
+sroie,invalid_box_line,1
+wildreceipt,annotation_dimensions_mismatch,16
+wildreceipt,invalid_box,1

@@ -1,0 +1,13 @@
+dataset,field,documents,annotated,unannotated,ambiguous,cobertura %
+sroie,tax_id,614,0,614,0,0.0
+sroie,date,614,614,0,0,100.0
+sroie,document_number,614,0,614,0,0.0
+sroie,subtotal,614,0,614,0,0.0
+sroie,tax,614,0,614,0,0.0
+sroie,total,614,613,1,0,99.8
+wildreceipt,tax_id,1267,0,1267,0,0.0
+wildreceipt,date,1267,1025,195,47,80.9
+wildreceipt,document_number,1267,0,1267,0,0.0
+wildreceipt,subtotal,1267,876,374,17,69.1
+wildreceipt,tax,1267,764,414,89,60.3
+wildreceipt,total,1267,1057,149,61,83.4

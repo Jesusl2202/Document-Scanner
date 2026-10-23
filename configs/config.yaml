@@ -1,0 +1,45 @@
+# Configuración de la aplicación y de los scripts de src/.
+# Todas las rutas son relativas a la raíz del repositorio.
+# El modelo (vistas OCR, etapas, normalización y validaciones) está en configs/definitivo.json.
+# Cualquier valor puede sobreescribirse con variables de entorno (ver .env.example).
+
+proyecto:
+  nombre: Lector de Facturas
+  version: 1.0.0
+
+rutas:
+  configuracion_modelo: configs/definitivo.json
+  ficha_modelo: models/ficha_modelo.json
+  pesos: models
+  datos_crudos: data/raw
+  datos_procesados: data/processed
+  salidas: outputs
+  resultados: results
+
+entrada:
+  extensiones: [.jpg, .jpeg, .png, .pdf]
+  tamano_maximo_mb: 20
+  paginas_maximas_pdf: 20
+  dimension_minima_px: 100
+  dpi_pdf: 200
+
+evaluacion:
+  semilla: 42
+  documentos_por_base: 50
+  meta_exactitud: 0.70
+  meta_procesamiento: 0.90
+  meta_interna_por_campo: 0.80
+
+optimizacion:
+  documentos_optimizacion: 30
+  documentos_control: 20
+  configuraciones: 24
+
+confianza:
+  # Acuerdo entre vistas OCR que leyeron el valor elegido (no es una probabilidad calibrada).
+  umbral_alta: 0.6
+  umbral_media: 0.3
+
+registro:
+  nivel: INFO
+  archivo: outputs/lector.log

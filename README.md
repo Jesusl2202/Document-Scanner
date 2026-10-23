@@ -2,7 +2,8 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Tesseract](https://img.shields.io/badge/OCR-Tesseract%205-4B8BBE)
-![Pruebas](https://img.shields.io/badge/pruebas-120%20aprobadas-2ea44f)
+![Pruebas](https://img.shields.io/badge/pruebas-153%20aprobadas-2ea44f)
+![PEP 8](https://img.shields.io/badge/estilo-PEP%208%20(flake8)-informational)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-yellow)
 ![Estado](https://img.shields.io/badge/estado-proyecto%20acad%C3%A9mico-lightgrey)
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Jesusl2202/Document-Scanner/blob/main/notebooks/05_evaluacion.ipynb)
@@ -84,7 +85,9 @@ flowchart LR
 
 En tres grupos aleatorios del test oficial el modelo final obtuvo **75,0–77,6 %**, siempre igual o mejor que la versión sin resumen contable y sin perder ningún campo. Los campos más débiles siguen siendo subtotal, impuesto y fecha de WildReceipt. Detalle en [`results/reports/resultados_desarrollo.md`](results/reports/resultados_desarrollo.md).
 
-**Comparación con baseline y evaluación final.** [`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb) mide el modelo final en 50 documentos por dataset del test oficial con intervalos de confianza, lo compara con la línea base (reglas iniciales, V7 y la versión sin resumen contable) sobre las mismas lecturas, analiza errores por tipo de imagen y evalúa una **prueba externa** de facturas propias anotadas. Sus tablas y figuras se guardan en [`results/`](results/).
+![Evolución de la exactitud durante el desarrollo](results/figures/desarrollo/evolucion_exactitud.png)
+
+**Comparación con baseline y evaluación final.** [`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb) mide el modelo final en 50 documentos por dataset del test oficial con intervalos de confianza, lo compara con la línea base (reglas iniciales, V7 y la versión sin resumen contable) sobre las mismas lecturas, analiza errores por tipo de imagen y evalúa una **prueba externa** de facturas propias anotadas. Sus tablas y figuras se copian a [`results/`](results/) con `python -m src.evaluate importar <zip>`, que además regenera [`results/reports/reporte_resultados.md`](results/reports/reporte_resultados.md).
 
 > **Honestidad sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)). Las cifras sobre el test sirven para comparar versiones; la evidencia de generalización es la prueba externa.
 
@@ -115,13 +118,31 @@ python -m pip install -r requirements.txt
 
 ```bash
 # Recibo sintético del repositorio (comprueba la instalación)
-python scripts/leer_documento.py samples/synthetic_receipt.png --out outputs/ejemplo
+python -m src.model samples/synthetic_receipt.png --salida outputs/ejemplo
 
 # Una factura propia (imagen o PDF)
-python scripts/leer_documento.py mi_factura.pdf --out outputs/mi_factura
+python -m src.model mi_factura.pdf --salida outputs/mi_factura
 ```
 
-La primera lectura descarga los pesos en `models/` y verifica su SHA-256. En la carpeta de salida quedan `campos.csv` (una fila por página) y `resultado.json` (texto, cajas, evidencia, validaciones y alertas):
+```text
+RUC / identificador fiscal   1234567890           confianza: alta
+Fecha de emisión             2026-09-27           confianza: alta
+Número de comprobante        001-002-000123       confianza: alta
+Subtotal                     100.00               confianza: alta
+Impuesto (IVA)               12.00                confianza: alta
+Total                        112.00               confianza: alta
+```
+
+Desde Python:
+
+```python
+from src.model import LectorFacturas
+resultado = LectorFacturas().leer("mi_factura.pdf")
+print(resultado.campos())     # {'tax_id': ..., 'date': ..., 'total': ...}
+print(resultado.tabla())      # valor, nivel de confianza y alertas por campo
+```
+
+La primera lectura descarga los pesos en `models/` y verifica su SHA-256. En la carpeta de salida quedan `campos.csv` (una fila por página) y `resultado.json` (texto, cajas, evidencia, confianza, validaciones y alertas). La configuración (rutas relativas, límites de entrada, metas, registro) está en [`configs/config.yaml`](configs/config.yaml) y se puede ajustar con un `.env` ([`.env.example`](.env.example)). `scripts/leer_documento.py` sigue disponible y produce la misma salida:
 
 ```csv
 page,status,tax_id,date,document_number,subtotal,tax,total,revision
@@ -132,9 +153,12 @@ page,status,tax_id,date,document_number,subtotal,tax,total,revision
 
 ```bash
 python -m pip install -e .                         # habilita el comando `lector archivo.pdf --out carpeta`
-python -m unittest discover -s tests -v            # 120 pruebas
+python -m unittest discover -s tests -v            # 153 pruebas (ver tests/README.md)
+python -m flake8 src tests                         # estilo PEP 8
 python scripts/download_data.py wildreceipt --out data/raw
 python scripts/download_data.py sroie --out data/raw   # Kaggle puede pedir descarga manual
+python -m src.evaluate test --datos data/raw --por-base 50     # evaluación en el test oficial
+python -m src.train --datos data/raw --salida outputs/optimizacion   # optimización de la configuración
 ```
 
 Guía completa en el [manual de usuario](docs/manual_usuario.md).
@@ -156,25 +180,23 @@ Document-Scanner/
 │                             # consideraciones éticas, manual de usuario y protocolo de anotación
 ├── data/                     # raw/ (descargas, no versionadas), processed/ (inventario de hashes), README
 ├── notebooks/                # 01 EDA · 02 preprocesamiento · 03 modelado · 04 optimización · 05 evaluación
-├── src/lector_facturas/      # Código fuente del lector
-├── configs/                  # definitivo.json (modelo final) y documentos_revisados.json
+├── src/                      # __init__, data_processing, model, train, evaluate, utils
+│   └── lector_facturas/      # Motor: OCR, extractor de reglas y consenso, métricas
+├── configs/                  # config.yaml (app), definitivo.json (modelo final), documentos_revisados.json
 ├── models/                   # Ficha del modelo; los pesos de Tesseract se descargan aquí (no versionados)
 ├── app/                      # Interfaz de usuario (en construcción)
-├── tests/                    # 120 pruebas unitarias
-├── results/                  # figures/, metrics/ y reports/ generados por los notebooks
+├── tests/                    # 153 pruebas: test_data_processing, test_model, test_app y las del motor
+├── results/                  # figures/, metrics/ y reports/ (EDA, desarrollo; 04 y 05 al importarlos)
 ├── scripts/                  # Lectura por línea de comandos, descarga de datos, ejemplos sintéticos
 └── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación
 ```
 
-| Pieza pedida en la guía | Dónde está en este repositorio |
+| Carpeta | Qué contiene |
 |---|---|
-| `src/data_processing.py` | `preprocessing.py` (imagen), `datasets.py` (adaptadores y partición), `common.py` (normalización) |
-| `src/model.py` | `consensus.py`, `candidate_rules.py`, `geometry.py`, `extraction.py` |
-| `src/train.py` | No aplica: no se entrenan pesos. La búsqueda de configuración está en `experiments.optimize_consensus_cached` y el notebook 04 |
-| `src/evaluate.py` | `evaluation.py`, `experiments.py` |
-| `src/utils.py` | `common.py`, `frozen_runtime.py`, `ocr.py`, `cli.py` |
-| `models/best_model.pkl` | `models/ficha_modelo.json` + `configs/definitivo.json` + pesos verificados por hash |
-| `tests/test_data_processing.py`, `test_model.py` | `test_preprocessing.py`, `test_pipeline.py`, `test_ocr.py`, `test_consensus.py`, `test_frozen_runtime.py` |
+| [`src/`](src/) | `data_processing.py` (validación de entrada, PDF, preprocesamiento, normalización, datasets), `model.py` (clase `LectorFacturas`, confianza por campo), `train.py` (optimización de la configuración: el modelo no entrena pesos), `evaluate.py` (métricas, test, prueba externa, importación de resultados y reporte), `utils.py` (configuración, rutas, registro, errores). El motor `lector_facturas/` es el modelo tal como se evaluó. Ver [`src/README.md`](src/README.md). |
+| [`models/`](models/) | En lugar de `best_model.pkl`: `ficha_modelo.json` + `configs/definitivo.json` + pesos verificados por hash. Versiones anteriores en el historial de Git. |
+| [`tests/`](tests/) | `test_data_processing.py`, `test_model.py`, `test_app.py` y las pruebas del motor. Ver [`tests/README.md`](tests/README.md). |
+| [`results/`](results/) | `figures/`, `metrics/` y `reports/`. Ver [`results/README.md`](results/README.md). |
 
 ## 8. Consideraciones éticas y limitaciones
 
