@@ -17,7 +17,7 @@ Conservar identificadores como texto para no perder ceros iniciales. Definir mon
 El adaptador automático de esta tabla propia queda para la siguiente iteración; actualmente los adaptadores productivos son SROIE y WildReceipt. La extracción de documentos individuales ya funciona con `extract` y permite revisar sus evidencias.
 
 
-## ZIP de test nuevo para la evaluación aleatoria
+## Formato del ZIP de prueba externa
 
 En la raíz del ZIP: `anotaciones.jsonl` y una carpeta `imagenes/`. Una línea JSON por factura. Ejemplo de FORMATO, no datos reales de evaluación:
 

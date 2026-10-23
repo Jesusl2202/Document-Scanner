@@ -297,7 +297,7 @@ El extractor final no se entrena, así que no aplicamos sobremuestreo ni pesos p
 
 1. Descargar los datos: `python scripts/download_data.py wildreceipt --out data/raw` y `python scripts/download_data.py sroie --out data/raw`.
 2. Ejecutar [`notebooks/01_exploracion.ipynb`](../notebooks/01_exploracion.ipynb), que llama a `prepare()` y `run_eda()`, genera `documents.csv`, `coverage.csv`, `incidents.csv` y `summary.json`, y dibuja las figuras.
-3. Copiar las figuras del ZIP `figuras_eda.zip` a [`results/figures/eda/`](../results/figures/eda/). La Figura 6 sale del notebook 02 ([`results/figures/preprocesamiento/`](../results/figures/preprocesamiento/)).
+3. Las figuras de este documento están en [`results/figures/eda/`](../results/figures/eda/); la Figura 6 sale del notebook 02 ([`results/figures/preprocesamiento/`](../results/figures/preprocesamiento/)).
 
 ### Referencias
 

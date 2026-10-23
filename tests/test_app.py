@@ -76,7 +76,7 @@ class AcercaDeTests(unittest.TestCase):
 
 
 class AppTests(unittest.TestCase):
-    @unittest.skipUnless(APP.is_file(), "app/app.py todavía no existe")
+    @unittest.skipUnless(APP.is_file(), "app/app.py no está disponible")
     def test_la_app_compila(self):
         py_compile.compile(str(APP), doraise=True)
 

@@ -140,7 +140,6 @@ La cobertura **no** es exactitud: un campo encontrado puede estar mal leído.
 | La fecha sale como `AMBIGUOUS:` | Día y mes son ≤ 12 | Configura `date_order: "dmy"` en `configs/definitivo.json` para facturas ecuatorianas. |
 | Un monto con punto de miles sale vacío (`1.234`) | No se sabe si el punto es decimal o de miles | Revisa el valor a mano; para facturas locales puedes fijar `decimal_separator`. |
 | Tarda mucho | Se leen 10 vistas por página en CPU | Es normal: del orden de 10–30 s por página en Colab (estimado). Las segundas lecturas del mismo archivo usan caché cuando se indica una carpeta de caché. |
-| En Colab: `La rama descargada todavía tiene el modelo anterior` | GitHub aún no tiene la versión «resumen contable» | Sube los cambios al repositorio o usa `USAR_CODIGO_LOCAL = True` en un clon actualizado. |
 
 ## 7. Preguntas frecuentes
 

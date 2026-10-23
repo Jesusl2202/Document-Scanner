@@ -22,7 +22,7 @@ Las imágenes de los datasets **no están en el repositorio**: se descargan con 
 |---|---|---|---|
 | **SROIE** (ICDAR 2019) | Desarrollo y evaluación | 626 train + 347 test (cifras oficiales) | `date`, `total` |
 | **WildReceipt** | Desarrollo y evaluación | 1 268 train + 472 test | `date`, `subtotal`, `tax`, `total` |
-| **Muestra propia (RIDE)** | Prueba final de generalización (pendiente) | 30–50 documentos, ≥ 3 emisores | los seis campos |
+| **Muestra propia (RIDE)** | Prueba final de generalización | 30–50 documentos, ≥ 3 emisores | los seis campos |
 | **Ejemplos sintéticos** (`samples/`) | Comprobar la instalación | 1 imagen + 1 PDF | los seis campos (no es evidencia de precisión) |
 
 Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del emisor), `date`, `document_number`, `subtotal`, `tax` y `total`. **Ninguna de las dos bases públicas anota `tax_id` ni `document_number`**, por lo que su precisión solo puede acreditarse con la muestra propia (ver [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Los campos sin anotación quedan fuera de las métricas; no se cuentan como acierto ni como error.
@@ -46,7 +46,7 @@ Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del em
 
 Conjunto de 30–50 comprobantes de al menos tres emisores, reservado como **prueba final** y mantenido separado de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
 
-**Estado:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) ya evalúa esta muestra como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`); falta reunir los documentos. Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
+**Evaluación:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) la evalúa como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`), separada de las métricas de SROIE y WildReceipt. La muestra está en recolección. Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
 
 ## 4. Modelos preentrenados (no son datasets)
 
