@@ -165,7 +165,7 @@ Guía completa en el [manual de usuario](docs/manual_usuario.md).
 
 ## 6. Interfaz de usuario
 
-⏳ **En construcción** en [`app/`](app/): carga de imagen o PDF con validación, procesamiento con indicador de carga, campos con evidencia y alertas, sección "Acerca de" con métricas y limitaciones, y ejemplos precargados. Aquí se agregarán las capturas de pantalla, el enlace a la aplicación desplegada y las instrucciones. Mientras tanto, el lector se usa desde Colab o la terminal (sección 5).
+La interfaz web está en desarrollo en [`app/`](app/): carga de imagen o PDF con validación, procesamiento con indicador de carga, campos con nivel de confianza y alertas, sección «Acerca de» con métricas y limitaciones, y ejemplos precargados. Mientras tanto, el lector se usa desde Colab o la terminal (sección 5).
 
 ## 7. Estructura del proyecto
 
@@ -218,8 +218,8 @@ Document-Scanner/
 
 | Integrante | Rol |
 |---|---|
-| **Sebastián Rojas** | Co-desarrollo del lector, la evaluación y la documentación. ⏳ *Detallar aportes específicos.* |
-| **Jesús López** | Co-desarrollo del lector, la evaluación y la documentación. ⏳ *Detallar aportes específicos.* |
+| **Sebastián Rojas** | Co-desarrollo del lector, la evaluación y la documentación. |
+| **Jesús López** | Co-desarrollo del lector, la evaluación y la documentación. |
 
 Ambos integrantes rotaron el rol de Scrum Master durante los cuatro sprints ([planificación](docs/planificacion.md)).
 
@@ -242,5 +242,5 @@ Agradecemos a los docentes del programa por la guía del proyecto integrador y a
 
 ## 12. Videos
 
-- 🎬 **Video pitch (5 min):** ⏳ *enlace pendiente*
-- 🎬 **Video de respuestas a las preguntas:** ⏳ *enlace pendiente*
+- 🎬 **Video pitch (5 min):** próximamente
+- 🎬 **Video de respuestas a las preguntas:** próximamente

@@ -233,45 +233,37 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
     resultados = ruta_proyecto(carpeta_resultados)
     metricas = resultados / "metrics"
     partes = ["# Reporte de resultados", "",
-              f"Generado con `python -m src.evaluate reporte` el {datetime.now().strftime('%d/%m/%Y %H:%M')}. "
-              "Las cifras salen de los archivos de `results/metrics/`; las secciones sin datos quedan pendientes.", ""]
+              f"Resumen de las métricas de `results/metrics/` "
+              f"(actualizado el {datetime.now().strftime('%d/%m/%Y')}).", ""]
 
-    partes += ["## 1. Desarrollo del modelo", ""]
     desarrollo = metricas / "desarrollo" / "resultados_desarrollo.csv"
     if desarrollo.is_file():
-        tabla = pd.read_csv(desarrollo)
-        partes += [tabla_markdown(tabla), "",
+        partes += ["## Desarrollo del modelo", "", tabla_markdown(pd.read_csv(desarrollo)), "",
                    "Mediciones usadas para elegir el modelo; no son una evaluación independiente "
-                   "(ver `results/reports/resultados_desarrollo.md`).", ""]
-    else:
-        partes += ["⏳ Pendiente.", ""]
+                   "(ver [`resultados_desarrollo.md`](resultados_desarrollo.md)).", ""]
 
-    partes += ["## 2. Datos (EDA)", ""]
     cobertura = metricas / "eda" / "cobertura_etiquetas.csv"
     if cobertura.is_file():
-        partes += [tabla_markdown(pd.read_csv(cobertura), 1), ""]
-    else:
-        partes += ["⏳ Pendiente: importar `figuras_eda.zip` del notebook 01.", ""]
+        partes += ["## Datos: cobertura de etiquetas", "", tabla_markdown(pd.read_csv(cobertura), 1), ""]
 
-    partes += ["## 3. Optimización (notebook 04)", ""]
     seleccion = next(iter(sorted((metricas / "optimizacion").rglob("seleccion.json"))), None) \
         if (metricas / "optimizacion").is_dir() else None
     if seleccion:
         datos = json.loads(seleccion.read_text(encoding="utf-8"))
         control = datos.get("control", {})
-        partes += [f"- Configuraciones evaluadas: {datos.get('n_busqueda', '?')}",
+        partes += ["## Optimización de hiperparámetros", "",
+                   f"- Configuraciones evaluadas: {datos.get('n_busqueda', '?')}",
                    f"- Decisión: **{datos.get('recomendada', {}).get('decision', datos.get('decision', '?'))}**",
                    f"- Cambio en control: {_numero(control.get('delta_pp', float('nan')), 2)} pp "
                    f"(IC95 {_numero(control.get('ic95_inferior_pp', float('nan')), 2)} a "
                    f"{_numero(control.get('ic95_superior_pp', float('nan')), 2)})", ""]
-    else:
-        partes += ["⏳ Pendiente: importar `optimizacion_resultados.zip`.", ""]
 
-    partes += ["## 4. Evaluación final (notebook 05)", ""]
     evaluacion = metricas / "evaluacion"
-    cumplimiento = next(iter(sorted(evaluacion.rglob("cumplimiento_meta.json"))), None) if evaluacion.is_dir() else None
+    cumplimiento = (next(iter(sorted(evaluacion.rglob("cumplimiento_meta.json"))), None)
+                    if evaluacion.is_dir() else None)
     if cumplimiento:
         c = json.loads(cumplimiento.read_text(encoding="utf-8"))
+        partes += ["## Evaluación final", ""]
         cumple = c.get("cumple_exactitud_70", c.get("cumple_exactitud"))
         partes += [f"- Exactitud por campo: **{_numero(100 * c['exactitud'])} %** "
                    f"({'cumple' if cumple else 'no cumple'} la meta del 70 %)",
@@ -285,11 +277,9 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
             archivo = next(iter(sorted(evaluacion.rglob(nombre))), None)
             if archivo:
                 partes += [f"### {titulo}", "", tabla_markdown(pd.read_csv(archivo, encoding="utf-8-sig")), ""]
-    else:
-        partes += ["⏳ Pendiente: importar el ZIP `evaluacion_<fecha>.zip` del notebook 05.", ""]
 
     figuras = sorted((resultados / "figures").rglob("*.png"))
-    partes += ["## 5. Figuras disponibles", ""]
+    partes += ["## Figuras", ""]
     enlaces = [f"- [`{f.relative_to(resultados)}`](../{f.relative_to(resultados).as_posix()})" for f in figuras]
     partes += enlaces or ["Ninguna."]
     destino = resultados / "reports" / "reporte_resultados.md"

@@ -6,7 +6,7 @@
 
 Guía para usar el lector: qué documentos acepta, cómo leer una factura, cómo interpretar el resultado y qué hacer cuando algo falla.
 
-> ⏳ **Interfaz web en construcción.** La aplicación de [`app/`](../app/) se documentará en la sección 4 con capturas de pantalla anotadas cuando esté lista. Mientras tanto, el lector se usa desde Google Colab (sección 2) o desde la terminal (sección 3).
+> La interfaz web de [`app/`](../app/) está en desarrollo. Mientras tanto, el lector se usa desde Google Colab (sección 2) o desde la terminal (sección 3).
 
 ## Contenido
 
@@ -79,11 +79,7 @@ En `outputs/mi_factura/` quedan:
 
 ## 4. Interfaz web
 
-⏳ *Pendiente: se completará cuando la aplicación de [`app/`](../app/) esté lista.* Debe incluir:
-
-- Cómo abrirla (enlace a la aplicación desplegada o `streamlit run app/app.py`).
-- Capturas anotadas: carga del documento, botón de procesar, indicador de carga, resultados con nivel de confianza y alertas, sección "Acerca de" y ejemplos precargados.
-- Explicación de cada funcionalidad y de la exportación de resultados.
+La interfaz web está en desarrollo en [`app/`](../app/). Usará el mismo modelo que la terminal (`src.model.LectorFacturas`): carga de una imagen o PDF, resultados con nivel de confianza y alertas por campo, sección «Acerca de» con métricas y limitaciones, y ejemplos para probar.
 
 ## 5. Cómo interpretar el resultado
 
