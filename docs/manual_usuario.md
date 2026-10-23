@@ -6,7 +6,7 @@
 
 Guía para usar el lector: qué documentos acepta, cómo leer una factura, cómo interpretar el resultado y qué hacer cuando algo falla.
 
-> ⏳ **Interfaz web en construcción.** La aplicación de [`app/`](../app/) se documentará en la sección 4 con capturas de pantalla anotadas cuando esté lista. Mientras tanto, el lector se usa desde Google Colab (sección 2) o desde la terminal (sección 3).
+> La interfaz web de [`app/`](../app/) está en desarrollo. Mientras tanto, el lector se usa desde Google Colab (sección 2) o desde la terminal (sección 3).
 
 ## Contenido
 
@@ -79,11 +79,7 @@ En `outputs/mi_factura/` quedan:
 
 ## 4. Interfaz web
 
-⏳ *Pendiente: se completará cuando la aplicación de [`app/`](../app/) esté lista.* Debe incluir:
-
-- Cómo abrirla (enlace a la aplicación desplegada o `streamlit run app/app.py`).
-- Capturas anotadas: carga del documento, botón de procesar, indicador de carga, resultados con nivel de confianza y alertas, sección "Acerca de" y ejemplos precargados.
-- Explicación de cada funcionalidad y de la exportación de resultados.
+La interfaz web está en desarrollo en [`app/`](../app/). Usará el mismo modelo que la terminal (`src.model.LectorFacturas`): carga de una imagen o PDF, resultados con nivel de confianza y alertas por campo, sección «Acerca de» con métricas y limitaciones, y ejemplos para probar.
 
 ## 5. Cómo interpretar el resultado
 
@@ -144,7 +140,6 @@ La cobertura **no** es exactitud: un campo encontrado puede estar mal leído.
 | La fecha sale como `AMBIGUOUS:` | Día y mes son ≤ 12 | Configura `date_order: "dmy"` en `configs/definitivo.json` para facturas ecuatorianas. |
 | Un monto con punto de miles sale vacío (`1.234`) | No se sabe si el punto es decimal o de miles | Revisa el valor a mano; para facturas locales puedes fijar `decimal_separator`. |
 | Tarda mucho | Se leen 10 vistas por página en CPU | Es normal: del orden de 10–30 s por página en Colab (estimado). Las segundas lecturas del mismo archivo usan caché cuando se indica una carpeta de caché. |
-| En Colab: `La rama descargada todavía tiene el modelo anterior` | GitHub aún no tiene la versión «resumen contable» | Sube los cambios al repositorio o usa `USAR_CODIGO_LOCAL = True` en un clon actualizado. |
 
 ## 7. Preguntas frecuentes
 

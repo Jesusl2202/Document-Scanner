@@ -1,8 +1,8 @@
 # Reporte de resultados
 
-Generado con `python -m src.evaluate reporte` el 22/10/2026 22:25. Las cifras salen de los archivos de `results/metrics/`; las secciones sin datos quedan pendientes.
+Resumen de las métricas de `results/metrics/` (actualizado el 22/10/2026).
 
-## 1. Desarrollo del modelo
+## Desarrollo del modelo
 
 | version | muestra | aciertos | campos | exactitud_pct | independiente |
 |---|---|---|---|---|---|
@@ -13,9 +13,9 @@ Generado con `python -m src.evaluate reporte` el 22/10/2026 22:25. Las cifras sa
 | Actual sin resumen contable | grupo de test 20261022 (reutilizado) | 183 | 241 | 75,93 | no |
 | Resumen contable (final) | grupo de test 20261022 (reutilizado) | 184 | 241 | 76,35 | no |
 
-Mediciones usadas para elegir el modelo; no son una evaluación independiente (ver `results/reports/resultados_desarrollo.md`).
+Mediciones usadas para elegir el modelo; no son una evaluación independiente (ver [`resultados_desarrollo.md`](resultados_desarrollo.md)).
 
-## 2. Datos (EDA)
+## Datos: cobertura de etiquetas
 
 | dataset | field | documents | annotated | unannotated | ambiguous | cobertura % |
 |---|---|---|---|---|---|---|
@@ -32,15 +32,7 @@ Mediciones usadas para elegir el modelo; no son una evaluación independiente (v
 | wildreceipt | tax | 1267 | 764 | 414 | 89 | 60,3 |
 | wildreceipt | total | 1267 | 1057 | 149 | 61 | 83,4 |
 
-## 3. Optimización (notebook 04)
-
-⏳ Pendiente: importar `optimizacion_resultados.zip`.
-
-## 4. Evaluación final (notebook 05)
-
-⏳ Pendiente: importar el ZIP `evaluacion_<fecha>.zip` del notebook 05.
-
-## 5. Figuras disponibles
+## Figuras
 
 - [`figures/desarrollo/evolucion_exactitud.png`](../figures/desarrollo/evolucion_exactitud.png)
 - [`figures/eda/01_particiones.png`](../figures/eda/01_particiones.png)

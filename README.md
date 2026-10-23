@@ -79,7 +79,7 @@ flowchart LR
 |---|---|---:|
 | Línea base V1 (reglas simples, 1 lectura) | 40 docs de validación | 35,0 % (36/103) |
 | V6 (consenso de lecturas) | 60 docs de validación | 62,75 % (96/153) |
-| V7 (5 vistas, entrega anterior) | 120 docs de selección | 70,53 % (213/302) |
+| V7 (5 vistas, versión anterior) | 120 docs de selección | 70,53 % (213/302) |
 | Actual sin resumen contable | Grupo más reciente del test oficial (con reutilización) | 75,93 % (183/241) |
 | **Resumen contable (final)** | Mismo grupo, mismo OCR | **76,35 % (184/241)** |
 
@@ -87,7 +87,7 @@ En tres grupos aleatorios del test oficial el modelo final obtuvo **75,0–77,6 
 
 ![Evolución de la exactitud durante el desarrollo](results/figures/desarrollo/evolucion_exactitud.png)
 
-**Comparación con baseline y evaluación final.** [`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb) mide el modelo final en 50 documentos por dataset del test oficial con intervalos de confianza, lo compara con la línea base (reglas iniciales, V7 y la versión sin resumen contable) sobre las mismas lecturas, analiza errores por tipo de imagen y evalúa una **prueba externa** de facturas propias anotadas. Sus tablas y figuras se copian a [`results/`](results/) con `python -m src.evaluate importar <zip>`, que además regenera [`results/reports/reporte_resultados.md`](results/reports/reporte_resultados.md).
+**Comparación con baseline y evaluación final.** [`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb) mide el modelo final en 50 documentos por dataset del test oficial con intervalos de confianza, lo compara con la línea base (reglas iniciales, V7 y la versión sin resumen contable) sobre las mismas lecturas, analiza errores por tipo de imagen y evalúa una **prueba externa** de facturas propias anotadas. Sus tablas y figuras están en [`results/`](results/) y se resumen en [`results/reports/reporte_resultados.md`](results/reports/reporte_resultados.md).
 
 > **Honestidad sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)). Las cifras sobre el test sirven para comparar versiones; la evidencia de generalización es la prueba externa.
 
@@ -142,7 +142,7 @@ print(resultado.campos())     # {'tax_id': ..., 'date': ..., 'total': ...}
 print(resultado.tabla())      # valor, nivel de confianza y alertas por campo
 ```
 
-La primera lectura descarga los pesos en `models/` y verifica su SHA-256. En la carpeta de salida quedan `campos.csv` (una fila por página) y `resultado.json` (texto, cajas, evidencia, confianza, validaciones y alertas). La configuración (rutas relativas, límites de entrada, metas, registro) está en [`configs/config.yaml`](configs/config.yaml) y se puede ajustar con un `.env` ([`.env.example`](.env.example)). `scripts/leer_documento.py` sigue disponible y produce la misma salida:
+La primera lectura descarga los pesos en `models/` y verifica su SHA-256. En la carpeta de salida quedan `campos.csv` (una fila por página) y `resultado.json` (texto, cajas, evidencia, confianza, validaciones y alertas). La configuración (rutas relativas, límites de entrada, metas, registro) está en [`configs/config.yaml`](configs/config.yaml) y se puede ajustar con un `.env` ([`.env.example`](.env.example)). `scripts/leer_documento.py` produce la misma salida:
 
 ```csv
 page,status,tax_id,date,document_number,subtotal,tax,total,revision
@@ -165,7 +165,7 @@ Guía completa en el [manual de usuario](docs/manual_usuario.md).
 
 ## 6. Interfaz de usuario
 
-⏳ **En construcción** en [`app/`](app/): carga de imagen o PDF con validación, procesamiento con indicador de carga, campos con evidencia y alertas, sección "Acerca de" con métricas y limitaciones, y ejemplos precargados. Aquí se agregarán las capturas de pantalla, el enlace a la aplicación desplegada y las instrucciones. Mientras tanto, el lector se usa desde Colab o la terminal (sección 5).
+La interfaz web está en desarrollo en [`app/`](app/): carga de imagen o PDF con validación, procesamiento con indicador de carga, campos con nivel de confianza y alertas, sección «Acerca de» con métricas y limitaciones, y ejemplos precargados. Mientras tanto, el lector se usa desde Colab o la terminal (sección 5).
 
 ## 7. Estructura del proyecto
 
@@ -184,9 +184,9 @@ Document-Scanner/
 │   └── lector_facturas/      # Motor: OCR, extractor de reglas y consenso, métricas
 ├── configs/                  # config.yaml (app), definitivo.json (modelo final), documentos_revisados.json
 ├── models/                   # Ficha del modelo; los pesos de Tesseract se descargan aquí (no versionados)
-├── app/                      # Interfaz de usuario (en construcción)
+├── app/                      # Interfaz de usuario
 ├── tests/                    # 153 pruebas: test_data_processing, test_model, test_app y las del motor
-├── results/                  # figures/, metrics/ y reports/ (EDA, desarrollo; 04 y 05 al importarlos)
+├── results/                  # Figuras, métricas y reportes
 ├── scripts/                  # Lectura por línea de comandos, descarga de datos, ejemplos sintéticos
 └── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación
 ```
@@ -218,8 +218,8 @@ Document-Scanner/
 
 | Integrante | Rol |
 |---|---|
-| **Sebastián Rojas** | Co-desarrollo del lector, la evaluación y la documentación. ⏳ *Detallar aportes específicos.* |
-| **Jesús López** | Co-desarrollo del lector, la evaluación y la documentación. ⏳ *Detallar aportes específicos.* |
+| **Sebastián Rojas** | Co-desarrollo del lector, la evaluación y la documentación. |
+| **Jesús López** | Co-desarrollo del lector, la evaluación y la documentación. |
 
 Ambos integrantes rotaron el rol de Scrum Master durante los cuatro sprints ([planificación](docs/planificacion.md)).
 
@@ -242,5 +242,5 @@ Agradecemos a los docentes del programa por la guía del proyecto integrador y a
 
 ## 12. Videos
 
-- 🎬 **Video pitch (5 min):** ⏳ *enlace pendiente*
-- 🎬 **Video de respuestas a las preguntas:** ⏳ *enlace pendiente*
+- 🎬 **Video pitch (5 min):** próximamente
+- 🎬 **Video de respuestas a las preguntas:** próximamente

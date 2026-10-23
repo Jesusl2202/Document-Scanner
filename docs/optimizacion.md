@@ -6,7 +6,6 @@
 
 Este documento describe cómo se optimizó el lector: primero con iteraciones dirigidas por el análisis de errores (de la línea base al modelo «resumen contable») y después con una **búsqueda sistemática de hiperparámetros** siguiendo el método del Workshop S5, implementada en [`notebooks/04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb).
 
-> **Cómo completar este documento.** El método, el espacio de búsqueda y la regla de decisión ya están fijados. Las celdas marcadas con ⏳ se llenan con la salida de la ejecución de 04 en Colab (tablas `sensibilidad.csv`, `importancia.csv`, `seleccion.json` y las figuras que se copian a [`results/figures/optimizacion/`](../results/figures/optimizacion/)). No se escriben cifras que no salgan de esa ejecución.
 
 ## Contenido
 
@@ -99,66 +98,31 @@ El espacio completo tiene 4 × 5 × 4 × 4 × 2⁹ = **163.840 combinaciones**; 
 
 ## 5. Análisis de sensibilidad
 
-⏳ *Figura pendiente (`sensibilidad.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![Sensibilidad](../results/figures/optimizacion/sensibilidad.png)`
-
-| Hiperparámetro | Mín. (pp) | Máx. (pp) | Rango (pp) |
-|---|---:|---:|---:|
-| ⏳ (de `resumen_sens` en la sección 5 de 04, ordenado por rango) | | | |
-
-**Lectura:** ⏳ qué hiperparámetros mueven más la exactitud y en qué dirección; si el valor actual está cerca del óptimo de cada curva.
+Cada hiperparámetro se recorre en todo su rango con los demás fijos en el valor actual, y se mide el cambio de exactitud macro en la muestra de optimización. El rango de cada curva (diferencia entre su mejor y su peor valor, en puntos porcentuales) indica cuánto depende el lector de ese hiperparámetro y si el valor actual está cerca de su óptimo. Gráfico y tabla: sección 5 de [`04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb) (`sensibilidad.png`, `sensibilidad.csv`).
 
 ## 6. Partial dependence plots
 
-⏳ *Figura pendiente (`pdp.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![PDP](../results/figures/optimizacion/pdp.png)`
-
-- R² fuera de bolsa del sustituto: ⏳ (si es menor que 0,5, los PDP solo orientan y manda el efecto medido directamente).
-- **Lectura:** ⏳ forma de cada curva (monótona, con óptimo interior o plana).
+Sobre las configuraciones de la búsqueda aleatoria se ajusta un Random Forest que predice la exactitud macro a partir de los 13 hiperparámetros. Cada PDP muestra el efecto promedio de un hiperparámetro cuando los demás varían, a diferencia de la sensibilidad, que los deja fijos. Antes de interpretarlos se revisa el R² fuera de bolsa del sustituto: por debajo de 0,5 los PDP solo orientan y prevalecen los efectos medidos directamente. Sección 7 del notebook 04 (`pdp.png`).
 
 ## 7. Ranking de importancia
 
-⏳ *Figura pendiente (`importancia.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![Importancia](../results/figures/optimizacion/importancia.png)`
-
-| Ranking | Hiperparámetro | Permutación | Efecto principal (pp) | Rango de sensibilidad (pp) |
-|---:|---|---:|---:|---:|
-| ⏳ | (de `importancia.csv`) | | | |
-
-**Lectura:** ⏳ si las tres medidas coinciden en los más importantes.
+Se ordenan los hiperparámetros con tres medidas que deberían coincidir: la importancia por permutación sobre el sustituto, el efecto principal medido directamente en la búsqueda (diferencia entre la mejor y la peor exactitud promedio por valor) y el rango de sensibilidad de la sección 5. Sección 8 del notebook 04 (`importancia.png`, `importancia.csv`).
 
 ## 8. Análisis de interacciones
 
-⏳ *Figura pendiente (`interacciones_pdp2d.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![Interacciones PDP 2D](../results/figures/optimizacion/interacciones_pdp2d.png)`
-
-⏳ *Figura pendiente (`interaccion_grilla.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![Grilla exacta](../results/figures/optimizacion/interaccion_grilla.png)`
-
-- Par más importante: ⏳.
-- Variación del efecto de uno según el otro: ⏳ pp (cerca de 0 = poca interacción).
+Con los tres hiperparámetros más importantes se dibujan PDP en dos dimensiones, y para el par más importante se calcula una grilla exacta (sin sustituto) con todas sus combinaciones y el resto en el valor actual. Si el efecto de uno cambia según el valor del otro, hay interacción y no conviene ajustarlos por separado. Sección 9 del notebook 04 (`interacciones_pdp2d.png`, `interaccion_grilla.png`).
 
 ## 9. Configuración final y justificación
 
-| Hiperparámetro | Actual | Seleccionada en optimización | Recomendada |
-|---|---|---|---|
-| ⏳ (de la sección 10 de 04 y `configuracion_recomendada.json`) | | | |
-
-⏳ *Figura pendiente (`exactitud_vs_costo.png`, notebook 04). Al copiarla a `results/figures/optimizacion/`, reemplazar esta línea por* `![Exactitud vs costo](../results/figures/optimizacion/exactitud_vs_costo.png)`
-
-**Justificación:** ⏳ la configuración recomendada es la seleccionada solo si cumplió la regla de la sección 3 en control; si no, se mantiene la actual de [`configs/definitivo.json`](../configs/definitivo.json). Indicar también el cambio en costo de OCR por documento.
+La configuración seleccionada es la de mayor exactitud macro en optimización, con desempates por peor campo, exactitud global, menos cambios y menor costo de OCR. Solo se recomienda si en la muestra de control cumple la regla fijada de antemano (sección 3); si no, se mantiene la de [`configs/definitivo.json`](../configs/definitivo.json). El gráfico de exactitud frente a costo de OCR permite ver si una mejora justifica leer más vistas. Sección 10 del notebook 04 (`exactitud_vs_costo.png`, `configuracion_recomendada.json`).
 
 ## 10. Comparación antes / después
 
 **a) Optimización iterativa (sección 2):** de 35,0 % (línea base) a 75,0–77,6 % en desarrollo, con el resumen contable sumando entre 1 y 2 campos por grupo sin perder ninguno.
 
-**b) Búsqueda de hiperparámetros (muestra de control, no usada para elegir):**
+![Evolución de la exactitud durante el desarrollo](../results/figures/desarrollo/evolucion_exactitud.png)
 
-| Configuración | Optimización · macro | Control · macro | Control · global | Control · peor campo |
-|---|---:|---:|---:|---:|
-| Actual (`definitivo.json`) | ⏳ | ⏳ | ⏳ | ⏳ |
-| Seleccionada | ⏳ | ⏳ | ⏳ | ⏳ |
-
-| Cambio en control | Δ (pp) | IC95 inferior | IC95 superior | Decisión |
-|---|---:|---:|---:|---|
-| Seleccionada − actual | ⏳ | ⏳ | ⏳ | ⏳ adoptar / mantener |
-
-La exactitud en la muestra de optimización está inflada por la propia selección; la cifra que cuenta es la de control. El efecto final en el test se mide en [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) (opción `USAR_CONFIG_OPTIMIZADA`).
+**b) Búsqueda de hiperparámetros:** la configuración actual y la seleccionada se comparan en la muestra de **control**, que no se usó para elegir, con `evaluation.evaluate` y un bootstrap pareado por documento (diferencia en puntos porcentuales e intervalo de confianza al 95 %). La exactitud en la muestra de optimización está inflada por la propia selección; la cifra que cuenta es la de control. Sección 11 del notebook 04. El efecto en el test se mide en [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) (opción `USAR_CONFIG_OPTIMIZADA`).
 
 ## 11. Limitaciones
 

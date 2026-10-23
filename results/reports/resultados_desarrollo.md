@@ -6,7 +6,7 @@ Registro de las mediciones que se usaron para **elegir** el modelo. No son la ev
 
 Comparación sobre el **mismo OCR archivado** de tres grupos aleatorios del test oficial (con documentos ya revisados permitidos). "Antes" es el lector actual sin contabilidad observada ni rescate por confianza; "Después" es el modelo final. Es una reextracción, no una inferencia nueva ni una validación independiente, y los grupos pueden solaparse: **no se deben sumar sus soportes**.
 
-| Grupo (ZIP de la ejecución) | Antes | Después | Cambios |
+| Grupo (ejecución) | Antes | Después | Cambios |
 |---|---:|---:|---|
 | `tesseract_20261022T002345_092851Z` (más reciente) | 183/241 (75,93 %) | 184/241 (76,35 %) | +1, −0 |
 | `tesseract_20261021T025614_902596Z` | 188/252 (74,60 %) | 189/252 (75,00 %) | +1, −0 |
@@ -16,7 +16,7 @@ Comparación sobre el **mismo OCR archivado** de tres grupos aleatorios del test
 - Ningún grupo empeora (0 campos perdidos).
 - Factura externa 1 (subtotal 355,20, descuento 17,76, total 412,03): el impuesto pasa de 74,50 a 74,59 con el resumen contable; la fecha 7/12/2014 se conserva. Factura externa 2: se mantienen subtotal 125,00, impuesto 4,75 y total 114,75, con envío 10,00 y descuento 25,00. Sin referencias humanas verificadas no se asigna exactitud a estas facturas.
 - Se probaron variantes de ponderación por confianza que cambiaban valores ya establecidos y causaban regresiones; **no se entregan activadas**. La variante final solo rellena campos vacíos con evidencia corroborada en dos vistas.
-- 120 pruebas automatizadas aprobadas. La prueba de integración del optimizador con OCR simulado cubre la separación de validación, la exportación y el rechazo de una configuración sin mejora.
+- 120 pruebas automatizadas del motor aprobadas. La prueba de integración del optimizador con OCR simulado cubre la separación de validación, la exportación y el rechazo de una configuración sin mejora.
 - No hay una medición nueva de velocidad desde cero: la caché de OCR se reutiliza durante la búsqueda y el tiempo real depende de Colab.
 
 ## Historia de versiones
@@ -33,8 +33,6 @@ Comparación sobre el **mismo OCR archivado** de tres grupos aleatorios del test
 
 Las cifras globales solo cubren campos anotados: fecha y total en SROIE; fecha, subtotal, impuesto y total en WildReceipt. Identificador fiscal y número de comprobante no tienen soporte en estas bases.
 
-## Qué falta para la evaluación final
+## Relación con la evaluación final
 
-1. Ejecutar [`04_optimizacion.ipynb`](../../notebooks/04_optimizacion.ipynb) y guardar `seleccion.json` y sus figuras en [`results/`](../).
-2. Ejecutar [`05_evaluacion.ipynb`](../../notebooks/05_evaluacion.ipynb) con la configuración entregada (o la recomendada por 04, decidida **antes** de ver el test).
-3. Reunir y anotar la **muestra propia** (30–50 comprobantes impresos de al menos tres emisores) y evaluarla como prueba externa: es la única evidencia de generalización, porque casi todo el test oficial ya se revisó.
+La optimización de hiperparámetros se hace en [`04_optimizacion.ipynb`](../../notebooks/04_optimizacion.ipynb) solo con la partición de validación, y la evaluación final en [`05_evaluacion.ipynb`](../../notebooks/05_evaluacion.ipynb) con la configuración fijada antes de leer el test. Como casi todo el test oficial se revisó durante el desarrollo, la evidencia de generalización es la prueba externa con la muestra propia de comprobantes impresos.

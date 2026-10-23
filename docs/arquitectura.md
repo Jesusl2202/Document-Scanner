@@ -223,7 +223,7 @@ Reglas de decisión:
 
 - Si para el total existe algún candidato con puntaje ≥ 8, solo compiten esos (`dominance`).
 - Gana el valor con mayor `rank`. Si dos valores empatan, **no se elige al azar**: el campo queda vacío con la alerta `<campo>:ambiguous_consensus`.
-- **Ya no se supone total = subtotal.** Si no hay total ni impuesto, el total queda vacío con la alerta `total:subtotal_no_confirma_total`: que no se vea un impuesto no prueba que no exista.
+- **No se supone total = subtotal** (a diferencia de V7). Si no hay total ni impuesto, el total queda vacío con la alerta `total:subtotal_no_confirma_total`: que no se vea un impuesto no prueba que no exista.
 - El extractor **nunca inventa montos**: solo elige entre valores que alguna lectura produjo de verdad.
 
 Cada mecanismo tiene un interruptor en `FLAGS` (`fuzzy`, `dominance`, `corroboration`, `balance`, `payment`, `triples`, `dates`, `glyphs`, `total_from_subtotal`) para poder apagarlo y medir cuánto aporta (ablación en el notebook 03).

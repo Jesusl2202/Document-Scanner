@@ -13,8 +13,9 @@ Este proyecto **no entrena pesos**, así que no hay un `best_model.pkl`. El mode
 | Archivo | Contenido |
 |---|---|
 | [`ficha_modelo.json`](ficha_modelo.json) | Ficha del **mejor modelo** («resumen contable»): pesos y revisiones, arquitectura VGSL, hash de la configuración y de cada archivo de código, resultados de desarrollo, uso previsto y casos fuera de alcance. |
-| `modelo_final.json` *(opcional)* | La misma definición con los resultados de validación de M0–M3; la genera [`03_modelado.ipynb`](../notebooks/03_modelado.ipynb) (sección 9) y se puede copiar aquí. |
-| `configuracion_recomendada.json` *(opcional)* | Salida de [`04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb); solo se adopta si mejora en la muestra de control. |
+
+
+Los notebooks generan además `modelo_final.json` ([`03_modelado.ipynb`](../notebooks/03_modelado.ipynb), con los resultados de validación de cada versión) y `configuracion_recomendada.json` ([`04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb), que solo se adopta si mejora en la muestra de control).
 
 ## Versiones anteriores
 
