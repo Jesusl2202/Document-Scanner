@@ -2,8 +2,19 @@ name: Pruebas
 on:
   push:
     branches: [prueba-actions]
+permissions:
+  contents: write
 jobs:
   info:
     runs-on: ubuntu-24.04
     steps:
-      - run: nproc && free -g && curl -sI https://www.kaggle.com/api/v1/datasets/download/urbikn/sroie-datasetv2 | head -5 && curl -sI https://download.openmmlab.com/mmocr/data/wildreceipt.tar | head -3
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p ci_out
+          { nproc; free -g; tesseract --version 2>&1 | head -1; python3 --version;
+            curl -sIL https://www.kaggle.com/api/v1/datasets/download/urbikn/sroie-datasetv2 | grep -i -E "^HTTP|content-length|content-type";
+            curl -sI https://download.openmmlab.com/mmocr/data/wildreceipt.tar | grep -i -E "^HTTP|content-length"; } > ci_out/info.txt 2>&1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-salida
+          git add ci_out && git commit -qm "info" && git push -f origin ci-salida
