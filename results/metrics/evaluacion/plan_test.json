@@ -10,9 +10,8 @@
   "historical_documents_allowed": true,
   "independent_test": false,
   "revision_codigo": {
-    "repositorio": "Jesusl2202/Document-Scanner",
-    "rama": "main",
-    "commit": "3e04381dba2bf209480fca9115ce08199bfacb3b"
+    "modo": "local",
+    "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
   },
   "configuracion": {
     "seed": 42,
@@ -141,6 +140,9 @@
   },
   "recomendacion_04": null,
   "codigo_sha256": {
+    "src/__init__.py": "03e2e53def079b2a786940279b967b6fff42f6b84bbeec8ee8c4f61b085b8850",
+    "src/data_processing.py": "ce938c8db2189dd456bc80eb52f75a31f83d96f4537edbcb06d98dbadc35e518",
+    "src/evaluate.py": "26f6dd7a67c7388df8deac5d0aea8108fd9fd53e53bdfce63c3134154bb007a0",
     "src/lector_facturas/__init__.py": "c06ca29eebb6166ea027d94f3a4b735aada4734ee9ef81eca21cc609a3515114",
     "src/lector_facturas/__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
     "src/lector_facturas/candidate_rules.py": "8fe76564424b92b858ff0925b88fdaf3bd11ee212795f82c88127d052156cb22",
@@ -155,7 +157,12 @@
     "src/lector_facturas/frozen_runtime.py": "3c59ef3b41a801a13c0f40efbf6dbe2767fd8e51dbd31e6685923d7e9f79af97",
     "src/lector_facturas/geometry.py": "7e45c1613d05bc057e164d3e290896e33d496642689a5f829908a5cdc756a261",
     "src/lector_facturas/ocr.py": "324a1780ad6bc736bb7b8690e47a0e68f835b9e3c22df6fd1690d9f0c321607f",
-    "src/lector_facturas/preprocessing.py": "24b74b8a500b3d6367f5528ea1335ff9785a12a4033a11d5a597c7e4a9f378b4"
+    "src/lector_facturas/preprocessing.py": "24b74b8a500b3d6367f5528ea1335ff9785a12a4033a11d5a597c7e4a9f378b4",
+    "src/line_classifier.py": "6e10315ba9abad542676a27ef8bc1e33bad6425ae0c5578e0721f55627759f61",
+    "src/model.py": "7d01ea7ba5f7562bac30512304baa9895a8f324fa05b9dbaa63efb3293849e5f",
+    "src/train.py": "0fedbbd5585cfe7e9743683e2836ef718d05812af692a1f8f7cc9b4e21918272",
+    "src/utils.py": "4fcad81a3ec6d086ca21e0565039611530ccbfa830a268e0d64f806eb42f33f7",
+    "src/validation.py": "396fff7cb99b1180a89b719a875407dd92b0958b29654b5b0ee7805065227ab8"
   },
   "firma_muestra": "e7ea1645d33c0acdf8476f81cfdfd183c599394d7be5ed99eee750b150108a05",
   "ya_revisados_en_desarrollo": 100,

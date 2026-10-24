@@ -4,9 +4,8 @@
   "n_control": 20,
   "n_busqueda": 80,
   "revision_codigo": {
-    "repositorio": "Jesusl2202/Document-Scanner",
-    "rama": "main",
-    "commit": "3e04381dba2bf209480fca9115ce08199bfacb3b"
+    "modo": "local",
+    "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
   },
   "configuracion": {
     "seed": 42,

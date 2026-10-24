@@ -41,7 +41,7 @@ from .utils import (ErrorEntrada, ErrorLector, cargar_configuracion, configurar_
                     leer_json, obtener_logger, ruta_proyecto)
 
 LOGGER = obtener_logger("evaluacion")
-TIPOS_RESULTADO = ("eda", "preprocesamiento", "modelado", "optimizacion", "evaluacion")
+TIPOS_RESULTADO = ("eda", "preprocesamiento", "modelado", "optimizacion", "evaluacion", "validacion")
 DECISIONES = {"mantener_actual": "mantener la configuración actual", "adoptar": "adoptar la configuración seleccionada"}
 # Archivos que nunca se copian a results/: pueden contener texto OCR, valores predichos documento por
 # documento o datos de documentos propios. RESULTADOS.md es una nota genérica del motor por corrida.
@@ -163,6 +163,8 @@ def _extraer_seguro(zip_path: Path, destino: Path) -> Path:
 def detectar_tipo(carpeta: Path) -> str:
     """Reconoce de qué notebook viene un ZIP de resultados por los archivos que contiene."""
     nombres = {p.name for p in carpeta.rglob("*")}
+    if "resumen_validacion.json" in nombres or "escenarios_criticos.csv" in nombres:
+        return "validacion"
     if "seleccion.json" in nombres or "sensibilidad.csv" in nombres:
         return "optimizacion"
     if "plan_test.json" in nombres or "cumplimiento_meta.json" in nombres:
@@ -298,7 +300,35 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
             archivo = next(iter(sorted(evaluacion.rglob(nombre))), None)
             if archivo:
                 tabla = pd.read_csv(archivo, encoding="utf-8-sig").replace({True: "sí", False: "no"})
-                partes += [f"### {titulo}", "", tabla_markdown(tabla.drop(columns=["nota"], errors="ignore"), 1), ""]
+                decimales = 3 if nombre == "metricas_por_campo.csv" else 1
+                tabla = tabla.drop(columns=["nota"], errors="ignore")
+                partes += [f"### {titulo}", "", tabla_markdown(tabla, decimales), ""]
+
+    validacion = metricas / "validacion"
+    if validacion.is_dir():
+        partes += ["## Validación en contextos simulados (notebook 06)", ""]
+        for nombre, titulo, decimales in (
+                ("nuevos_vs_test.csv", "Documentos nunca revisados frente al test (%)", 1),
+                ("calibracion_confianza.csv", "Exactitud según el nivel de confianza (%)", 1),
+                ("tiempo_revision.csv", "Tiempo de revisión estimado por documento", 1),
+                ("escenarios_criticos.csv", "Escenarios críticos", 1),
+                ("equidad_subgrupos.csv", "Resultados por subgrupo", 1)):
+            archivo = next(iter(sorted(validacion.rglob(nombre))), None)
+            if archivo:
+                tabla = pd.read_csv(archivo, encoding="utf-8-sig").drop(columns=["simula"], errors="ignore")
+                partes += [f"### {titulo}", "", tabla_markdown(tabla, decimales), ""]
+        por_doc = next(iter(sorted(validacion.rglob("nuevos_por_documento.json"))), None)
+        if por_doc:
+            d = json.loads(por_doc.read_text(encoding="utf-8"))["por_documento"]
+            partes += [f"Documentos con todos sus campos correctos: **{_numero(d['todo_correcto'])} %** "
+                       f"(si los campos fallaran de forma independiente se esperaría "
+                       f"{_numero(d['esperado_si_independientes'])} %).", ""]
+
+    tecnicas = next(iter(sorted((metricas / "modelado").rglob("comparacion_tecnicas_test.csv"))), None) \
+        if (metricas / "modelado").is_dir() else None
+    if tecnicas:
+        partes += ["## Comparación con una técnica aprendida (notebook 03)", "",
+                   tabla_markdown(pd.read_csv(tecnicas, encoding="utf-8-sig"), 1), ""]
 
     figuras = sorted((resultados / "figures").rglob("*.png"))
     partes += ["## Figuras", ""]

@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Tesseract](https://img.shields.io/badge/OCR-Tesseract%205-4B8BBE)
-![Pruebas](https://img.shields.io/badge/pruebas-153%20aprobadas-2ea44f)
+[![Pruebas](https://github.com/Jesusl2202/Document-Scanner/actions/workflows/pruebas.yml/badge.svg)](https://github.com/Jesusl2202/Document-Scanner/actions/workflows/pruebas.yml)
 ![PEP 8](https://img.shields.io/badge/estilo-PEP%208%20(flake8)-informational)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-yellow)
 ![Estado](https://img.shields.io/badge/estado-proyecto%20acad%C3%A9mico-lightgrey)
@@ -45,15 +45,15 @@ Proyecto integrador de la Maestría en Inteligencia Artificial — Universidad E
 |---|---|---|---|---|
 | **SROIE** (ICDAR 2019) | Recibos escaneados de Malasia | 973 imágenes (626 train + 347 test) | `date`, `total` | [Kaggle `urbikn/sroie-datasetv2`](https://www.kaggle.com/datasets/urbikn/sroie-datasetv2); uso académico, sin licencia explícita de redistribución |
 | **WildReceipt** (Sun et al., 2021) | Recibos fotografiados en condiciones reales, 25 categorías | 1.739 imágenes (1.267 train + 472 test) | `date`, `subtotal`, `tax`, `total` | [MMOCR `wildreceipt.tar`](https://download.openmmlab.com/mmocr/data/wildreceipt.tar); publicado para investigación |
-| **Muestra propia** | Comprobantes reales impresos de ≥ 3 emisores | 30–50 documentos (en recolección) | Los seis, incluidos `tax_id` y `document_number` | Privada; anonimizada y no publicada |
+| **Muestra propia** (prueba externa) | Comprobantes reales impresos de ≥ 3 emisores | Protocolo de anotación y evaluación definidos ([`anotacion_propia.md`](docs/anotacion_propia.md)); no forma parte de las cifras publicadas | Los seis, incluidos `tax_id` y `document_number` | Privada; nunca se publica |
 
-**Características principales.** Tras la partición por hash (semilla 42) quedan 1.517 documentos de entrenamiento, 364 de validación, 816 del test oficial y 15 en cuarentena por duplicados. Cada documento tiene ancho, alto, regiones de texto anotadas y, por campo, un estado (`annotated`, `unannotated`, `ambiguous`, `absent`). Las fotos de WildReceipt son muy pequeñas (mediana 0,2 MP frente a 1,44 MP de SROIE) y su CER es más del doble; 80,6 % de los recibos con los tres montos cumple subtotal + impuesto = total. **Ninguna base pública anota `tax_id` ni `document_number`**: esos campos solo se miden con la muestra propia.
+**Características principales.** Tras la partición por hash (semilla 42) quedan 1.517 documentos de entrenamiento, 364 de validación, 816 del test oficial y 15 en cuarentena por duplicados. Cada documento tiene ancho, alto, regiones de texto anotadas y, por campo, un estado (`annotated`, `unannotated`, `ambiguous`, `absent`). Las fotos de WildReceipt son muy pequeñas (mediana 0,2 MP frente a 1,44 MP de SROIE) y su CER es más del doble; 80,6 % de los recibos con los tres montos cumple subtotal + impuesto = total. **Ninguna base pública anota `tax_id` ni `document_number`**: su exactitud no se ha podido medir.
 
 Las imágenes **no se redistribuyen**: se descargan de su fuente con `scripts/download_data.py`. Detalle en [`data/README.md`](data/README.md) y en el [análisis de datos](docs/analisis_datos.md).
 
 ## 3. Metodología
 
-**Tipo de modelo y justificación.** Extracción de información clave en dos etapas: (1) OCR con **Tesseract 5** y sus redes LSTM preentrenadas (`eng` de `tessdata_fast` y `tessdata_best`, `spa`), y (2) un **extractor de reglas, geometría y consenso**. Se eligió frente a CRF, SDMG-R, LayoutLMv3 y Donut porque las bases no anotan RUC ni número de comprobante (un modelo entrenado no podría aprenderlos), porque cada valor debe ser trazable hasta su texto y su posición, y por los recursos disponibles (CPU, costo cero). Detalle en [arquitectura](docs/arquitectura.md).
+**Tipo de modelo y justificación.** Extracción de información clave en dos etapas: (1) OCR con **Tesseract 5** y sus redes LSTM preentrenadas (`eng` de `tessdata_fast` y `tessdata_best`, `spa`), y (2) un **extractor de reglas, geometría y consenso**. Se eligió frente a CRF, SDMG-R, LayoutLMv3 y Donut porque las bases no anotan RUC ni número de comprobante (un modelo entrenado no podría aprenderlos), porque cada valor debe ser trazable hasta su texto y su posición, y por los recursos disponibles (CPU, costo cero). La comparación con una red neuronal entrenada sobre las líneas del OCR lo confirma: con la misma lectura acierta 57,4 % frente a 51,9 % de las reglas iniciales, muy lejos del 81,1 % del modelo final (sección 4). Detalle en [arquitectura](docs/arquitectura.md).
 
 ```mermaid
 flowchart LR
@@ -65,11 +65,11 @@ flowchart LR
     F --> G[/"JSON + CSV<br/>evidencia y alertas"/]
 ```
 
-**Preprocesamiento.** Escala de grises y autocontraste; ampliación al lado mayor de 2.200 px (máx. ×3) porque las imágenes pequeñas se leen peor; tope de 25 MP; binarización Otsu, corrección de iluminación y filtro de ruido en vistas distintas; binarización local (Sauvola) solo en el rescate; coordenadas devueltas al tamaño original. Normalización de fechas a ISO (sin adivinar día/mes ambiguo) y de montos a decimal. Ver [`02_preprocesamiento.ipynb`](notebooks/02_preprocesamiento.ipynb).
+**Preprocesamiento.** Escala de grises y autocontraste; ampliación al lado mayor de 2.200 px (máx. ×3) porque las imágenes pequeñas se leen peor; tope de 25 MP; binarización Otsu, corrección de iluminación y filtro de ruido en vistas distintas; binarización local (Sauvola) solo en el rescate; coordenadas devueltas al tamaño original. Normalización de fechas a ISO (sin adivinar día/mes ambiguo) y de montos a decimal. La decisión más importante fue **no elegir un único preprocesamiento sino leer varias versiones y combinarlas**: ninguna gana en todos los documentos (el CER medio por vista va de 0,34 a 0,47 y cambia de un recibo a otro), y quitar las vistas `best` o quedarse con las 5 vistas `fast` baja entre 3,6 y 4,0 puntos en validación ([ablación](results/metrics/modelado/ablacion.csv)). Ver [`02_preprocesamiento.ipynb`](notebooks/02_preprocesamiento.ipynb).
 
 **Técnicas de optimización.** (1) Iteración guiada por análisis de errores: de la línea base V1 (35 %) a V7 (70,5 %) y al modelo «resumen contable». (2) Búsqueda de hiperparámetros del Workshop S5 en [`04_optimizacion.ipynb`](notebooks/04_optimizacion.ipynb): 13 hiperparámetros (pesos del consenso, etapas del extractor y grupos de vistas OCR), sensibilidad uno a uno, búsqueda aleatoria, sustituto Random Forest con PDP, importancia e interacciones, y antes/después en una muestra de control con bootstrap pareado. Ver [optimización](docs/optimizacion.md).
 
-**Métricas.** Exactitud por campo (meta ≥ 70 %), precisión, recall y F1 por campo y dataset, porcentaje de documentos procesados sin error (meta ≥ 90 %), CER del OCR y tiempo por documento. Un valor equivocado cuenta como falso positivo y falso negativo; un campo sin anotación no cuenta.
+**Métricas.** Exactitud por campo (meta ≥ 70 %), precisión, recall y F1 por campo y dataset, porcentaje de documentos procesados sin error (meta ≥ 90 %), exactitud por documento (todos sus campos correctos), errores silenciosos (valor equivocado con confianza alta), CER del OCR y tiempo por documento. Un valor equivocado cuenta como falso positivo y falso negativo; un campo sin anotación no cuenta. La exactitud por campo es la adecuada porque cada campo se revisa y se corrige por separado; la meta del 70 % se justifica con el costo del error en las [consideraciones éticas](docs/consideraciones_eticas.md#6-meta-de-exactitud-y-costo-del-error).
 
 ## 4. Resultados
 
@@ -81,7 +81,8 @@ Modelo «resumen contable» en una muestra aleatoria del test oficial (semilla 4
 |---|---:|---:|:---:|
 | Exactitud por campo | **81,1 %** (IC95 75,0–86,9 %) | ≥ 70 % | ✅ |
 | Documentos procesados sin error | **100 %** | ≥ 90 % | ✅ |
-| Tiempo por documento (CPU) | mediana 11,2 s · p95 20,7 s | — | |
+| Documentos con todos sus campos correctos | 67,7 % (2,5 campos anotados por documento) | — | |
+| Tiempo por documento (CPU) | mediana 11,2 s en Colab (2 vCPU); 7,3 s en GitHub Actions (4 vCPU) | — | |
 
 | Dataset | Fecha | Subtotal | Impuesto | Total | Exactitud (IC95) |
 |---|---:|---:|---:|---:|---:|
@@ -105,7 +106,40 @@ SROIE solo anota fecha y total; ninguno de los dos datasets anota RUC ni número
 
 **Optimización de hiperparámetros.** La búsqueda sobre 13 hiperparámetros (81 configuraciones) encontró una alternativa con +0,9 pp en la muestra de optimización que en control perdió 3,1 pp (IC95 −7,1 a 0,0): era sobreajuste, así que se **mantiene la configuración actual**. Los factores que más pesan son el voto entre vistas y los pesos `best` de Tesseract. Ver [optimización](docs/optimizacion.md).
 
-> **Sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)); los 100 documentos de esta muestra estaban entre ellos. Las cifras sirven para comparar versiones con la misma muestra y método, pero no son una medición inédita: en documentos nuevos se espera un resultado algo menor. El notebook incluye además una prueba externa con facturas propias anotadas ([formato](docs/anotacion_propia.md)), que no forma parte de estas cifras.
+> **Sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)); los 100 documentos de esta muestra estaban entre ellos. Las cifras sirven para comparar versiones con la misma muestra y método, pero no son una medición inédita. La medición con documentos nuevos es la siguiente.
+
+### Validación con documentos nuevos y escenarios críticos (Workshop S5)
+
+[`06_validacion_escenarios.ipynb`](notebooks/06_validacion_escenarios.ipynb) evalúa el mismo modelo, con criterios fijados antes de ejecutar, en **100 documentos que nadie revisó durante el desarrollo** (partición `train`; el modelo no se entrena, así que nunca influyeron en las reglas ni en los hiperparámetros):
+
+| | Documentos nuevos | Test (ya revisado) |
+|---|---:|---:|
+| Exactitud por campo | **75,0 %** (IC95 67,9–81,6 %) ✅ | 81,1 % (75,0–86,9 %) |
+| SROIE (escaneos) | 86,0 % | 89,0 % |
+| WildReceipt (fotos) | 67,4 % | 75,7 % |
+| Documentos con todos sus campos correctos | 61,6 % | 67,7 % |
+| Exactitud de los campos con confianza alta | 95,4 % (54 % de los campos) | 97,6 % (51 % de los campos) |
+| Errores silenciosos (equivocados con confianza alta) | 2,5 % de los campos | 1,2 % |
+
+Los **6,1 puntos** de diferencia son el optimismo de haber ajustado reglas mirando documentos del test; con documentos nuevos el modelo sigue cumpliendo la meta, pero con fotos de celular queda por debajo. Con revisión completa se estima un **ahorro de 47 %** del tiempo de captura (11,7 s frente a 22,2 s por documento; entre 19 % y 61 % según los supuestos).
+
+**Escenarios críticos.** Las mismas 40 imágenes, degradadas a propósito (caída máxima aceptable fijada de antemano: 10 puntos):
+
+![Escenarios críticos](results/figures/validacion/escenarios_criticos.png)
+
+El sistema tolera ruido leve, sombras y la pérdida del pie del comprobante; falla con desenfoque, baja resolución, compresión fuerte y fotos torcidas. En casi todos los casos falla **dejando campos vacíos**; la rotación es la excepción peligrosa, porque produce valores equivocados con confianza alta.
+
+### Comparación con una técnica aprendida
+
+[`03_modelado.ipynb`](notebooks/03_modelado.ipynb) (sección 9) compara el modelo con una **red neuronal (MLP) que clasifica las líneas del OCR**, la versión liviana de LayoutLMv3 propuesta en la Ficha técnica, entrenada con 1.502 documentos, elegida con validación y evaluada una sola vez en el mismo test:
+
+| Modelo | Lectura OCR | Exactitud en el test |
+|---|---|---:|
+| M0 · reglas iniciales | 1 vista | 51,9 % |
+| Red MLP sobre líneas | 1 vista | 57,4 % (IC95 56,1–58,8 %, 5 semillas) |
+| **M3 · resumen contable (final)** | 10 vistas | **81,1 %** |
+
+Con la misma lectura, aprender a ubicar los campos mejora poco a las reglas (+4,5 puntos): el límite lo pone el OCR, porque en una sola lectura solo entre el 51 % y el 82 % de los documentos tiene el valor correcto escrito en alguna línea. Por eso el proyecto invirtió en **leer mejor** (10 vistas y consenso) y no en un clasificador. El diagnóstico de la red (curvas por época, de aprendizaje y de validación, cinco semillas) muestra sobreajuste sin regularización y un comportamiento adecuado con *early stopping*.
 
 ### Desarrollo del modelo
 
@@ -127,7 +161,7 @@ Detalle en [`results/reports/resultados_desarrollo.md`](results/reports/resultad
 |---|---|
 | Meta del proyecto | ≥ 70 % por campo · ≥ 90 % procesados |
 | Sistemas del estado del arte en SROIE / WildReceipt (modelos entrenados en esos datos) | F1 > 85–90 % |
-| Este proyecto (evaluación final, sin entrenamiento) | 81,1 % por campo · F1 0,81–0,88 por campo |
+| Este proyecto (sin entrenamiento) | 81,1 % por campo en el test y 75,0 % en documentos nuevos · F1 0,81–0,88 por campo en el test |
 
 ## 5. Instalación y uso
 
@@ -185,8 +219,8 @@ page,status,tax_id,date,document_number,subtotal,tax,total,revision
 
 ```bash
 python -m pip install -e .                         # habilita el comando `lector archivo.pdf --out carpeta`
-python -m unittest discover -s tests -v            # 153 pruebas (ver tests/README.md)
-python -m flake8 src tests                         # estilo PEP 8
+python -m unittest discover -s tests -v            # 177 pruebas (ver tests/README.md)
+python -m flake8 src app tests                     # estilo PEP 8
 python scripts/download_data.py wildreceipt --out data/raw
 python scripts/download_data.py sroie --out data/raw   # Kaggle puede pedir descarga manual
 python -m src.evaluate test --datos data/raw --por-base 50     # evaluación en el test oficial
@@ -197,7 +231,18 @@ Guía completa en el [manual de usuario](docs/manual_usuario.md).
 
 ## 6. Interfaz de usuario
 
-La interfaz web está en desarrollo en [`app/`](app/): carga de imagen o PDF con validación, procesamiento con indicador de carga, campos con nivel de confianza y alertas, sección «Acerca de» con métricas y limitaciones, y ejemplos precargados. Mientras tanto, el lector se usa desde Colab o la terminal (sección 5).
+Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en Hugging Face Spaces.
+
+![Resultado de una lectura en la aplicación](app/assets/capturas/resultado.png)
+
+- **Carga validada:** imagen JPG/PNG o PDF (hasta 10 MB y 3 páginas), arrastrando o eligiendo el archivo; se rechazan con un mensaje claro los formatos no admitidos, archivos vacíos o dañados, imágenes demasiado pequeñas y PDF largos.
+- **Procesamiento con indicador:** barra de progreso, paso en curso y tiempo transcurrido.
+- **Resultado revisable:** los seis campos con su valor, la línea del documento de donde salió, el nivel de confianza (alta, media, baja, no detectado) y alertas en lenguaje claro; recuadros sobre la imagen que se resaltan al pasar por cada fila; comprobación de subtotal + IVA = total; aviso cuando el comprobante es una factura electrónica del SRI con XML disponible.
+- **«Cómo funciona»:** métricas de la evaluación, resultados con imágenes degradadas, casos en que no debe usarse y privacidad.
+- **Ejemplos precargados** (comprobantes sintéticos) y **descarga CSV/JSON** generada en el navegador, sin el texto completo de la factura.
+- **Privacidad:** el archivo se procesa en una carpeta temporal que se borra al terminar; la página no hace peticiones a servicios externos.
+
+En local: `pip install -r app/requirements.txt` y `python -m app.app`, o con Docker `docker build -t lector-facturas .` y `docker run -p 7860:7860 lector-facturas`. Detalle en [`app/README.md`](app/README.md) y en el [manual de usuario](docs/manual_usuario.md#2-usar-la-aplicación-web).
 
 ## 7. Estructura del proyecto
 
@@ -212,22 +257,27 @@ Document-Scanner/
 │                             # consideraciones éticas, manual de usuario y protocolo de anotación
 ├── data/                     # raw/ (descargas, no versionadas), processed/ (inventario de hashes), README
 ├── notebooks/                # 01 EDA · 02 preprocesamiento · 03 modelado · 04 optimización · 05 evaluación
-├── src/                      # __init__, data_processing, model, train, evaluate, utils
+│                             # · 06 validación en escenarios (Workshop S5)
+├── src/                      # __init__, data_processing, model, train, evaluate, utils, validation, line_classifier
 │   └── lector_facturas/      # Motor: OCR, extractor de reglas y consenso, métricas
 ├── configs/                  # config.yaml (app), definitivo.json (modelo final), documentos_revisados.json
 ├── models/                   # Ficha del modelo; los pesos de Tesseract se descargan aquí (no versionados)
-├── app/                      # Interfaz de usuario
-├── tests/                    # 153 pruebas: test_data_processing, test_model, test_app y las del motor
+├── app/                      # Interfaz web (Flask): app.py, servicio.py, templates/, static/, assets/
+├── tests/                    # 177 pruebas: interfaz pública, app, validación, comparador y motor
 ├── results/                  # Figuras, métricas y reportes
-├── scripts/                  # Lectura por línea de comandos, descarga de datos, ejemplos sintéticos
-└── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación
+├── scripts/                  # Lectura, descarga de datos, ejemplos, ejecución de notebooks, despliegue
+├── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación
+├── Dockerfile                # Imagen de la app (Ubuntu 24.04 + Tesseract 5.3.4)
+└── .github/workflows/        # Pruebas y prueba de la imagen, notebooks con datos completos, despliegue
 ```
 
 | Carpeta | Qué contiene |
 |---|---|
-| [`src/`](src/) | `data_processing.py` (validación de entrada, PDF, preprocesamiento, normalización, datasets), `model.py` (clase `LectorFacturas`, confianza por campo), `train.py` (optimización de la configuración: el modelo no entrena pesos), `evaluate.py` (métricas, test, prueba externa, importación de resultados y reporte), `utils.py` (configuración, rutas, registro, errores). El motor `lector_facturas/` es el modelo tal como se evaluó. Ver [`src/README.md`](src/README.md). |
+| [`src/`](src/) | `data_processing.py` (validación de entrada, PDF, preprocesamiento, normalización, datasets), `model.py` (clase `LectorFacturas`, confianza por campo), `train.py` (optimización de la configuración: el modelo no entrena pesos), `evaluate.py` (métricas, test, prueba externa, importación de resultados y reporte), `validation.py` (datos nuevos, escenarios críticos, costo del error), `line_classifier.py` (red de comparación), `utils.py` (configuración, rutas, registro, errores). El motor `lector_facturas/` es el modelo tal como se evaluó. Ver [`src/README.md`](src/README.md). |
+| [`app/`](app/) | Interfaz web: rutas Flask, servicio de lectura probado sin servidor, página y ejemplos sintéticos. Ver [`app/README.md`](app/README.md). |
+| [`notebooks/`](notebooks/) | Los seis notebooks se ejecutan con los datasets completos en GitHub Actions y se guardan con sus salidas; también se abren en Colab. |
 | [`models/`](models/) | En lugar de `best_model.pkl`: `ficha_modelo.json` + `configs/definitivo.json` + pesos verificados por hash. Versiones anteriores en el historial de Git. |
-| [`tests/`](tests/) | `test_data_processing.py`, `test_model.py`, `test_app.py` y las pruebas del motor. Ver [`tests/README.md`](tests/README.md). |
+| [`tests/`](tests/) | `test_data_processing.py`, `test_model.py`, `test_app.py`, `test_validation.py`, `test_line_classifier.py` y las pruebas del motor. Ver [`tests/README.md`](tests/README.md). |
 | [`results/`](results/) | `figures/`, `metrics/` y `reports/`. Ver [`results/README.md`](results/README.md). |
 
 ## 8. Consideraciones éticas y limitaciones
@@ -237,11 +287,14 @@ Document-Scanner/
 **Limitaciones conocidas.**
 
 - **Campos escritos a mano:** no se reconocen de forma confiable y están fuera del alcance (ver sección 1).
-- Exactitud de 81 % por campo en la evaluación final (76 % en fotos de celular, 69 % cuando el OCR lee mal): **siempre hay que revisar** los valores, sobre todo los que tienen alertas.
+- Exactitud de 75 % por campo con documentos nuevos (86 % en escaneos, 67 % en fotos de celular) y 81 % en el test: solo el 62 % de los documentos sale completo, así que **siempre hay que revisar** los valores; la revisión guiada solo por la confianza dejaría pasar unos 6 errores por cada 100 facturas.
+- Fotos movidas, de baja resolución, muy comprimidas o **torcidas** bajan mucho la exactitud; las torcidas producen valores equivocados con confianza alta.
+- Las facturas electrónicas del SRI deben leerse desde su XML autorizado; la app avisa cuando detecta la clave de acceso.
 - `tax_id` y `document_number` aún no tienen exactitud medida (las bases públicas no los anotan).
 - Peor desempeño con fotos pequeñas, borrosas o con sombras y con etiquetas en idiomas o formatos poco comunes.
 - Fechas como `05/03/18` quedan ambiguas si no se configura el orden día/mes.
-- 10 lecturas por página: más lento que una sola lectura (del orden de segundos a decenas de segundos por página en CPU).
+- 10 lecturas por página: más lento que una sola lectura (mediana de 7–11 s por página en CPU).
+- El número de comprobante solo se reconoce si su etiqueta («Factura No.», «Invoice No.») está en la misma línea o justo encima.
 - Cada página de un PDF se procesa por separado.
 
 **Advertencias de uso.** No usar para verificar la autenticidad o la validez tributaria de un comprobante (`valid_format` solo revisa la forma), para procesar facturas ajenas sin autorización, para construir bases de datos de personas ni para tomar decisiones automáticas sin revisión humana. Los archivos de salida contienen el texto completo de la factura: trátelos como información confidencial.

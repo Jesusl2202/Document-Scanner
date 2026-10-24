@@ -59,11 +59,13 @@ Desarrollar, en seis semanas y con un equipo de dos personas, un sistema que ext
 
 | Nivel | Umbral | Origen |
 |---|---|---|
-| Mínimo aceptable | Exactitud de campos ≥ 70 % y procesamiento sin error ≥ 90 % | Documento de Alcance, sección 4.3 |
+| Mínimo aceptable | Exactitud de campos ≥ 70 % y procesamiento sin error ≥ 90 % | Documento de Alcance, sección 4.3. Es el mínimo para que el sistema sirva como **asistente con revisión completa**; la justificación con el costo del error está en [Consideraciones éticas](consideraciones_eticas.md#6-meta-de-exactitud-y-costo-del-error). |
 | Objetivo de excelencia | Exactitud ≥ 85–90 % | Resultados reportados en SROIE y WildReceipt |
 | Techo de referencia | > 95 % de precisión en campos | Servicios comerciales de Document AI (solo referencia, no meta) |
 
-Métricas secundarias: precisión y recall por campo, CER del OCR y tiempo de procesamiento por documento (referencia: menos de 2 s por documento en lote).
+Métricas secundarias: precisión y recall por campo, exactitud por documento (todos los campos correctos), errores silenciosos, CER del OCR y tiempo de procesamiento por documento (referencia: menos de 2 s por documento en lote; con 10 lecturas por página, la mediana medida es de 7–11 s).
+
+**Resultado:** 81,1 % por campo en el test y **75,0 %** en documentos nunca usados para ajustar el sistema, 100 % procesados. Se cumple el mínimo; no se alcanza el objetivo de excelencia (85–90 %), salvo en escaneos (86–89 %).
 
 ## 3. Justificación y relevancia
 
@@ -125,17 +127,17 @@ gantt
 | **S2 · Sprint 2** | OCR funcionando y primer módulo de extracción (≥ 4 de 6 campos). | Pipeline inicial con Tesseract 5.3.4, adaptadores de SROIE y WildReceipt, EDA de 2.712 documentos, 14 pruebas unitarias y línea base: **35,0 %** de exactitud (36/103) en 40 documentos de validación. Ficha técnica con la elección Tesseract + reglas, LayoutLMv3 como comparación y Document AI como referencia. | ✅ Cumplido, por debajo de la meta | Ficha Semana 2; commits `24d7375`, `1c643f7` |
 | **S3 · Sprint 3** | Reglas de validación, comparación de OCR e integración de extremo a extremo. | Diagnóstico de overfitting/underfitting con un clasificador de líneas (versión reducida de LayoutLMv3). Mejora iterativa del extractor (versiones V1 a V7) y consolidación del **lector definitivo V7**: consenso de cinco lecturas, **70,53 %** (213/302) en 120 documentos usados para seleccionar la versión. Limpieza del repositorio (05/10). | ⚠️ Parcial | Reporte Semana 3; commit `1636f65`; [`resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md) |
 | **S4–S5 · Sprint 3 (cont.)** | Comparación Tesseract vs. Document AI y pipeline integrado. | Pipeline integrado en `src/` con CLI y notebook único. Carpeta `data/` documentada (19/10). Nuevas versiones del extractor hasta el modelo **resumen contable**: pesos `best`, rescate adaptativo y contabilidad observada; en tres grupos del test con reutilización pasó de 74,6–77,1 % a 75,0–77,6 % frente a la misma versión sin resumen contable. La comparación con Document AI y LayoutLMv3 se reprogramó para el cierre del proyecto. | ⚠️ Parcial | commit `9dbe8b2`; [`resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md) |
-| **S6 · Sprint 4** | Métricas finales, documentación y presentación. | Modelo **resumen contable** integrado (10 vistas, rescate adaptativo, contabilidad observada). Interfaz pública `src/` con configuración YAML, logging y 153 pruebas (22/10). Repositorio reorganizado con la estructura final, notebooks 01–05 y los seis documentos de `docs/` (21/10). Optimización de hiperparámetros (81 configuraciones; se mantiene la configuración actual) y evaluación final en 100 documentos del test: **81,1 %** de exactitud por campo y 100 % de documentos procesados, las dos metas cumplidas (23/10). En curso: interfaz de usuario y videos. | 🔄 En curso | Este documento; [`results/`](../results/); [`reporte_resultados.md`](../results/reports/reporte_resultados.md) |
+| **S6 · Sprint 4** | Métricas finales, documentación y presentación. | Modelo **resumen contable** integrado (10 vistas, rescate adaptativo, contabilidad observada). Interfaz pública `src/` con configuración YAML y logging (22/10). Repositorio reorganizado con la estructura final y los documentos de `docs/` (21/10). Optimización de hiperparámetros (81 configuraciones; se mantiene la configuración actual) y evaluación final en 100 documentos del test: **81,1 %** por campo y 100 % procesados (23/10). Validación del Workshop S5 con 100 documentos nunca revisados (**75,0 %**) y 11 escenarios críticos; comparación con una red neuronal sobre líneas OCR; interfaz web desplegada en Hugging Face Spaces; 177 pruebas automáticas y los seis notebooks ejecutados con los datasets completos (24/10). | ✅ Cumplido | Este documento; [`results/`](../results/); [`reporte_resultados.md`](../results/reports/reporte_resultados.md); [`app/`](../app/) |
 
 ### 5.3 Desviaciones y por qué ocurrieron
 
 | Desviación | Causa | Decisión tomada |
 |---|---|---|
 | La línea base quedó en 35 % frente a una meta de 70 %. | Reglas de cercanía muy simples y abstención cuando había varios totales o fechas candidatas. | Se iteró sobre las reglas con datos de desarrollo: consenso de cinco lecturas OCR (V7) y luego 10 lecturas con resumen contable observado. |
-| La comparación con Google Document AI y LayoutLMv3 se movió al último sprint. | Se priorizó llevar la ruta principal (Tesseract + reglas) hasta la meta de exactitud. En Semana 3 se trabajó con un clasificador reducido para practicar el diagnóstico de curvas antes de ajustar LayoutLMv3. | La comparación se ejecuta en el Sprint 4 sobre los mismos documentos que la ruta principal. |
-| La muestra propia (30–50 comprobantes) se incorporó tarde. | Se priorizaron SROIE y WildReceipt, que ya tenían etiquetas. | Se definió el formato de anotación y el ZIP de prueba externa en [`anotacion_propia.md`](anotacion_propia.md); el notebook 05 la evalúa por separado. |
-| El test oficial dejó de ser inédito. | Para mejorar fecha, subtotal e impuesto se revisaron grupos aleatorios del test (1.461 documentos registrados en total). | Se declara en el README y en 05; la evidencia de generalización pasa a ser la prueba externa anotada. |
-| La interfaz no estaba en el plan de Semana 1. | El Alcance original se limitaba al pipeline; la entrega final del curso exige interfaz. | Se agrega como entregable del Sprint 4. |
+| No se ajustó LayoutLMv3 ni se probó Google Document AI. | LayoutLMv3 necesita GPU y etiquetas por palabra que los datasets no traen; Document AI exige una cuenta de Google Cloud con medio de pago, y enviarle facturas reales contradice el procesamiento local que se priorizó por privacidad. | Se comparó con una **técnica aprendida** que sí cabe en CPU: la red neuronal sobre líneas OCR del diagnóstico de la Semana 3, ahora de extremo a extremo con la misma métrica y el mismo test ([`03_modelado.ipynb`](../notebooks/03_modelado.ipynb), sección 9). La comparación con Document AI queda como referencia de la literatura (> 95 % en facturas limpias). |
+| No se reunió la muestra propia (30–50 comprobantes). | Se priorizaron SROIE y WildReceipt, que ya tenían etiquetas, y reunir facturas reales exige autorización de sus emisores y anonimización. | Se definió el protocolo y el formato del ZIP de prueba externa ([`anotacion_propia.md`](anotacion_propia.md)), que el notebook 05 evalúa por separado. La generalización se midió con documentos públicos nunca revisados (notebook 06). `tax_id` y `document_number` quedan sin exactitud medida. |
+| El test oficial dejó de ser inédito. | Para mejorar fecha, subtotal e impuesto se revisaron grupos aleatorios del test (1.461 documentos registrados en total). | Se declara en el README y en 05; la evidencia de generalización pasa a ser una muestra de documentos de `train` que nunca se revisaron (notebook 06). |
+| La interfaz no estaba en el plan de Semana 1. | El Alcance original se limitaba al pipeline; la entrega final del curso exige interfaz desplegada. | Se construyó en el Sprint 4 (Flask + Docker) y se publicó en Hugging Face Spaces, con pruebas automáticas de la imagen. |
 
 ## 6. Recursos necesarios
 
@@ -185,7 +187,7 @@ Probabilidad e impacto: A = alta, M = media, B = baja.
 | # | Riesgo | Prob. | Impacto | Mitigación | Estado al cierre |
 |---|---|:-:|:-:|---|---|
 | R1 | Los datasets públicos no representan las facturas reales del equipo (formatos ecuatorianos, RUC, IVA). | A | A | Reservar una muestra propia de 30–50 comprobantes solo para el test final. | Abierto: formato de anotación y evaluación externa listos en 05; falta reunir la muestra completa. |
-| R2 | Las reglas se ajustan demasiado a los documentos que vimos (sobreajuste de reglas). | A | A | Separar optimización, control y test; inventario por hash de los documentos ya vistos; configuración congelada antes de leer. | Ocurrió en parte: 1.461 documentos revisados, incluido casi todo el test oficial. Se reporta así y se usa la prueba externa. |
+| R2 | Las reglas se ajustan demasiado a los documentos que vimos (sobreajuste de reglas). | A | A | Separar optimización, control y test; inventario por hash de los documentos ya vistos; configuración congelada antes de leer. | Ocurrió en parte: 1.461 documentos revisados, incluido casi todo el test oficial. Se reporta así y se mide además con documentos nunca revisados (notebook 06). |
 | R3 | Errores del OCR se propagan a la extracción. | A | A | Preprocesamiento, 10 lecturas con distintas configuraciones y pesos, rescate adaptativo y consenso; alertas cuando algo no cuadra. | Mitigado parcialmente. |
 | R4 | No alcanzar la meta de 70 %. | M | A | Iterar sobre datos de desarrollo y reportar el resultado real del test sin cambiar el modelo para forzar la meta. | Evaluación final: 81,1 % (IC95 75,0–86,9 %) en 100 documentos del test, ya revisados en el desarrollo. |
 | R5 | Fuga de datos entre entrenamiento y prueba. | M | A | Partición por SHA-256 con semilla fija (42); duplicados a cuarentena; test oficial nunca explorado. | Mitigado. |
@@ -199,7 +201,7 @@ Probabilidad e impacto: A = alta, M = media, B = baja.
 
 - **La línea base temprana fue lo más útil del plan.** Tener el 35 % en la Semana 2 nos mostró a tiempo que el problema estaba en la selección de campos y no solo en el OCR.
 - **Las comparaciones toman más tiempo del previsto.** Tres rutas (reglas, LayoutLMv3 y Document AI) para dos personas a tiempo parcial obligaron a mover parte del trabajo al último sprint.
-- **Separar los datos desde el inicio ahorra problemas, y hay que cuidar esa separación hasta el final.** El inventario de documentos vistos permitió detectar que, al mejorar el modelo, se había revisado casi todo el test oficial; por eso la prueba externa debió reservarse desde el Sprint 1.
+- **Separar los datos desde el inicio ahorra problemas, y hay que cuidar esa separación hasta el final.** El inventario de documentos vistos permitió detectar que, al mejorar el modelo, se había revisado casi todo el test oficial; por eso la muestra de prueba independiente (y la prueba externa con facturas propias) debió reservarse desde el Sprint 1.
 - **La interfaz debió estar en el backlog desde el Sprint 1**, porque es parte de la entrega final del curso.
 
 ---

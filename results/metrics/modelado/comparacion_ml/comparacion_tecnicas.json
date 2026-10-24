@@ -1,0 +1,35 @@
+{
+  "configuracion_red": {
+    "capas": [
+      128
+    ],
+    "l2": 0.01,
+    "epocas": 40,
+    "paciencia": 5,
+    "tasa": 0.001,
+    "lote": 256
+  },
+  "umbral": 0.2,
+  "semillas": [
+    42,
+    7,
+    2024,
+    11,
+    123
+  ],
+  "media": 57.44855967078189,
+  "ic95": [
+    56.11610552698872,
+    58.78101381457506
+  ],
+  "m0": 51.85185185185185,
+  "delta_red_menos_m0": {
+    "delta_pp": 4.526748971193416,
+    "ic95_inferior_pp": 0.0,
+    "ic95_superior_pp": 8.979711415816325,
+    "nota": "Bootstrap pareado por documento, estratificado por dataset; muestra pequeña, no prueba causal."
+  },
+  "documentos_test": 99,
+  "documentos_train": 1502,
+  "documentos_validacion": 360
+}

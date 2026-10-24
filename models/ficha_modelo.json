@@ -2,7 +2,7 @@
   "modelo": "Resumen contable",
   "descripcion": "Tesseract 5 preentrenado (sin entrenamiento) + extractor de reglas, geometría y consenso de 10 vistas, con rescate OCR adaptativo, resumen contable observado y rescate de campos vacíos por confianza.",
   "version": "1.0.0",
-  "fecha": "2026-10-23",
+  "fecha": "2026-10-24",
   "pesos_ocr": [
     {
       "pesos": "tessdata_fast",
@@ -72,19 +72,89 @@
     "exactitud_wildreceipt": "75,7 % (IC95 66,7-84,5 %)",
     "documentos_procesados": "100 %",
     "segundos_por_documento": {
-      "mediana": 11.2,
-      "p95": 20.7
+      "mediana": 7.3,
+      "p95": 12.4,
+      "entorno": "GitHub Actions, 4 vCPU (en Colab, 2 vCPU: mediana 11,2 s y p95 20,7 s)"
     },
     "metas": {
       "exactitud_70": true,
       "procesados_90": true
     },
     "codigo_evaluado_igual_al_versionado": true,
-    "detalle": "results/reports/reporte_resultados.md"
+    "detalle": "results/reports/reporte_resultados.md",
+    "documentos_todo_correcto": "67,7 % (2,5 campos anotados por documento)",
+    "confianza_alta": "97,6 % de exactitud en el 50,8 % de los campos"
+  },
+  "validacion": {
+    "documentos_nuevos": {
+      "muestra": "100 documentos de la partición train que nunca se revisaron (50 SROIE, 50 WildReceipt), semilla 42",
+      "documentos": 100,
+      "exactitud": "75,0 % (IC95 67,9-81,6 %)",
+      "exactitud_sroie": "86,0 %",
+      "exactitud_wildreceipt": "67,4 %",
+      "documentos_todo_correcto": "61,6 %",
+      "confianza_alta": "95,4 % de exactitud en el 53,7 % de los campos",
+      "errores_silenciosos": "2,5 % de los campos"
+    },
+    "escenarios": [
+      [
+        "Sin perturbar",
+        "81,1 %"
+      ],
+      [
+        "Ruido σ = 12",
+        "76,7 %"
+      ],
+      [
+        "Ruido σ = 30",
+        "48,9 %"
+      ],
+      [
+        "Desenfoque leve",
+        "42,2 %"
+      ],
+      [
+        "Desenfoque fuerte",
+        "17,8 %"
+      ],
+      [
+        "Mitad de resolución",
+        "61,1 %"
+      ],
+      [
+        "30 % de resolución",
+        "33,3 %"
+      ],
+      [
+        "JPEG calidad 12",
+        "61,1 %"
+      ],
+      [
+        "Rotación 6°",
+        "53,3 %"
+      ],
+      [
+        "Sombra lateral",
+        "72,2 %"
+      ],
+      [
+        "Falta el 20 % inferior",
+        "72,2 %"
+      ]
+    ],
+    "detalle": "notebooks/06_validacion_escenarios.ipynb; results/metrics/validacion"
+  },
+  "comparacion_tecnicas": {
+    "red_mlp_lineas_1_vista": "57,4 % (IC95 56,1-58,8 %, 5 semillas)",
+    "reglas_iniciales_1_vista": "51,9 %",
+    "modelo_final_10_vistas": "81,1 %",
+    "detalle": "notebooks/03_modelado.ipynb, sección 9"
   },
   "uso_previsto": "Asistir la digitación de facturas y recibos impresos o digitales, con revisión humana.",
   "fuera_de_alcance": [
     "campos escritos a mano",
+    "fotos movidas, borrosas, torcidas o tomadas de lejos",
+    "facturas electrónicas cuyo XML autorizado está disponible (usar el XML)",
     "validez tributaria o autenticidad",
     "decisiones automáticas sin revisión"
   ],

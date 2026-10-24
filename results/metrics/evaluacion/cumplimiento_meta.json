@@ -5,7 +5,7 @@
   "cumple_procesamiento_90": true,
   "documentos": 100,
   "campos_evaluados": 244,
-  "mediana_s_por_documento": 11.229806841000027,
-  "p95_s_por_documento": 20.69242760399993,
+  "mediana_s_por_documento": 7.315228907500014,
+  "p95_s_por_documento": 12.402741968000043,
   "cer": 0.3399533835455474
 }

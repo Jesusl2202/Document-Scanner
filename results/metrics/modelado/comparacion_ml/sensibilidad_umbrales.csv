@@ -1,0 +1,81 @@
+﻿modelo,subida_max_%,brecha_max_f1,diagnostico
+R0 red grande sin regularización,5,0.05,overfitting
+R0 red grande sin regularización,5,0.1,overfitting
+R0 red grande sin regularización,5,0.15,overfitting
+R0 red grande sin regularización,5,0.2,overfitting
+R0 red grande sin regularización,10,0.05,overfitting
+R0 red grande sin regularización,10,0.1,overfitting
+R0 red grande sin regularización,10,0.15,overfitting
+R0 red grande sin regularización,10,0.2,overfitting
+R0 red grande sin regularización,15,0.05,overfitting
+R0 red grande sin regularización,15,0.1,overfitting
+R0 red grande sin regularización,15,0.15,overfitting
+R0 red grande sin regularización,15,0.2,overfitting
+R0 red grande sin regularización,20,0.05,overfitting
+R0 red grande sin regularización,20,0.1,overfitting
+R0 red grande sin regularización,20,0.15,overfitting
+R0 red grande sin regularización,20,0.2,overfitting
+R0 red grande sin regularización,30,0.05,overfitting
+R0 red grande sin regularización,30,0.1,overfitting
+R0 red grande sin regularización,30,0.15,overfitting
+R0 red grande sin regularización,30,0.2,overfitting
+R1 + L2,5,0.05,overfitting
+R1 + L2,5,0.1,overfitting
+R1 + L2,5,0.15,overfitting
+R1 + L2,5,0.2,overfitting
+R1 + L2,10,0.05,overfitting
+R1 + L2,10,0.1,overfitting
+R1 + L2,10,0.15,overfitting
+R1 + L2,10,0.2,overfitting
+R1 + L2,15,0.05,overfitting
+R1 + L2,15,0.1,overfitting
+R1 + L2,15,0.15,overfitting
+R1 + L2,15,0.2,overfitting
+R1 + L2,20,0.05,overfitting
+R1 + L2,20,0.1,overfitting
+R1 + L2,20,0.15,overfitting
+R1 + L2,20,0.2,overfitting
+R1 + L2,30,0.05,overfitting
+R1 + L2,30,0.1,overfitting
+R1 + L2,30,0.15,overfitting
+R1 + L2,30,0.2,overfitting
+R2 + red pequeña,5,0.05,overfitting
+R2 + red pequeña,5,0.1,overfitting
+R2 + red pequeña,5,0.15,overfitting
+R2 + red pequeña,5,0.2,overfitting
+R2 + red pequeña,10,0.05,overfitting
+R2 + red pequeña,10,0.1,overfitting
+R2 + red pequeña,10,0.15,overfitting
+R2 + red pequeña,10,0.2,overfitting
+R2 + red pequeña,15,0.05,overfitting
+R2 + red pequeña,15,0.1,overfitting
+R2 + red pequeña,15,0.15,overfitting
+R2 + red pequeña,15,0.2,adecuado
+R2 + red pequeña,20,0.05,overfitting
+R2 + red pequeña,20,0.1,overfitting
+R2 + red pequeña,20,0.15,overfitting
+R2 + red pequeña,20,0.2,adecuado
+R2 + red pequeña,30,0.05,overfitting
+R2 + red pequeña,30,0.1,overfitting
+R2 + red pequeña,30,0.15,overfitting
+R2 + red pequeña,30,0.2,adecuado
+R3 + early stopping,5,0.05,overfitting
+R3 + early stopping,5,0.1,adecuado
+R3 + early stopping,5,0.15,adecuado
+R3 + early stopping,5,0.2,adecuado
+R3 + early stopping,10,0.05,overfitting
+R3 + early stopping,10,0.1,adecuado
+R3 + early stopping,10,0.15,adecuado
+R3 + early stopping,10,0.2,adecuado
+R3 + early stopping,15,0.05,overfitting
+R3 + early stopping,15,0.1,adecuado
+R3 + early stopping,15,0.15,adecuado
+R3 + early stopping,15,0.2,adecuado
+R3 + early stopping,20,0.05,overfitting
+R3 + early stopping,20,0.1,adecuado
+R3 + early stopping,20,0.15,adecuado
+R3 + early stopping,20,0.2,adecuado
+R3 + early stopping,30,0.05,overfitting
+R3 + early stopping,30,0.1,adecuado
+R3 + early stopping,30,0.15,adecuado
+R3 + early stopping,30,0.2,adecuado
