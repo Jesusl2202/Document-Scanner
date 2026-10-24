@@ -1,0 +1,4 @@
+﻿comparacion,delta_pp,ic95_inferior_pp,ic95_superior_pp,nota
+M0 reglas iniciales (1 vista) → M3 resumen contable (final),29.51,23.91,35.54,"Bootstrap pareado por documento, estratificado por dataset; muestra pequeña, no prueba causal."
+M1 V7 anterior (5 vistas fast) → M3 resumen contable (final),17.21,12.0,22.67,"Bootstrap pareado por documento, estratificado por dataset; muestra pequeña, no prueba causal."
+M2 actual sin resumen contable → M3 resumen contable (final),0.41,0.0,1.24,"Bootstrap pareado por documento, estratificado por dataset; muestra pequeña, no prueba causal."

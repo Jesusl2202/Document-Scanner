@@ -35,4 +35,4 @@ Las cifras globales solo cubren campos anotados: fecha y total en SROIE; fecha, 
 
 ## Relación con la evaluación final
 
-La optimización de hiperparámetros se hace en [`04_optimizacion.ipynb`](../../notebooks/04_optimizacion.ipynb) solo con la partición de validación, y la evaluación final en [`05_evaluacion.ipynb`](../../notebooks/05_evaluacion.ipynb) con la configuración fijada antes de leer el test. Como casi todo el test oficial se revisó durante el desarrollo, la evidencia de generalización es la prueba externa con la muestra propia de comprobantes impresos.
+La optimización de hiperparámetros se hizo en [`04_optimizacion.ipynb`](../../notebooks/04_optimizacion.ipynb) solo con la partición de validación y mantuvo la configuración actual. La evaluación final, en [`05_evaluacion.ipynb`](../../notebooks/05_evaluacion.ipynb) con la configuración fijada antes de leer el test, dio **81,1 %** por campo en 100 documentos ([reporte de resultados](reporte_resultados.md)). Como casi todo el test oficial se revisó durante el desarrollo, esa cifra tampoco es inédita.

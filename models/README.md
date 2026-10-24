@@ -15,7 +15,7 @@ Este proyecto **no entrena pesos**, así que no hay un `best_model.pkl`. El mode
 | [`ficha_modelo.json`](ficha_modelo.json) | Ficha del **mejor modelo** («resumen contable»): pesos y revisiones, arquitectura VGSL, hash de la configuración y de cada archivo de código, resultados de desarrollo, uso previsto y casos fuera de alcance. |
 
 
-Los notebooks generan además `modelo_final.json` ([`03_modelado.ipynb`](../notebooks/03_modelado.ipynb), con los resultados de validación de cada versión) y `configuracion_recomendada.json` ([`04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb), que solo se adopta si mejora en la muestra de control).
+Los notebooks generan además `modelo_final.json` ([`03_modelado.ipynb`](../notebooks/03_modelado.ipynb), con los resultados de validación de cada versión) y `configuracion_recomendada.json` ([`04_optimizacion.ipynb`](../notebooks/04_optimizacion.ipynb)). La optimización recomendó **mantener la configuración actual** porque la alternativa encontrada empeoró en la muestra de control ([`configuracion_recomendada.json`](../results/metrics/optimizacion/configuracion_recomendada.json), [optimización](../docs/optimizacion.md)).
 
 ## Versiones anteriores
 
@@ -24,6 +24,6 @@ En lugar de `model_v1.pkl`, las versiones anteriores están en el historial de G
 | Versión | Dónde | Resultado de desarrollo |
 |---|---|---|
 | V7 (cinco vistas `fast`) | commit `1636f65` | 213/302 (70,53 %), retrospectivo |
-| Resumen contable (actual) | rama `main` | 75,0–77,6 % en tres grupos del test con reutilización |
+| Resumen contable (actual) | rama `main` | 75,0–77,6 % en tres grupos del test con reutilización; **81,1 %** en la evaluación final (100 documentos) |
 
 Detalle en [`results/reports/resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md).

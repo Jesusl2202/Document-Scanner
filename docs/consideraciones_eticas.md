@@ -85,7 +85,18 @@ Usamos el dataset como grupo de comparación (escaneo vs. foto) y reportamos las
 
 *Línea base de Semana 2 sobre 40 documentos de validación. Es una muestra pequeña: sirve para ver la dirección de la diferencia, no para medirla con precisión.*
 
-La brecha en la lectura de fechas (80 % vs. 44 %) muestra que la calidad de la imagen sí cambia el resultado. La brecha persistió durante el desarrollo: con V6 la fecha se acertó en 80,0 % de SROIE frente a 53,8 % de WildReceipt, y con el modelo actual los campos más débiles siguen siendo subtotal, impuesto y fecha de WildReceipt ([resultados de desarrollo](../results/reports/resultados_desarrollo.md)). El notebook 05 reporta la exactitud **por dataset, por tamaño de imagen y por calidad del OCR** (sección 7.1) para vigilar esa diferencia.
+La brecha en la lectura de fechas (80 % vs. 44 %) muestra que la calidad de la imagen sí cambia el resultado. La brecha persistió durante el desarrollo: con V6 la fecha se acertó en 80,0 % de SROIE frente a 53,8 % de WildReceipt, y con el modelo actual los campos más débiles siguen siendo subtotal, impuesto y fecha de WildReceipt ([resultados de desarrollo](../results/reports/resultados_desarrollo.md)). La evaluación final lo confirma ([`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb), 100 documentos del test):
+
+| Grupo | Documentos | Exactitud por campo |
+|---|---:|---:|
+| SROIE (escaneos) | 50 | 89,0 % (IC95 82,0–95,0) |
+| WildReceipt (fotos) | 49 | 75,7 % (IC95 66,7–84,5) |
+| Imágenes grandes | 33 | 94,2 % |
+| Imágenes pequeñas | 33 | 77,0 % |
+| OCR limpio (CER bajo) | 33 | 92,9 % |
+| OCR con muchos errores (CER alto) | 33 | 68,8 % |
+
+La diferencia entre escaneos y fotos de celular (unos 13 puntos) es la principal brecha del sistema: quien fotografía sus comprobantes con un celular de gama baja o con mala luz obtiene resultados peores. Por eso las alertas y la revisión humana son parte del diseño y no un añadido. Tabla: [`exactitud_por_factor.csv`](../results/metrics/evaluacion/exactitud_por_factor.csv).
 
 ### 2.3 Estrategias para reducir la diferencia
 
@@ -178,7 +189,7 @@ SHAP y LIME están pensados para explicar modelos entrenados que asignan pesos a
 
 - **Exposición de datos personales** si los resultados se comparten o se guardan sin cuidado (sección 3).
 - **Confianza excesiva**: un usuario podría registrar los valores sin revisarlos y arrastrar un error a la contabilidad o a una declaración de impuestos.
-- **Desplazamiento de tareas**: en un uso real, la digitación manual podría reducirse. Con la exactitud actual (alrededor de 75 % por campo en desarrollo) el sistema **asiste** a la persona, no la reemplaza.
+- **Desplazamiento de tareas**: en un uso real, la digitación manual podría reducirse. Con la exactitud actual (81 % por campo en la evaluación final) el sistema **asiste** a la persona, no la reemplaza.
 
 ### 5.3 ¿Quiénes se benefician y quiénes podrían salir perjudicados?
 
@@ -206,11 +217,11 @@ El sistema es un **prototipo académico**. Los valores que entrega son **sugeren
 - **El sistema prefiere dejar vacío antes que adivinar**: ante un empate devuelve el campo vacío con alerta, nunca inventa un monto que no leyó y, desde el modelo «resumen contable», **ya no supone que el total es igual al subtotal** cuando no ve un impuesto. Las correcciones del resumen contable y el rescate por confianza conservan el valor anterior y la evidencia.
 - **Historial en Git** de todas las versiones del extractor.
 - **Resultados reportados tal como salen**: el notebook 05 congela la configuración antes de leer el test y reporta el resultado sin cambiar el modelo para forzar la meta. También declara cuántos documentos del test ya se habían revisado durante el desarrollo.
-- **Optimización con regla fijada de antemano**: el notebook 04 solo adopta una configuración nueva si mejora en una muestra de control con un intervalo de confianza favorable.
+- **Optimización con regla fijada de antemano**: el notebook 04 solo adopta una configuración nueva si mejora en una muestra de control con un intervalo de confianza favorable. En la práctica, la regla rechazó la mejor configuración de la búsqueda, que ganaba 0,9 pp en optimización pero perdía 3,1 pp en control.
 
 ### 6.3 Plan de monitoreo y actualización
 
-1. Ejecutar la evaluación final (notebook 05) y la **prueba externa anotada**, y publicar el resultado aunque esté por debajo de la meta.
+1. Publicar cada evaluación tal como sale, aunque quede por debajo de la meta, con su intervalo de confianza y sus resultados por tipo de imagen, como se hizo con la evaluación final ([reporte](../results/reports/reporte_resultados.md)). Medir además la **prueba externa anotada** con la muestra propia.
 2. Revisar periódicamente los casos con alertas y los errores reportados por usuarios para encontrar formatos nuevos.
 3. Antes de cambiar una regla, medirla en documentos de **desarrollo**, nunca en el test, y registrar el cambio en Git.
 4. Ampliar la muestra propia con facturas de nuevos emisores para revisar si el desempeño se mantiene.
@@ -253,7 +264,7 @@ Sí, y el riesgo está ligado a la privacidad:
 
 ### 8.2 Advertencias para los usuarios
 
-- La exactitud medida en desarrollo es de **75,0–77,6 % por campo** en tres grupos aleatorios del test oficial que ya se habían revisado al mejorar el modelo. No es una medida en documentos nuevos: el resultado con facturas propias puede ser menor (ver la prueba externa del notebook 05).
+- La exactitud de la evaluación final es de **81,1 % por campo** (IC95 75,0–86,9 %): 89 % en escaneos y 76 % en fotos de celular. Los documentos de esa muestra ya se habían revisado al mejorar el modelo, así que no es una medida en documentos nuevos: el resultado con facturas propias puede ser menor.
 - `tax_id` y `document_number` **no se han podido medir** con los datasets públicos porque no traen esas etiquetas.
 - Revisar siempre los campos con alertas, en especial `total:subtotal_no_confirma_total`, `observed_accounting_selection` y `confidence_gap_recovery`.
 - Usar solo comprobantes **impresos o digitales**; si algún campo está escrito a mano, digitarlo manualmente.

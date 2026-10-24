@@ -2,7 +2,7 @@
   "modelo": "Resumen contable",
   "descripcion": "Tesseract 5 preentrenado (sin entrenamiento) + extractor de reglas, geometría y consenso de 10 vistas, con rescate OCR adaptativo, resumen contable observado y rescate de campos vacíos por confianza.",
   "version": "1.0.0",
-  "fecha": "2026-10-21",
+  "fecha": "2026-10-23",
   "pesos_ocr": [
     {
       "pesos": "tessdata_fast",
@@ -63,6 +63,24 @@
       "349/450 (77,56 %)"
     ],
     "nota": "Reextracción sobre OCR archivado; no es evaluación independiente. Ver results/reports/resultados_desarrollo.md"
+  },
+  "evaluacion_final": {
+    "muestra": "100 documentos del test oficial (50 SROIE, 50 WildReceipt), semilla 42; ya revisados durante el desarrollo",
+    "campos_evaluados": 244,
+    "exactitud_por_campo": "81,1 % (IC95 75,0-86,9 %)",
+    "exactitud_sroie": "89,0 % (IC95 82,0-95,0 %)",
+    "exactitud_wildreceipt": "75,7 % (IC95 66,7-84,5 %)",
+    "documentos_procesados": "100 %",
+    "segundos_por_documento": {
+      "mediana": 11.2,
+      "p95": 20.7
+    },
+    "metas": {
+      "exactitud_70": true,
+      "procesados_90": true
+    },
+    "codigo_evaluado_igual_al_versionado": true,
+    "detalle": "results/reports/reporte_resultados.md"
   },
   "uso_previsto": "Asistir la digitación de facturas y recibos impresos o digitales, con revisión humana.",
   "fuera_de_alcance": [
