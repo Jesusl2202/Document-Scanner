@@ -1,0 +1,22 @@
+{
+  "consensus_parameters": {
+    "primary_weight": 1.5,
+    "vote_weight": 2.0,
+    "fuzzy_weight": 0.5,
+    "balance_bonus": 3.0
+  },
+  "etapas": {
+    "printed_improvements": true,
+    "semantic_amounts": true,
+    "document_consistency": true,
+    "structured_fields": true,
+    "observed_accounting": true,
+    "confidence_rescue": true
+  },
+  "vistas": {
+    "usar_pesos_best": true,
+    "usar_vista_espanol": true,
+    "usar_rescate_ocr": true
+  },
+  "decision": "mantener_actual"
+}

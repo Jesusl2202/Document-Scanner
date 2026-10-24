@@ -1,0 +1,90 @@
+{
+  "plan": {
+    "revision_codigo": {
+      "modo": "local",
+      "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
+    },
+    "seed": 42,
+    "documents": 100,
+    "firma_muestra": "e7ea1645d33c0acdf8476f81cfdfd183c599394d7be5ed99eee750b150108a05",
+    "ya_revisados_en_desarrollo": 100
+  },
+  "configuracion": "definitivo.json",
+  "cumplimiento": {
+    "exactitud": 0.8114754098360656,
+    "procesamiento": 1.0,
+    "cumple_exactitud_70": true,
+    "cumple_procesamiento_90": true,
+    "documentos": 100,
+    "campos_evaluados": 244,
+    "mediana_s_por_documento": 7.315228907500014,
+    "p95_s_por_documento": 12.402741968000043,
+    "cer": 0.3399533835455474
+  },
+  "intervalos": [
+    {
+      "grupo": "todos",
+      "exactitud": 81.1,
+      "ic95_inf": 75.0,
+      "ic95_sup": 86.9
+    },
+    {
+      "grupo": "sroie",
+      "exactitud": 89.0,
+      "ic95_inf": 82.0,
+      "ic95_sup": 95.0
+    },
+    {
+      "grupo": "wildreceipt",
+      "exactitud": 75.7,
+      "ic95_inf": 66.7,
+      "ic95_sup": 84.5
+    }
+  ],
+  "comparacion": [
+    {
+      "index": "M0 reglas iniciales (1 vista)",
+      "exactitud %": 51.6,
+      "procesados %": 99.0,
+      "campos": 244.0
+    },
+    {
+      "index": "M1 V7 anterior (5 vistas fast)",
+      "exactitud %": 63.9,
+      "procesados %": 100.0,
+      "campos": 244.0
+    },
+    {
+      "index": "M2 actual sin resumen contable",
+      "exactitud %": 80.7,
+      "procesados %": 100.0,
+      "campos": 244.0
+    },
+    {
+      "index": "M3 resumen contable (final)",
+      "exactitud %": 81.1,
+      "procesados %": 100.0,
+      "campos": 244.0
+    }
+  ],
+  "alertas": {
+    "total:semantic_conflict": 9,
+    "tax:semantic_selection": 14,
+    "date:ambiguous_consensus": 2,
+    "total:structured_selection": 5,
+    "tax:semantic_conflict": 8,
+    "total:semantic_selection": 2,
+    "date:structured_selection": 1,
+    "document_number:ambiguous_consensus": 3,
+    "tax:observed_accounting_selection": 1,
+    "subtotal:semantic_selection": 2,
+    "tax:structured_selection": 1,
+    "tax:ambiguous_consensus": 2,
+    "subtotal:structured_selection": 1,
+    "document_number:structured_selection": 1,
+    "subtotal:semantic_conflict": 1,
+    "subtotal:observed_accounting_selection": 1,
+    "subtotal:joint_observed_amount": 1,
+    "total:ambiguous_consensus": 1
+  }
+}

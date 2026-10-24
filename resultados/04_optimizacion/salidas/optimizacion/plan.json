@@ -1,0 +1,153 @@
+{
+  "semilla": 42,
+  "n_opt": 30,
+  "n_control": 20,
+  "n_busqueda": 80,
+  "revision_codigo": {
+    "modo": "local",
+    "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
+  },
+  "configuracion": {
+    "seed": 42,
+    "validation_fraction": 0.2,
+    "ocr": {
+      "executable": "tesseract",
+      "language": "eng",
+      "psm": 6,
+      "oem": 1,
+      "timeout_seconds": 90,
+      "grayscale": true,
+      "autocontrast": true,
+      "preprocess": "resize",
+      "target_long_edge": 2200,
+      "max_scale": 3,
+      "border": 20,
+      "max_pixels": 25000000,
+      "ensemble_views": [
+        {
+          "preprocess": "original",
+          "psm": 6,
+          "model": "fast"
+        },
+        {
+          "preprocess": "resize",
+          "psm": 6,
+          "model": "fast"
+        },
+        {
+          "preprocess": "otsu",
+          "psm": 6,
+          "model": "fast"
+        },
+        {
+          "preprocess": "resize",
+          "psm": 3,
+          "model": "fast"
+        },
+        {
+          "preprocess": "resize",
+          "psm": 11,
+          "model": "fast"
+        },
+        {
+          "preprocess": "original",
+          "psm": 6,
+          "model": "best"
+        },
+        {
+          "preprocess": "resize",
+          "psm": 6,
+          "model": "best"
+        },
+        {
+          "preprocess": "resize",
+          "psm": 11,
+          "model": "best"
+        },
+        {
+          "preprocess": "illumination",
+          "psm": 6,
+          "model": "best"
+        }
+      ],
+      "focused_reading": {
+        "enabled": false,
+        "max_regions": 8,
+        "minimum_agreement": 2,
+        "minimum_confidence": 35,
+        "printed": true
+      },
+      "workers": 2,
+      "omp_thread_limit": 1,
+      "include_spanish": true,
+      "adaptive_rescue": {
+        "enabled": true,
+        "confidence_threshold": 70,
+        "minimum_words": 20,
+        "max_views": 2
+      },
+      "rescue_views": [
+        {
+          "model": "best",
+          "preprocess": "local_binary",
+          "psm": 6,
+          "target_long_edge": 2800,
+          "max_scale": 4,
+          "max_pixels": 6000000,
+          "local_window": 41,
+          "local_k": 0.2
+        },
+        {
+          "model": "best",
+          "preprocess": "local_binary",
+          "psm": 11,
+          "target_long_edge": 2800,
+          "max_scale": 4,
+          "max_pixels": 6000000,
+          "local_window": 41,
+          "local_k": 0.2
+        }
+      ],
+      "summary_rescue": {
+        "enabled": true
+      }
+    },
+    "normalization": {
+      "date_order": "auto",
+      "decimal_separator": "auto"
+    },
+    "validation": {
+      "check_amount_balance": true,
+      "amount_tolerance": "0.02",
+      "tax_id_pattern": null
+    },
+    "extractor": "consensus",
+    "printed_improvements": true,
+    "accounting_improvements": true,
+    "amount_context": true,
+    "spatial_amounts": true,
+    "semantic_amounts": true,
+    "document_consistency": true,
+    "structured_fields": true,
+    "observed_accounting": true,
+    "confidence_rescue": true
+  },
+  "codigo_sha256": {
+    "__init__.py": "c06ca29eebb6166ea027d94f3a4b735aada4734ee9ef81eca21cc609a3515114",
+    "__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+    "candidate_rules.py": "8fe76564424b92b858ff0925b88fdaf3bd11ee212795f82c88127d052156cb22",
+    "cli.py": "af7cb23edbf858657990abc369ad957a8ed8c0e59c77655067d37bf0ccd537f0",
+    "common.py": "2ffe0cb353b8dc3db43d1a38c12f33abd0db5c487a1197acaeef005da0febff8",
+    "consensus.py": "0e39954284cf85529c5f181501638c33c1d5e823ff26c383596b47e6d85282e1",
+    "datasets.py": "5fbf809d62ba571e67462a2a9053f44289a3b46f5c88ea4117137827b55aefb2",
+    "eda.py": "3d9077ed0b958c3d9cd3fc3a3338424464415835272113372dd4add5d03ed24d",
+    "evaluation.py": "8bb724b78771d732439dd37af793e64ef99ca669561de4b657cbe61c0bc33fd2",
+    "experiments.py": "08d472b57f8af6e8dd1499e23e7095919ecbbc04a0bc2a7e90e61cbffbd086e4",
+    "extraction.py": "be7e1cd9ab6be8321bba935605cdb744c74d7d3862fa2e55651856e88e6c9ba2",
+    "frozen_runtime.py": "3c59ef3b41a801a13c0f40efbf6dbe2767fd8e51dbd31e6685923d7e9f79af97",
+    "geometry.py": "7e45c1613d05bc057e164d3e290896e33d496642689a5f829908a5cdc756a261",
+    "ocr.py": "324a1780ad6bc736bb7b8690e47a0e68f835b9e3c22df6fd1690d9f0c321607f",
+    "preprocessing.py": "24b74b8a500b3d6367f5528ea1335ff9785a12a4033a11d5a597c7e4a9f378b4"
+  },
+  "nota": "Plan fijado antes de leer el OCR. El test oficial no participa."
+}

@@ -1,0 +1,9 @@
+﻿factor,grupo,documentos,exactitud %
+dataset,sroie,50,89.0
+dataset,wildreceipt,49,75.7
+tamaño,pequeña,33,77.0
+tamaño,mediana,33,74.7
+tamaño,grande,33,94.2
+calidad OCR,CER bajo,33,92.9
+calidad OCR,CER medio,33,85.2
+calidad OCR,CER alto,33,68.8

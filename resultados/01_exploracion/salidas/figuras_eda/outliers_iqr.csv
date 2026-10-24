@@ -1,0 +1,9 @@
+﻿dataset,variable,outliers,documentos,porcentaje,limite_inferior,limite_superior
+sroie,width,86,614,14.0,153.5,1405.5
+sroie,height,86,614,14.0,283.0,3259.0
+sroie,mpx,86,614,14.0,-0.6,3.48
+sroie,regions,15,614,2.4,10.5,94.5
+wildreceipt,width,98,1267,7.7,-280.0,1368.0
+wildreceipt,height,89,1267,7.0,-375.0,1825.0
+wildreceipt,mpx,152,1267,12.0,-0.75,1.65
+wildreceipt,regions,65,1267,5.1,3.0,75.0

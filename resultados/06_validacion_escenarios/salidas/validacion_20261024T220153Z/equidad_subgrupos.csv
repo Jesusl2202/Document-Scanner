@@ -1,0 +1,9 @@
+﻿factor,grupo,documentos,campos,exactitud,omisiones,equivocados,silenciosos,campos_a_revisar_por_doc
+captura,celular (WildReceipt),49,144,67.36,15.28,17.36,2.78,1.63
+captura,escáner (SROIE),50,100,86.0,2.0,12.0,2.0,0.66
+tamaño de imagen,pequeña,33,98,66.33,13.27,20.41,3.06,1.7
+tamaño de imagen,mediana,33,77,74.03,12.99,12.99,1.3,1.09
+tamaño de imagen,grande,33,69,88.41,1.45,10.14,2.9,0.64
+calidad del OCR,OCR limpio,33,69,89.86,1.45,8.7,2.9,0.52
+calidad del OCR,OCR medio,33,78,80.77,5.13,14.1,1.28,0.94
+calidad del OCR,OCR con muchos errores,33,97,59.79,19.59,20.62,3.09,1.97

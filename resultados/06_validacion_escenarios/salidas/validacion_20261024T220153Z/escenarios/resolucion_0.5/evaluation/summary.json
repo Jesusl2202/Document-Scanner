@@ -1,0 +1,18 @@
+{
+  "documents": 40,
+  "successful_executions": 40,
+  "execution_success_rate": 1.0,
+  "evaluated_field_instances": 90,
+  "micro_exact_match": 0.6111111111111112,
+  "median_seconds_uncached": 4.141424814000175,
+  "p95_seconds_uncached": 7.526732790000096,
+  "latency_sample_size": 40,
+  "cer_layout_order_sensitive": 0.35981259760541384,
+  "cer_documents": 40,
+  "notes": [
+    "CER usa orden geométrico de referencia y orden OCR; no es puntuación oficial SROIE.",
+    "Sin soporte no se reporta cero: queda null.",
+    "Métricas de extracción no acreditan validez fiscal.",
+    "Micro global tiene distinta cobertura por dataset; comparar también fecha y total por separado."
+  ]
+}

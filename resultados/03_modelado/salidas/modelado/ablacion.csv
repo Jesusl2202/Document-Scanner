@@ -1,0 +1,23 @@
+﻿componente apagado,exactitud %,cambio (pp)
+vistas: solo las 5 fast,71.83,-3.97
+vistas: sin pesos best,72.22,-3.57
+etapa: observed_accounting,75.0,-0.79
+consenso: triples,75.0,-0.79
+vistas: sin rescate,75.4,-0.4
+consenso: dates,75.4,-0.4
+consenso: payment,75.4,-0.4
+etapa: structured_fields,75.4,-0.4
+etapa: semantic_amounts,75.79,0.0
+etapa: document_consistency,75.79,0.0
+etapa: amount_context,75.79,0.0
+etapa: confidence_rescue,75.79,0.0
+vistas: sin vista en español,75.79,0.0
+etapa: spatial_amounts,75.79,0.0
+etapa: printed_improvements,75.79,0.0
+etapa: accounting_improvements,75.79,0.0
+consenso: corroboration,75.79,0.0
+consenso: dominance,75.79,0.0
+consenso: fuzzy,75.79,0.0
+consenso: balance,75.79,0.0
+consenso: glyphs,75.79,0.0
+consenso: total_from_subtotal,75.79,0.0

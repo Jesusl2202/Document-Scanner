@@ -1,0 +1,4 @@
+﻿modelo,lectura OCR,exactitud,ic95
+M0 reglas iniciales (1 vista),1 vista,51.9,—
+"Red MLP sobre líneas (capas=(128,), L2=0.01, ES5)",1 vista,57.4,56.1 – 58.8 (5 semillas)
+M3 resumen contable (final),10 vistas,81.1,"75,0 – 86,9 (bootstrap, notebook 05)"

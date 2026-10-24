@@ -1,0 +1,16 @@
+{
+  "por_documento": {
+    "documentos": 99,
+    "campos_por_documento": 2.4646464646464645,
+    "todo_correcto": 61.61616161616161,
+    "esperado_si_independientes": 54.410673375414554,
+    "al_menos_un_error": 38.38383838383838
+  },
+  "composicion": {
+    "campos": 244,
+    "exactitud": 75.0,
+    "omisiones": 9.836065573770492,
+    "equivocados": 15.163934426229508,
+    "silenciosos": 2.459016393442623
+  }
+}
