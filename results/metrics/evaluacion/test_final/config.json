@@ -1,0 +1,143 @@
+{
+  "seed": 42,
+  "validation_fraction": 0.2,
+  "ocr": {
+    "executable": "tesseract",
+    "language": "eng",
+    "psm": 6,
+    "oem": 1,
+    "timeout_seconds": 90,
+    "grayscale": true,
+    "autocontrast": true,
+    "preprocess": "resize",
+    "target_long_edge": 2200,
+    "max_scale": 3,
+    "border": 20,
+    "max_pixels": 25000000,
+    "ensemble_views": [
+      {
+        "preprocess": "original",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      {
+        "preprocess": "resize",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      {
+        "preprocess": "otsu",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      {
+        "preprocess": "resize",
+        "psm": 3,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      {
+        "preprocess": "resize",
+        "psm": 11,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      {
+        "preprocess": "original",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      },
+      {
+        "preprocess": "resize",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      },
+      {
+        "preprocess": "resize",
+        "psm": 11,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      },
+      {
+        "preprocess": "illumination",
+        "psm": 6,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      },
+      {
+        "preprocess": "denoise",
+        "psm": 6,
+        "language": "eng+spa",
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      }
+    ],
+    "focused_reading": {
+      "enabled": false,
+      "max_regions": 8,
+      "minimum_agreement": 2,
+      "minimum_confidence": 35,
+      "printed": true
+    },
+    "workers": 2,
+    "omp_thread_limit": 1,
+    "include_spanish": true,
+    "adaptive_rescue": {
+      "enabled": true,
+      "confidence_threshold": 70,
+      "minimum_words": 20,
+      "max_views": 2
+    },
+    "rescue_views": [
+      {
+        "preprocess": "local_binary",
+        "psm": 6,
+        "target_long_edge": 2800,
+        "max_scale": 4,
+        "max_pixels": 6000000,
+        "local_window": 41,
+        "local_k": 0.2,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      },
+      {
+        "preprocess": "local_binary",
+        "psm": 11,
+        "target_long_edge": 2800,
+        "max_scale": 4,
+        "max_pixels": 6000000,
+        "local_window": 41,
+        "local_k": 0.2,
+        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+      }
+    ],
+    "summary_rescue": {
+      "enabled": true
+    }
+  },
+  "normalization": {
+    "date_order": "auto",
+    "decimal_separator": "auto"
+  },
+  "validation": {
+    "check_amount_balance": true,
+    "amount_tolerance": "0.02",
+    "tax_id_pattern": null
+  },
+  "extractor": "consensus",
+  "printed_improvements": true,
+  "accounting_improvements": true,
+  "amount_context": true,
+  "spatial_amounts": true,
+  "semantic_amounts": true,
+  "document_consistency": true,
+  "structured_fields": true,
+  "observed_accounting": true,
+  "confidence_rescue": true
+}

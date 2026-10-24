@@ -73,29 +73,61 @@ flowchart LR
 
 ## 4. Resultados
 
-**Resultados de desarrollo** (mediciones usadas para elegir el modelo; no son una evaluación independiente):
+### Evaluación final
+
+Modelo «resumen contable» en una muestra aleatoria del test oficial (semilla 42): **100 documentos** (50 de SROIE y 50 de WildReceipt) y **244 campos anotados**. La configuración quedó fija antes de leer la muestra ([`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb)).
+
+| Indicador | Resultado | Meta | |
+|---|---:|---:|:---:|
+| Exactitud por campo | **81,1 %** (IC95 75,0–86,9 %) | ≥ 70 % | ✅ |
+| Documentos procesados sin error | **100 %** | ≥ 90 % | ✅ |
+| Tiempo por documento (CPU) | mediana 11,2 s · p95 20,7 s | — | |
+
+| Dataset | Fecha | Subtotal | Impuesto | Total | Exactitud (IC95) |
+|---|---:|---:|---:|---:|---:|
+| SROIE (escaneos) | 92,0 % | — | — | 86,0 % | 89,0 % (82,0–95,0) |
+| WildReceipt (fotos) | 79,1 % | 73,5 % | 74,1 % | 75,0 % | 75,7 % (66,7–84,5) |
+
+SROIE solo anota fecha y total; ninguno de los dos datasets anota RUC ni número de comprobante, así que esos campos no se miden. Precisión, recall y F1 por campo en el [reporte de resultados](results/reports/reporte_resultados.md).
+
+**Comparación con la línea base** (mismas lecturas OCR para todos los modelos):
+
+| Modelo | Exactitud | Mejora del modelo final (IC95, bootstrap pareado) |
+|---|---:|---|
+| M0 · reglas iniciales, 1 lectura | 51,6 % | +29,5 pp (23,9 a 35,5) |
+| M1 · V7, 5 vistas `fast` | 63,9 % | +17,2 pp (12,0 a 22,7) |
+| M2 · actual sin resumen contable | 80,7 % | +0,4 pp (0,0 a 1,2) |
+| **M3 · resumen contable (final)** | **81,1 %** | — |
+
+![Exactitud por campo y modelo en el test](results/figures/evaluacion/test_comparacion_modelos.png)
+
+**Dónde funciona bien y dónde no.** El lector acierta el 94,2 % en imágenes grandes y el 92,9 % cuando el OCR lee limpio, pero baja al 74,7–77,0 % en imágenes pequeñas o medianas y al **68,8 %** cuando el OCR lee mal. De los 46 campos fallidos, 27 son **valores equivocados** y 19 **omisiones** (el campo queda vacío). En subtotal e impuesto predominan las omisiones; en fecha y total, los valores equivocados. En el total, 5 de los 14 valores equivocados son montos redondos (20, 50, 90 o 100): el efectivo entregado, no el total de la compra. Ver [`exactitud_por_factor.csv`](results/metrics/evaluacion/exactitud_por_factor.csv) y la [figura de errores](results/figures/evaluacion/07_errores_linea_base.png).
+
+**Optimización de hiperparámetros.** La búsqueda sobre 13 hiperparámetros (81 configuraciones) encontró una alternativa con +0,9 pp en la muestra de optimización que en control perdió 3,1 pp (IC95 −7,1 a 0,0): era sobreajuste, así que se **mantiene la configuración actual**. Los factores que más pesan son el voto entre vistas y los pesos `best` de Tesseract. Ver [optimización](docs/optimizacion.md).
+
+> **Sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)); los 100 documentos de esta muestra estaban entre ellos. Las cifras sirven para comparar versiones con la misma muestra y método, pero no son una medición inédita: en documentos nuevos se espera un resultado algo menor. El notebook incluye además una prueba externa con facturas propias anotadas ([formato](docs/anotacion_propia.md)), que no forma parte de estas cifras.
+
+### Desarrollo del modelo
+
+Mediciones usadas para elegir el modelo (no son una evaluación independiente):
 
 | Modelo | Muestra | Exactitud por campo |
 |---|---|---:|
 | Línea base V1 (reglas simples, 1 lectura) | 40 docs de validación | 35,0 % (36/103) |
 | V6 (consenso de lecturas) | 60 docs de validación | 62,75 % (96/153) |
 | V7 (5 vistas, versión anterior) | 120 docs de selección | 70,53 % (213/302) |
-| Actual sin resumen contable | Grupo más reciente del test oficial (con reutilización) | 75,93 % (183/241) |
+| Actual sin resumen contable | Grupo del test oficial (con reutilización) | 75,93 % (183/241) |
 | **Resumen contable (final)** | Mismo grupo, mismo OCR | **76,35 % (184/241)** |
 
-En tres grupos aleatorios del test oficial el modelo final obtuvo **75,0–77,6 %**, siempre igual o mejor que la versión sin resumen contable y sin perder ningún campo. Los campos más débiles siguen siendo subtotal, impuesto y fecha de WildReceipt. Detalle en [`results/reports/resultados_desarrollo.md`](results/reports/resultados_desarrollo.md).
+Detalle en [`results/reports/resultados_desarrollo.md`](results/reports/resultados_desarrollo.md).
 
 ![Evolución de la exactitud durante el desarrollo](results/figures/desarrollo/evolucion_exactitud.png)
-
-**Comparación con baseline y evaluación final.** [`05_evaluacion.ipynb`](notebooks/05_evaluacion.ipynb) mide el modelo final en 50 documentos por dataset del test oficial con intervalos de confianza, lo compara con la línea base (reglas iniciales, V7 y la versión sin resumen contable) sobre las mismas lecturas, analiza errores por tipo de imagen y evalúa una **prueba externa** de facturas propias anotadas. Sus tablas y figuras están en [`results/`](results/) y se resumen en [`results/reports/reporte_resultados.md`](results/reports/reporte_resultados.md).
-
-> **Honestidad sobre el test.** Durante el desarrollo se revisaron 1.461 documentos, incluido casi todo el test oficial ([`data/processed/documentos_revisados.csv`](data/processed/documentos_revisados.csv)). Las cifras sobre el test sirven para comparar versiones; la evidencia de generalización es la prueba externa.
 
 | Referencia | Exactitud / F1 |
 |---|---|
 | Meta del proyecto | ≥ 70 % por campo · ≥ 90 % procesados |
 | Sistemas del estado del arte en SROIE / WildReceipt (modelos entrenados en esos datos) | F1 > 85–90 % |
-| Este proyecto (desarrollo) | 75,0–77,6 % por campo, sin entrenamiento |
+| Este proyecto (evaluación final, sin entrenamiento) | 81,1 % por campo · F1 0,81–0,88 por campo |
 
 ## 5. Instalación y uso
 
@@ -205,7 +237,7 @@ Document-Scanner/
 **Limitaciones conocidas.**
 
 - **Campos escritos a mano:** no se reconocen de forma confiable y están fuera del alcance (ver sección 1).
-- Exactitud de ~75 % por campo en desarrollo: **siempre hay que revisar** los valores, sobre todo los que tienen alertas.
+- Exactitud de 81 % por campo en la evaluación final (76 % en fotos de celular, 69 % cuando el OCR lee mal): **siempre hay que revisar** los valores, sobre todo los que tienen alertas.
 - `tax_id` y `document_number` aún no tienen exactitud medida (las bases públicas no los anotan).
 - Peor desempeño con fotos pequeñas, borrosas o con sombras y con etiquetas en idiomas o formatos poco comunes.
 - Fechas como `05/03/18` quedan ambiguas si no se configura el orden día/mes.

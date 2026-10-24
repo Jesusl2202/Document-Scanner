@@ -42,9 +42,12 @@ from .utils import (ErrorEntrada, ErrorLector, cargar_configuracion, configurar_
 
 LOGGER = obtener_logger("evaluacion")
 TIPOS_RESULTADO = ("eda", "preprocesamiento", "modelado", "optimizacion", "evaluacion")
-# Archivos que nunca se copian a results/: pueden contener texto OCR o datos de documentos propios.
+DECISIONES = {"mantener_actual": "mantener la configuración actual", "adoptar": "adoptar la configuración seleccionada"}
+# Archivos que nunca se copian a results/: pueden contener texto OCR, valores predichos documento por
+# documento o datos de documentos propios. RESULTADOS.md es una nota genérica del motor por corrida.
 EXCLUIDOS = ("predictions.jsonl", "evaluation_manifest.jsonl", "muestra_test_congelada.jsonl",
-             "optimizacion.jsonl", "control.jsonl", "manifest.jsonl", "resultado.json")
+             "optimizacion.jsonl", "control.jsonl", "manifest.jsonl", "resultado.json", "errors.csv",
+             "RESULTADOS.md")
 
 
 def cumplimiento_metas(resumen: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
@@ -251,12 +254,15 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
     if seleccion:
         datos = json.loads(seleccion.read_text(encoding="utf-8"))
         control = datos.get("control", {})
+        decision = datos.get("recomendada", {}).get("decision", datos.get("decision", "?"))
         partes += ["## Optimización de hiperparámetros", "",
                    f"- Configuraciones evaluadas: {datos.get('n_busqueda', '?')}",
-                   f"- Decisión: **{datos.get('recomendada', {}).get('decision', datos.get('decision', '?'))}**",
-                   f"- Cambio en control: {_numero(control.get('delta_pp', float('nan')), 2)} pp "
+                   f"- Decisión: **{DECISIONES.get(decision, decision)}**",
+                   f"- Cambio de la configuración seleccionada en la muestra de control: "
+                   f"{_numero(control.get('delta_pp', float('nan')), 2)} pp "
                    f"(IC95 {_numero(control.get('ic95_inferior_pp', float('nan')), 2)} a "
-                   f"{_numero(control.get('ic95_superior_pp', float('nan')), 2)})", ""]
+                   f"{_numero(control.get('ic95_superior_pp', float('nan')), 2)} pp)", "",
+                   "Detalle en [`docs/optimizacion.md`](../../docs/optimizacion.md).", ""]
 
     evaluacion = metricas / "evaluacion"
     cumplimiento = (next(iter(sorted(evaluacion.rglob("cumplimiento_meta.json"))), None)
@@ -267,16 +273,32 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
         cumple = c.get("cumple_exactitud_70", c.get("cumple_exactitud"))
         partes += [f"- Exactitud por campo: **{_numero(100 * c['exactitud'])} %** "
                    f"({'cumple' if cumple else 'no cumple'} la meta del 70 %)",
-                   f"- Documentos procesados sin error: **{_numero(100 * c['procesamiento'])} %**",
-                   f"- Documentos: {c.get('documentos')} · campos evaluados: {c.get('campos_evaluados')}", ""]
+                   f"- Documentos procesados sin error: **{_numero(100 * c['procesamiento'])} %** "
+                   f"({'cumple' if c.get('cumple_procesamiento_90', c.get('cumple_procesamiento')) else 'no cumple'}"
+                   " la meta del 90 %)",
+                   f"- Documentos: {c.get('documentos')} · campos evaluados: {c.get('campos_evaluados')}"]
+        if c.get("mediana_s_por_documento") is not None:
+            partes.append(f"- Tiempo por documento: mediana {_numero(c['mediana_s_por_documento'])} s, "
+                          f"p95 {_numero(c['p95_s_por_documento'])} s")
+        plan = next(iter(sorted(evaluacion.rglob("plan_test.json"))), None)
+        if plan:
+            p = json.loads(plan.read_text(encoding="utf-8"))
+            partes += ["", f"Muestra aleatoria (semilla {p.get('seed')}) del test oficial: "
+                       f"{', '.join(f'{v} de {k}' for k, v in p.get('by_dataset', {}).items())}. La configuración "
+                       "quedó fija antes de leer la muestra. "
+                       f"{p.get('ya_revisados_en_desarrollo', '?')} de los {p.get('documents', '?')} documentos "
+                       "ya se habían revisado durante el desarrollo, así que no es una medición inédita."]
+        partes.append("")
         for nombre, titulo in (("intervalos_confianza.csv", "Intervalos de confianza (%)"),
                                ("comparacion_modelos.csv", "Comparación con la línea base"),
+                               ("deltas_bootstrap.csv", "Mejora frente a cada línea base (bootstrap pareado)"),
                                ("metricas_por_campo.csv", "Métricas por campo"),
                                ("exactitud_por_factor.csv", "Dónde funciona bien y dónde no"),
                                ("metricas_prueba_externa.csv", "Prueba externa")):
             archivo = next(iter(sorted(evaluacion.rglob(nombre))), None)
             if archivo:
-                partes += [f"### {titulo}", "", tabla_markdown(pd.read_csv(archivo, encoding="utf-8-sig")), ""]
+                tabla = pd.read_csv(archivo, encoding="utf-8-sig").replace({True: "sí", False: "no"})
+                partes += [f"### {titulo}", "", tabla_markdown(tabla.drop(columns=["nota"], errors="ignore"), 1), ""]
 
     figuras = sorted((resultados / "figures").rglob("*.png"))
     partes += ["## Figuras", ""]
