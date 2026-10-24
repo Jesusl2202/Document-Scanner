@@ -40,6 +40,7 @@ def factura_ferreteria() -> tuple[Image.Image, dict]:
     d.text((725, 75), "RUC: 0991234567001", font=negrita, fill="black")
     d.text((725, 130), "FACTURA No.", font=titulo, fill="black")
     d.text((725, 190), "001-002-000004521", font=normal, fill="black")
+    d.text((725, 230), "AUTORIZACIÓN SRI", font=chica, fill="black")
     d.text((70, 300), "Fecha de emisión: 14/10/2026", font=normal, fill="black")
     d.text((70, 345), "Cliente: CONSUMIDOR FINAL", font=normal, fill="black")
     d.line((70, 410, 1170, 410), fill="black", width=2)
@@ -65,6 +66,8 @@ def factura_ferreteria() -> tuple[Image.Image, dict]:
         d.text((700, y), etiqueta, font=f, fill="black")
         d.text((1000, y), valor, font=f, fill="black")
         y += 60
+    d.text((70, alto - 200), "CLAVE DE ACCESO:", font=chica, fill="black")
+    d.text((70, alto - 170), "1410202601099123456700120020010000045211234567815", font=chica, fill="black")
     d.text((70, alto - 120), "Forma de pago: efectivo", font=chica, fill="black")
     d.text((70, alto - 85), "Documento generado para pruebas del Lector de Facturas.", font=chica, fill="black")
     gold = {"tax_id": "0991234567001", "date": "2026-10-14", "document_number": "001-002-000004521",

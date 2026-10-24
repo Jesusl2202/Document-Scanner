@@ -99,6 +99,13 @@ class AppTests(unittest.TestCase):
         self.assertEqual(explicar_alerta("tax:structured_selection")["nivel"], "info")
         self.assertEqual(explicar_alerta("date:codigo_nuevo")["nivel"], "aviso")    # desconocida: pide revisar
 
+    def test_detecta_comprobante_electronico_del_sri(self):
+        from app.servicio import es_comprobante_electronico
+        clave = "1410202601099123456700120020010000045211234567815"
+        self.assertTrue(es_comprobante_electronico("CLAVE DE ACCESO:\n" + clave))
+        self.assertTrue(es_comprobante_electronico("1410 2026 0109912345670012002001000004521 1234567815"))
+        self.assertFalse(es_comprobante_electronico("RUC 0991234567001 TOTAL 42.72"))
+
     def test_evidencia_busca_el_valor_entre_las_palabras(self):
         from app.servicio import evidencia_principal
         normalizacion = {"date_order": "auto", "decimal_separator": "auto"}

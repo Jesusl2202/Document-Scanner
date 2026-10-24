@@ -13,6 +13,7 @@ import base64
 import copy
 import io
 import json
+import re
 import tempfile
 import threading
 import time
@@ -52,6 +53,18 @@ ALERTAS: dict[str, tuple[str, str]] = {
     "semantic_selection": ("info", "Asociado a su etiqueta por la posición en el documento."),
     "word_geometry_alignment": ("info", "Tomado del número alineado con su etiqueta."),
 }
+
+CLAVE_ACCESO = re.compile(r"(?<!\d)\d{49}(?!\d)")
+ETIQUETA_SRI = re.compile(r"clave\s*de\s*acceso|n[uú]mero\s*de\s*autorizaci[oó]n", re.IGNORECASE)
+AVISO_SRI = ("Parece una factura electrónica del SRI (tiene clave de acceso). Sus datos oficiales están en el XML "
+             "autorizado: descárgalo o consúltalo en el portal del SRI con esa clave; es más confiable "
+             "que leer la imagen.")
+
+
+def es_comprobante_electronico(texto: str) -> bool:
+    """¿El texto OCR muestra la clave de acceso de 49 dígitos o la etiqueta de autorización del SRI?"""
+    return bool(ETIQUETA_SRI.search(texto or "") or CLAVE_ACCESO.search(re.sub(r"[ \t]", "", texto or "")))
+
 
 CUADRE = {
     "consistent": ("ok", "Subtotal + IVA = total"),
@@ -220,11 +233,14 @@ class ServicioLector:
         avisos = []
         if fecha == "ambiguous_date_order":
             avisos.append("La fecha admite dos lecturas (día/mes o mes/día): confírmala con el documento.")
+        electronica = es_comprobante_electronico(pagina.texto)
+        if electronica:
+            avisos.append(AVISO_SRI)
         encontrados = sum(c["valor"] is not None for c in campos)
         if encontrados == 0:
             avisos.append("No se encontró ningún campo. ¿Es una factura impresa y legible? Prueba con una foto más "
                           "cercana, recta y con buena luz.")
-        datos.update(campos=campos, encontrados=encontrados,
+        datos.update(campos=campos, encontrados=encontrados, comprobante_electronico=electronica,
                      alertas=[a for a in alertas if not a["campo"]],
                      cuadre={"estado": balance, "nivel": nivel, "texto": texto},
                      avisos=avisos, revision=list(pagina.revision))
