@@ -1,0 +1,17 @@
+.git
+.github
+**/__pycache__
+*.py[cod]
+.venv
+venv
+data/raw
+data/processed
+outputs
+models/fast
+models/best
+notebooks
+results
+docs
+tests
+*.zip
+.env

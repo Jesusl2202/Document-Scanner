@@ -1,0 +1,31 @@
+name: Despliegue en Hugging Face Spaces
+
+# Publica la interfaz web en un Space de Hugging Face (SDK Docker, CPU gratuita).
+# Requiere el secreto HF_TOKEN (token de Hugging Face con permiso de escritura).
+# Opcional: la variable HF_SPACE (usuario/nombre); por defecto <usuario>/lector-facturas.
+
+on:
+  push:
+    branches: [main]
+    paths: [app/**, src/**, configs/**, models/ficha_modelo.json, Dockerfile, requirements.txt, .github/workflows/despliegue.yml]
+  workflow_dispatch:
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Publicar en el Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::warning::Falta el secreto HF_TOKEN: no se publica la interfaz."
+            exit 0
+          fi
+          pip install -q "huggingface_hub>=0.25"
+          python scripts/desplegar_hf.py

@@ -1,0 +1,3 @@
+# Dependencias de la interfaz web, además de las de requirements.txt (raíz).
+Flask>=3,<4
+gunicorn>=22,<24

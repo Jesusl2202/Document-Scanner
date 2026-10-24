@@ -62,6 +62,7 @@ class ResultadoPagina:
     cobertura: dict[str, Any] = field(default_factory=dict)
     evidencia: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     texto: str = ""
+    palabras: list[dict[str, Any]] = field(default_factory=list)   # palabras del OCR principal con su caja
     segundos: float | None = None
     error: str | None = None
 
@@ -116,7 +117,7 @@ class ResultadoDocumento:
         """Escribe ``resultado.json`` y ``campos.csv`` en ``carpeta``.
 
         Args:
-            incluir_texto: Si es ``False`` se omiten el texto OCR y la evidencia (útil para
+            incluir_texto: Si es ``False`` se omiten el texto OCR, las palabras y la evidencia (útil para
                 compartir resultados sin el contenido completo de la factura).
         """
         carpeta = ruta_proyecto(carpeta)
@@ -124,7 +125,7 @@ class ResultadoDocumento:
         datos = self.a_dict()
         if not incluir_texto:
             for pagina in datos["paginas"]:
-                pagina["texto"], pagina["evidencia"] = "", {}
+                pagina["texto"], pagina["evidencia"], pagina["palabras"] = "", {}, []
         ruta_json = escribir_json(carpeta / "resultado.json", datos)
         ruta_csv = carpeta / "campos.csv"
         with ruta_csv.open("w", newline="", encoding="utf-8-sig") as archivo:
@@ -274,7 +275,9 @@ class LectorFacturas:
                                confianza=confianza, alertas=list(bruto.get("alerts", [])),
                                revision=review_notes(bruto), validacion=dict(bruto.get("validation", {})),
                                cobertura=dict(bruto.get("quality", {})), evidencia=bruto.get("evidence", {}),
-                               texto=bruto.get("text", ""), segundos=round(segundos, 2))
+                               texto=bruto.get("text", ""), segundos=round(segundos, 2),
+                               palabras=[{"text": w.get("text", ""), "box": w.get("box"), "line_id": w.get("line_id")}
+                                         for w in bruto.get("ocr", {}).get("words", []) if w.get("box")])
 
     def acerca_de(self) -> dict[str, Any]:
         """Información del modelo para la sección «Acerca de» de la interfaz."""

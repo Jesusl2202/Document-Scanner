@@ -1,0 +1,96 @@
+name: Experimentos (notebooks 01–06)
+
+# Ejecuta los notebooks con los datasets completos en un runner de GitHub (4 CPU) y publica
+# los notebooks con sus salidas, las tablas y las figuras en la rama «resultados-experimentos».
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [experimentos]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: experimentos
+  cancel-in-progress: true
+
+jobs:
+  notebook:
+    name: ${{ matrix.notebook }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        notebook: [01_exploracion, 02_preprocesamiento, 03_modelado, 04_optimizacion, 05_evaluacion, 06_validacion_escenarios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar Tesseract y dependencias
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
+          pip install -r requirements.txt nbformat nbclient ipykernel
+          python -m ipykernel install --user --name python3
+      - name: Descargar SROIE y WildReceipt
+        run: |
+          for base in wildreceipt sroie; do
+            for intento in 1 2 3; do
+              python scripts/download_data.py "$base" --out data/raw && break
+              sleep 20
+            done
+          done
+          ls data/raw
+      - name: Ejecutar el notebook
+        run: python scripts/ejecutar_notebook.py notebooks/${{ matrix.notebook }}.ipynb --datos data/raw
+      - name: Reunir resultados (sin imágenes, cachés ni texto OCR completo)
+        if: always()
+        run: |
+          python - <<'PY'
+          import shutil
+          from pathlib import Path
+          destino = Path('paquete/${{ matrix.notebook }}')
+          destino.mkdir(parents=True, exist_ok=True)
+          shutil.copy2('notebooks/${{ matrix.notebook }}.ipynb', destino)
+          origen = Path('outputs/experimentos/notebooks')
+          excluir = {'predictions.jsonl', 'evaluation_manifest.jsonl', 'muestra_test_congelada.jsonl'}
+          for p in origen.rglob('*') if origen.exists() else []:
+              partes = set(p.relative_to(origen).parts)
+              if (p.is_file() and p.suffix in {'.csv', '.json', '.png', '.md'} and p.name not in excluir
+                      and not partes & {'documento_privado', 'preparados', 'paginas'}
+                      and not any(x.startswith('cache_ocr') for x in partes)):
+                  objetivo = destino / 'salidas' / p.relative_to(origen)
+                  objetivo.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(p, objetivo)
+          print(sum(1 for _ in destino.rglob('*')), 'archivos')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.notebook }}
+          path: paquete
+          retention-days: 7
+
+  publicar:
+    needs: notebook
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: descargas
+      - name: Publicar en la rama resultados-experimentos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan resultados-experimentos
+          git rm -rq --cached . && find . -mindepth 1 -maxdepth 1 ! -name .git ! -name descargas -exec rm -rf {} +
+          mkdir -p resultados && for d in descargas/*/; do cp -r "$d"* resultados/; done
+          rm -rf descargas
+          echo "Commit evaluado: ${GITHUB_SHA}" > resultados/COMMIT.txt
+          git add resultados && git commit -qm "Resultados de los notebooks (${GITHUB_SHA::7})"
+          git push -f origin resultados-experimentos

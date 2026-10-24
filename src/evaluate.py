@@ -41,7 +41,7 @@ from .utils import (ErrorEntrada, ErrorLector, cargar_configuracion, configurar_
                     leer_json, obtener_logger, ruta_proyecto)
 
 LOGGER = obtener_logger("evaluacion")
-TIPOS_RESULTADO = ("eda", "preprocesamiento", "modelado", "optimizacion", "evaluacion")
+TIPOS_RESULTADO = ("eda", "preprocesamiento", "modelado", "optimizacion", "evaluacion", "validacion")
 DECISIONES = {"mantener_actual": "mantener la configuración actual", "adoptar": "adoptar la configuración seleccionada"}
 # Archivos que nunca se copian a results/: pueden contener texto OCR, valores predichos documento por
 # documento o datos de documentos propios. RESULTADOS.md es una nota genérica del motor por corrida.
@@ -163,6 +163,8 @@ def _extraer_seguro(zip_path: Path, destino: Path) -> Path:
 def detectar_tipo(carpeta: Path) -> str:
     """Reconoce de qué notebook viene un ZIP de resultados por los archivos que contiene."""
     nombres = {p.name for p in carpeta.rglob("*")}
+    if "resumen_validacion.json" in nombres or "escenarios_criticos.csv" in nombres:
+        return "validacion"
     if "seleccion.json" in nombres or "sensibilidad.csv" in nombres:
         return "optimizacion"
     if "plan_test.json" in nombres or "cumplimiento_meta.json" in nombres:

@@ -35,6 +35,14 @@ optimizacion:
   documentos_control: 20
   configuraciones: 24
 
+interfaz:
+  # Límites de la versión web (app/), más estrictos que los de la línea de comandos para
+  # que cada lectura termine en segundos en un servidor gratuito de 2 CPU.
+  tamano_maximo_mb: 10
+  paginas_maximas_pdf: 3
+  lecturas_simultaneas: 1
+  espera_maxima_s: 120
+
 confianza:
   # Acuerdo entre vistas OCR que leyeron el valor elegido (no es una probabilidad calibrada).
   umbral_alta: 0.6
