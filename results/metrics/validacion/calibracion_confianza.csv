@@ -1,0 +1,5 @@
+﻿confianza,campos,porcentaje_de_campos,exactitud,equivocados,omisiones
+alta,131,53.7,95.4,4.6,0.0
+media,48,19.7,75.0,25.0,0.0
+baja,41,16.8,53.7,46.3,0.0
+sin_valor,24,9.8,0.0,0.0,100.0

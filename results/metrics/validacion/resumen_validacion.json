@@ -1,0 +1,244 @@
+{
+  "plan": {
+    "criterios": {
+      "exactitud_minima": 70.0,
+      "caida_maxima_pp": 10.0,
+      "silenciosos_max": 5.0,
+      "procesados_min": 90.0
+    },
+    "revision_codigo": {
+      "modo": "local",
+      "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
+    },
+    "fecha_utc": "2026-10-24T22:01:53.366498+00:00"
+  },
+  "muestra": {
+    "semilla": 42,
+    "particion": "train",
+    "elegibles_por_base": {
+      "sroie": 242,
+      "wildreceipt": 836
+    },
+    "exclusiones": {
+      "ya_revisado": 437,
+      "imagen_en_otra_particion": 2,
+      "imagen_duplicada": 0
+    },
+    "documentos": 100,
+    "por_base": {
+      "sroie": 50,
+      "wildreceipt": 50
+    },
+    "firma_muestra": "3adf73088370639002606f3cb051beba602cfb08d95d28466a66af0ab0759825",
+    "nota": "Documentos nunca revisados durante el desarrollo; configuración fija antes de leerlos."
+  },
+  "nuevos": {
+    "exactitud": 75.0,
+    "procesados": 100.0,
+    "cumple_exactitud": true,
+    "cumple_procesados": true,
+    "mediana_s_por_documento": 5.450961654499963
+  },
+  "por_documento": {
+    "documentos": 99,
+    "campos_por_documento": 2.4646464646464645,
+    "todo_correcto": 61.61616161616161,
+    "esperado_si_independientes": 54.410673375414554,
+    "al_menos_un_error": 38.38383838383838
+  },
+  "composicion": {
+    "campos": 244,
+    "exactitud": 75.0,
+    "omisiones": 9.836065573770492,
+    "equivocados": 15.163934426229508,
+    "silenciosos": 2.459016393442623
+  },
+  "calibracion": [
+    {
+      "confianza": "alta",
+      "campos": 131,
+      "porcentaje_de_campos": 53.7,
+      "exactitud": 95.4,
+      "equivocados": 4.6,
+      "omisiones": 0.0
+    },
+    {
+      "confianza": "media",
+      "campos": 48,
+      "porcentaje_de_campos": 19.7,
+      "exactitud": 75.0,
+      "equivocados": 25.0,
+      "omisiones": 0.0
+    },
+    {
+      "confianza": "baja",
+      "campos": 41,
+      "porcentaje_de_campos": 16.8,
+      "exactitud": 53.7,
+      "equivocados": 46.3,
+      "omisiones": 0.0
+    },
+    {
+      "confianza": "sin_valor",
+      "campos": 24,
+      "porcentaje_de_campos": 9.8,
+      "exactitud": 0.0,
+      "equivocados": 0.0,
+      "omisiones": 100.0
+    }
+  ],
+  "tiempos": [
+    {
+      "forma de trabajo": "Manual (sin el sistema)",
+      "segundos_por_documento": 22.2,
+      "errores_sin_corregir_por_100_documentos": 0.0,
+      "ahorro_vs_manual_%": 0.0
+    },
+    {
+      "forma de trabajo": "Revisión completa",
+      "segundos_por_documento": 11.7,
+      "errores_sin_corregir_por_100_documentos": 0.0,
+      "ahorro_vs_manual_%": 47.2
+    },
+    {
+      "forma de trabajo": "Revisión guiada por la confianza",
+      "segundos_por_documento": 7.9,
+      "errores_sin_corregir_por_100_documentos": 6.1,
+      "ahorro_vs_manual_%": 64.6
+    }
+  ],
+  "escenarios": [
+    {
+      "escenario": "Sin perturbar",
+      "simula": "Imagen original",
+      "campos": 90,
+      "exactitud": 81.1,
+      "omisiones": 5.6,
+      "equivocados": 13.3,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 0.0,
+      "veredicto": "aceptable"
+    },
+    {
+      "escenario": "Ruido σ = 12",
+      "simula": "Foto con poca luz o sensor de gama baja",
+      "campos": 90,
+      "exactitud": 76.7,
+      "omisiones": 11.1,
+      "equivocados": 12.2,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 4.4,
+      "veredicto": "aceptable"
+    },
+    {
+      "escenario": "Ruido σ = 30",
+      "simula": "Foto nocturna o muy granulada",
+      "campos": 90,
+      "exactitud": 48.9,
+      "omisiones": 33.3,
+      "equivocados": 17.8,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 32.2,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "Desenfoque leve",
+      "simula": "Foto ligeramente movida o desenfocada",
+      "campos": 90,
+      "exactitud": 42.2,
+      "omisiones": 45.6,
+      "equivocados": 12.2,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 38.9,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "Desenfoque fuerte",
+      "simula": "Foto movida",
+      "campos": 90,
+      "exactitud": 17.8,
+      "omisiones": 67.8,
+      "equivocados": 14.4,
+      "silenciosos": 1.1,
+      "procesados": 100.0,
+      "caida_pp": 63.3,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "Mitad de resolución",
+      "simula": "Foto tomada de lejos o reenviada reducida",
+      "campos": 90,
+      "exactitud": 61.1,
+      "omisiones": 27.8,
+      "equivocados": 11.1,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 20.0,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "30 % de resolución",
+      "simula": "Captura de pantalla o miniatura",
+      "campos": 90,
+      "exactitud": 33.3,
+      "omisiones": 51.1,
+      "equivocados": 15.6,
+      "silenciosos": 3.3,
+      "procesados": 100.0,
+      "caida_pp": 47.8,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "JPEG calidad 12",
+      "simula": "Imagen recomprimida por mensajería",
+      "campos": 90,
+      "exactitud": 61.1,
+      "omisiones": 26.7,
+      "equivocados": 12.2,
+      "silenciosos": 1.1,
+      "procesados": 100.0,
+      "caida_pp": 20.0,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "Rotación 6°",
+      "simula": "Foto torcida",
+      "campos": 90,
+      "exactitud": 53.3,
+      "omisiones": 11.1,
+      "equivocados": 35.6,
+      "silenciosos": 6.7,
+      "procesados": 100.0,
+      "caida_pp": 27.8,
+      "veredicto": "falla"
+    },
+    {
+      "escenario": "Sombra lateral",
+      "simula": "Iluminación desigual o sombra de la mano",
+      "campos": 90,
+      "exactitud": 72.2,
+      "omisiones": 13.3,
+      "equivocados": 14.4,
+      "silenciosos": 2.2,
+      "procesados": 100.0,
+      "caida_pp": 8.9,
+      "veredicto": "aceptable"
+    },
+    {
+      "escenario": "Falta el 20 % inferior",
+      "simula": "Comprobante cortado: el pie no aparece",
+      "campos": 90,
+      "exactitud": 72.2,
+      "omisiones": 15.6,
+      "equivocados": 12.2,
+      "silenciosos": 4.4,
+      "procesados": 100.0,
+      "caida_pp": 8.9,
+      "veredicto": "aceptable"
+    }
+  ]
+}

@@ -9,11 +9,13 @@ src/
 ├── model.py             # Clase LectorFacturas: carga del modelo, lectura, confianza por campo, exportación
 ├── train.py             # Optimización de la configuración en validación (el modelo no entrena pesos)
 ├── evaluate.py          # Evaluación en test y prueba externa, importación de resultados y reporte
+├── validation.py        # Validación en contextos simulados: datos nuevos, escenarios críticos, costo del error
+├── line_classifier.py   # Técnica de comparación aprendida: red MLP que clasifica las líneas del OCR
 ├── utils.py             # Configuración (config.yaml + .env), rutas relativas, registro, errores
 └── lector_facturas/     # Motor: OCR con Tesseract, extractor de reglas y consenso, métricas
 ```
 
-- **Interfaz pública (`src/*.py`)**: lo que usan la app, los scripts y las pruebas. Sigue PEP 8 (revisado con `flake8`, ver `.flake8`), tiene docstrings, valida entradas, maneja errores con mensajes para el usuario y registra eventos con `logging`.
+- **Interfaz pública (`src/*.py`)**: lo que usan la app, los notebooks, los scripts y las pruebas. Sigue PEP 8 (revisado con `flake8`, ver `.flake8`), tiene docstrings, valida entradas, maneja errores con mensajes para el usuario y registra eventos con `logging`.
 - **Motor (`src/lector_facturas/`)**: el modelo «resumen contable» tal como se desarrolló y evaluó. La interfaz lo envuelve sin cambiar su comportamiento, para que los resultados de los notebooks sigan siendo reproducibles.
 
 ## Uso desde Python
@@ -59,7 +61,14 @@ python -m src.train --datos data/raw --salida outputs/optimizacion  # optimizar 
 | `model.LectorFacturas` | `frozen_runtime.bind_models`, `cli.predict`, `consensus.extract` |
 | `train.optimizar` | `experiments.optimize_consensus_cached` |
 | `evaluate.evaluar_*` | `experiments.run`, `random_known_sample`, `load_external_test`, `evaluation.evaluate` |
+| `validation.*` (notebook 06) | `experiments.run` y las salidas de `evaluation.evaluate`; `model.calcular_confianza` |
+| `line_classifier.*` (notebook 03, sección 9) | `geometry.grouped`, `candidate_rules.AMOUNT`/`DATE`, `common.normalize`; scikit-learn |
 
 ## Nivel de confianza
 
 `model.calcular_confianza` asigna a cada campo `alta`, `media`, `baja` o `sin_valor` según la fracción de vistas OCR que leyeron el valor elegido (umbrales en `config.yaml`). Si el campo tiene una alerta, baja un escalón. **No es una probabilidad calibrada**: indica cuántas lecturas coinciden y sirve para priorizar la revisión.
+
+## Validación y comparación (Workshop S5 y Semana 3)
+
+- [`validation.py`](validation.py): muestra de documentos nunca revisados (`muestra_no_revisada`), escenarios críticos de imagen (`ESCENARIOS`, `perturbar_imagen`), tipo de error y confianza por campo (`detalle_campos`), exactitud por documento, calibración de la confianza y tiempo de revisión estimado. Lo usa [`06_validacion_escenarios.ipynb`](../notebooks/06_validacion_escenarios.ipynb).
+- [`line_classifier.py`](line_classifier.py): red MLP por campo sobre las líneas del OCR, con etiquetas débiles, entrenamiento época por época con historial (`entrenar`, `Historial`), *early stopping* con restauración y diagnóstico de overfitting con umbrales explícitos (`cuantificar`, `diagnosticar`, `sensibilidad_umbrales`). Lo usa la sección 9 de [`03_modelado.ipynb`](../notebooks/03_modelado.ipynb).

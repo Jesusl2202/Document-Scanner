@@ -2,6 +2,15 @@
    Idea visual: papel de libro contable (renglones verdes, margen rojo) y papel carbón azul
    para marcar la evidencia sobre el documento. */
 
+/* Atkinson Hyperlegible Next (Braille Institute, licencia SIL OFL 1.1, ver fuentes/OFL.txt).
+   Se sirve desde la app: la página no hace peticiones a servicios externos. */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("fuentes/AtkinsonHyperlegibleNext.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
 :root {
   --papel: #F4F7F4;
   --hoja: #FFFFFF;

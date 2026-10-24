@@ -300,7 +300,35 @@ def generar_reporte(carpeta_resultados: str | Path = "results") -> Path:
             archivo = next(iter(sorted(evaluacion.rglob(nombre))), None)
             if archivo:
                 tabla = pd.read_csv(archivo, encoding="utf-8-sig").replace({True: "sí", False: "no"})
-                partes += [f"### {titulo}", "", tabla_markdown(tabla.drop(columns=["nota"], errors="ignore"), 1), ""]
+                decimales = 3 if nombre == "metricas_por_campo.csv" else 1
+                tabla = tabla.drop(columns=["nota"], errors="ignore")
+                partes += [f"### {titulo}", "", tabla_markdown(tabla, decimales), ""]
+
+    validacion = metricas / "validacion"
+    if validacion.is_dir():
+        partes += ["## Validación en contextos simulados (notebook 06)", ""]
+        for nombre, titulo, decimales in (
+                ("nuevos_vs_test.csv", "Documentos nunca revisados frente al test (%)", 1),
+                ("calibracion_confianza.csv", "Exactitud según el nivel de confianza (%)", 1),
+                ("tiempo_revision.csv", "Tiempo de revisión estimado por documento", 1),
+                ("escenarios_criticos.csv", "Escenarios críticos", 1),
+                ("equidad_subgrupos.csv", "Resultados por subgrupo", 1)):
+            archivo = next(iter(sorted(validacion.rglob(nombre))), None)
+            if archivo:
+                tabla = pd.read_csv(archivo, encoding="utf-8-sig").drop(columns=["simula"], errors="ignore")
+                partes += [f"### {titulo}", "", tabla_markdown(tabla, decimales), ""]
+        por_doc = next(iter(sorted(validacion.rglob("nuevos_por_documento.json"))), None)
+        if por_doc:
+            d = json.loads(por_doc.read_text(encoding="utf-8"))["por_documento"]
+            partes += [f"Documentos con todos sus campos correctos: **{_numero(d['todo_correcto'])} %** "
+                       f"(si los campos fallaran de forma independiente se esperaría "
+                       f"{_numero(d['esperado_si_independientes'])} %).", ""]
+
+    tecnicas = next(iter(sorted((metricas / "modelado").rglob("comparacion_tecnicas_test.csv"))), None) \
+        if (metricas / "modelado").is_dir() else None
+    if tecnicas:
+        partes += ["## Comparación con una técnica aprendida (notebook 03)", "",
+                   tabla_markdown(pd.read_csv(tecnicas, encoding="utf-8-sig"), 1), ""]
 
     figuras = sorted((resultados / "figures").rglob("*.png"))
     partes += ["## Figuras", ""]

@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lector de Facturas</title>
   <meta name="description" content="Extrae RUC, fecha, número, subtotal, IVA y total de facturas impresas con OCR, con la evidencia de cada valor.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="{{ url_for('static', filename='fuentes/AtkinsonHyperlegibleNext.ttf') }}" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='3' width='20' height='26' rx='2' fill='%23F4F7F4' stroke='%232F6B4F' stroke-width='2'/%3E%3Cpath d='M10 10h12M10 15h12M10 20h7' stroke='%232D50A0' stroke-width='2'/%3E%3C/svg%3E">
 </head>
@@ -51,7 +49,7 @@
           <ul>
             <li>Factura o recibo <strong>impreso o digital</strong>. Lo escrito a mano no se reconoce bien: si un dato está a mano, digítalo tú.</li>
             <li>Foto recta, completa y con buena luz; mejor si el comprobante ocupa toda la imagen.</li>
-            <li>El archivo solo se usa para esta lectura y se borra al terminar.</li>
+            <li>El archivo solo se usa para esta lectura y se borra al terminar. Esta demostración corre en un servidor de Hugging Face: sube facturas tuyas o los ejemplos, no facturas de otras personas.</li>
           </ul>
           {% if ejemplos %}
           <h2>O prueba con un ejemplo</h2>

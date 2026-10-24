@@ -8,7 +8,7 @@ Este documento describe los datos del proyecto, lo que encontramos al explorarlo
 
 > **Regla que seguimos en todo el EDA:** solo exploramos los documentos de **entrenamiento y validación**. Del test oficial únicamente revisamos integridad y duplicados; nunca miramos sus etiquetas.
 >
-> Esa regla se cumplió en el EDA, pero no durante todo el desarrollo: para mejorar el modelo se revisaron grupos aleatorios del test oficial (sección 2). Por eso la evaluación final se complementa con una prueba externa anotada.
+> Esa regla se cumplió en el EDA, pero no durante todo el desarrollo: para mejorar el modelo se revisaron grupos aleatorios del test oficial (sección 2). Por eso la evaluación final se complementa con documentos de la partición `train` que nunca se revisaron ([`06_validacion_escenarios.ipynb`](../notebooks/06_validacion_escenarios.ipynb)).
 
 ## Contenido
 

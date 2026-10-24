@@ -1,0 +1,19 @@
+{
+  "python": "3.12.15 (main, Oct  1 2026, 02:35:59) [GCC 13.3.0]",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "source": "ocr",
+  "packages": {
+    "Pillow": "12.3.0",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "matplotlib": "3.11.2",
+    "pypdfium2": "5.14.0"
+  },
+  "tesseract": {
+    "version": "tesseract 5.3.4",
+    "languages": [
+      "eng",
+      "osd"
+    ]
+  }
+}
