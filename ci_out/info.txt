@@ -1,0 +1,11 @@
+4
+               total        used        free      shared  buff/cache   available
+Mem:              15           1          12           0           2          14
+Swap:              2           0           2
+/home/runner/work/_temp/2a5d8710-ddc0-4985-a61d-0fedb5f562b7.sh: line 2: tesseract: command not found
+Python 3.12.3
+HTTP/2 404 
+content-length: 134
+content-type: text/html; charset=UTF-8
+HTTP/1.1 200 OK
+Content-Length: 185323520
