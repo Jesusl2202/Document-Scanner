@@ -11,6 +11,7 @@ mismos límites, mismas alertas y mismos mensajes de error. La presentación est
 """
 from __future__ import annotations
 
+import hashlib
 import sys
 import tempfile
 from pathlib import Path
@@ -35,9 +36,25 @@ st.set_page_config(page_title="Lector de Facturas", page_icon="🧾", layout="wi
                                         f"Artificial, Universidad Espíritu Santo. {P.REPOSITORIO}"})
 
 
-@st.cache_resource(show_spinner="Preparando el modelo. La primera vez descarga los pesos de Tesseract (unos segundos)…")
-def obtener_servicio() -> ServicioLector:
-    """Un solo servicio por servidor: carga Tesseract y los pesos una vez y atiende una lectura a la vez."""
+# Archivos que definen el servicio: si cambian (nueva versión publicada), se crea un servicio nuevo en lugar
+# de seguir usando el que quedó en caché con el código anterior.
+ARCHIVOS_SERVICIO = ("app/servicio.py", "configs/config.yaml", "configs/definitivo.json", "src/model.py",
+                     "src/data_processing.py", "models/ficha_modelo.json")
+
+
+def huella_servicio() -> str:
+    resumen = hashlib.sha256()
+    for relativo in ARCHIVOS_SERVICIO:
+        ruta = RAIZ / relativo
+        resumen.update(ruta.read_bytes() if ruta.is_file() else b"")
+    return resumen.hexdigest()[:16]
+
+
+@st.cache_resource(show_spinner="Preparando el modelo. La primera vez descarga los pesos de Tesseract (unos segundos)…",
+                   max_entries=1)
+def obtener_servicio(huella: str) -> ServicioLector:
+    """Un solo servicio por servidor (por versión del código): carga Tesseract y los pesos una vez y atiende una
+    lectura a la vez. ``huella`` solo sirve de clave de la caché."""
     servicio = ServicioLector()
     servicio.lector.cargar()
     return servicio
@@ -204,14 +221,14 @@ def main() -> None:
     st.html(P.html_cabecera())
     leer_tab, acerca_tab = st.tabs(["Leer documentos", "Cómo funciona"])
     try:
-        servicio = obtener_servicio()
+        servicio = obtener_servicio(huella_servicio())
     except Exception as exc:  # noqa: BLE001
         LOGGER.exception("No se pudo preparar el modelo")
         with leer_tab:
             st.html(P.html_mensaje(respuesta_error(exc)[0]["error"]))
         return
     limites = servicio.limites()
-    ayuda = (f'Hasta {limites["documentos_por_lote"]} archivos a la vez. JPG, PNG o PDF de hasta '
+    ayuda = (f'Hasta {limites.get("documentos_por_lote", 20)} archivos a la vez. JPG, PNG o PDF de hasta '
              f'{limites["tamano_maximo_mb"]} MB cada uno; los PDF, de hasta {limites["paginas_maximas_pdf"]} páginas.')
     st.html(f'<style>[data-testid="stFileUploaderDropzoneInstructions"] > div::after {{ content: "{ayuda}"; }}</style>')
     with leer_tab:
