@@ -18,62 +18,62 @@
       {
         "preprocess": "original",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       },
       {
         "preprocess": "resize",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       },
       {
         "preprocess": "otsu",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       },
       {
         "preprocess": "resize",
         "psm": 3,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       },
       {
         "preprocess": "resize",
         "psm": 11,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       },
       {
         "preprocess": "original",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       },
       {
         "preprocess": "resize",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       },
       {
         "preprocess": "resize",
         "psm": 11,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       },
       {
         "preprocess": "illumination",
         "psm": 6,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       },
       {
         "preprocess": "denoise",
         "psm": 6,
         "language": "eng+spa",
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/fast",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/fast",
         "expected_model_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
       }
     ],
@@ -102,7 +102,7 @@
         "max_pixels": 6000000,
         "local_window": 41,
         "local_k": 0.2,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       },
       {
@@ -113,7 +113,7 @@
         "max_pixels": 6000000,
         "local_window": 41,
         "local_k": 0.2,
-        "tessdata_dir": "/content/Lector_Facturas_Experimentos/modelos/best",
+        "tessdata_dir": "/home/runner/work/Document-Scanner/Document-Scanner/outputs/experimentos/modelos/best",
         "expected_model_sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
       }
     ],

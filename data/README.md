@@ -44,9 +44,9 @@ Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del em
 
 ## 3. Muestra propia (RIDE)
 
-Conjunto de 30–50 comprobantes de al menos tres emisores, reservado como **prueba final** y mantenido separado de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
+Protocolo para una prueba externa con 30–50 comprobantes reales de al menos tres emisores, separada de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
 
-**Evaluación:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) la evalúa como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`), separada de las métricas de SROIE y WildReceipt. La muestra está en recolección. Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
+**Evaluación:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) la evalúa como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`), separada de las métricas de SROIE y WildReceipt. Las cifras publicadas del proyecto no incluyen esta prueba: la evidencia de generalización viene de documentos de SROIE y WildReceipt que nunca se revisaron (sección 6). Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
 
 ## 4. Modelos preentrenados (no son datasets)
 
@@ -83,11 +83,11 @@ La preparación (`prepare` en `datasets.py`) construye un manifiesto y asigna ca
 
 **Documentos ya revisados.** [`processed/documentos_revisados.csv`](processed/documentos_revisados.csv) registra por id y hash los **1.461** documentos que se miraron durante el desarrollo: 650 de entrenamiento, **809 del test oficial** (337 de SROIE y 472 de WildReceipt) y 2 externos. En la entrega V7 eran 350, todos de entrenamiento; para mejorar los campos débiles se revisaron después grupos aleatorios del test.
 
-Consecuencia: el test oficial **ya no es inédito**. El notebook 05 sigue tomando 50 documentos por base del test (sin duplicados con desarrollo) para medir y comparar versiones, declara cuántos ya se habían revisado y deja la evidencia de generalización a la **prueba externa** con la muestra propia. La optimización (notebook 04) usa solo `validation`, separada por hash en optimización y control y sin imágenes del test.
+Consecuencia: el test oficial **ya no es inédito**. El notebook 05 sigue tomando 50 documentos por base del test (sin duplicados con desarrollo) para medir y comparar versiones y declara cuántos ya se habían revisado. La evidencia de generalización la da el notebook [`06_validacion_escenarios.ipynb`](../notebooks/06_validacion_escenarios.ipynb): 50 documentos por base de la partición `train` que **no figuran en este registro** (nadie miró sus errores al ajustar las reglas) ni comparten imagen con otras particiones. La optimización (notebook 04) usa solo `validation`, separada por hash en optimización y control y sin imágenes del test.
 
 ## 7. Limitaciones conocidas de los datos
 
-- **Sin agrupación por emisor:** la partición train/validation se hace por hash de imagen, no por comercio; plantillas del mismo emisor pueden aparecer en ambas y favorecer la validación.
+- **Sin agrupación por emisor:** la partición train/validation se hace por hash de imagen, no por comercio; plantillas del mismo emisor pueden aparecer en ambas y favorecer la validación. Por la misma razón, los documentos nunca revisados del notebook 06 pueden ser de comercios cuyos recibos sí se revisaron: son imágenes nuevas, no necesariamente formatos nuevos.
 - **Duplicados:** solo se detectan por SHA-256; imágenes casi idénticas pasan desapercibidas.
 - **Cobertura de anotación ≠ exactitud:** que un campo esté anotado no dice nada sobre si el extractor lo lee bien; `coverage.csv` mide cobertura de etiquetas.
 - **Sesgo de origen:** ninguna de las dos bases públicas se construyó con comprobantes ecuatorianos y el OCR se ejecuta con el modelo inglés (`eng`). El proyecto apunta también a comprobantes ecuatorianos (RUC, IVA), que solo la muestra propia representa. Los resultados en las bases públicas no garantizan el mismo desempeño en esos documentos.

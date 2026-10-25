@@ -1,0 +1,12 @@
+﻿escenario,simula,campos,exactitud,omisiones,equivocados,silenciosos,procesados,caida_pp,veredicto
+Sin perturbar,Imagen original,90,81.1,5.6,13.3,2.2,100.0,0.0,aceptable
+Ruido σ = 12,Foto con poca luz o sensor de gama baja,90,76.7,11.1,12.2,2.2,100.0,4.4,aceptable
+Ruido σ = 30,Foto nocturna o muy granulada,90,48.9,33.3,17.8,2.2,100.0,32.2,falla
+Desenfoque leve,Foto ligeramente movida o desenfocada,90,42.2,45.6,12.2,2.2,100.0,38.9,falla
+Desenfoque fuerte,Foto movida,90,17.8,67.8,14.4,1.1,100.0,63.3,falla
+Mitad de resolución,Foto tomada de lejos o reenviada reducida,90,61.1,27.8,11.1,2.2,100.0,20.0,falla
+30 % de resolución,Captura de pantalla o miniatura,90,33.3,51.1,15.6,3.3,100.0,47.8,falla
+JPEG calidad 12,Imagen recomprimida por mensajería,90,61.1,26.7,12.2,1.1,100.0,20.0,falla
+Rotación 6°,Foto torcida,90,53.3,11.1,35.6,6.7,100.0,27.8,falla
+Sombra lateral,Iluminación desigual o sombra de la mano,90,72.2,13.3,14.4,2.2,100.0,8.9,aceptable
+Falta el 20 % inferior,Comprobante cortado: el pie no aparece,90,72.2,15.6,12.2,4.4,100.0,8.9,aceptable

@@ -2,7 +2,7 @@
 
 **Proyecto:** Lector de Facturas — extracción y validación de datos de facturas y comprobantes de compra con OCR
 **Equipo:** Sebastián Rojas y Jesús Antonio López Barahona
-**Última actualización:** 21/10/2026
+**Última actualización:** 24/10/2026
 
 Este documento explica qué modelo usa el sistema, por qué lo elegimos, cómo está construido por dentro y cómo viajan los datos desde la imagen hasta el JSON final. Describe la versión actual de la rama `main`: el modelo **«resumen contable»**, definido por [`configs/definitivo.json`](../configs/definitivo.json) y el código de [`src/lector_facturas/`](../src/lector_facturas/).
 
@@ -15,7 +15,8 @@ Este documento explica qué modelo usa el sistema, por qué lo elegimos, cómo e
 5. [Organización del código](#5-organización-del-código)
 6. [Tecnologías y versiones](#6-tecnologías-y-versiones)
 7. [Reproducibilidad](#7-reproducibilidad)
-8. [Limitaciones de la arquitectura](#8-limitaciones-de-la-arquitectura)
+8. [Interfaz web y despliegue](#8-interfaz-web-y-despliegue)
+9. [Limitaciones de la arquitectura](#9-limitaciones-de-la-arquitectura)
 
 ---
 
@@ -48,7 +49,8 @@ En la Ficha de Decisión Técnica (Semana 2) comparamos cinco familias de técni
 | **Interpretabilidad** | Un usuario de contabilidad necesita saber de dónde sale cada valor. Con reglas, cada campo guarda el texto, la zona de la imagen, la vista y la regla que lo produjo. LayoutLMv3 y Donut son menos transparentes, y Donut puede generar valores que no están en la imagen. |
 | **Recursos** | Dos personas, seis semanas y Colab gratuito. Tesseract corre en **CPU** y no necesita GPU ni entrenamiento. |
 | **Costo** | USD 0. No depende de una API de pago y las imágenes no salen del equipo donde se procesan. |
-| **Riesgo de sobreajuste** | Al no entrenar pesos no hay curvas de entrenamiento que sobreajustar. El riesgo que sí existe es **ajustar las reglas a los documentos vistos**; lo controlamos separando desarrollo, optimización, control y test (sección 7). |
+| **Riesgo de sobreajuste** | Al no entrenar pesos no hay curvas de entrenamiento que sobreajustar. El riesgo que sí existe es **ajustar las reglas a los documentos vistos**; lo controlamos separando desarrollo, optimización, control y test (sección 7) y lo medimos: con documentos que nadie revisó, la exactitud baja de 81,1 % a 75,0 % ([notebook 06](../notebooks/06_validacion_escenarios.ipynb)). |
+| **Evidencia frente a una técnica aprendida** | Una red neuronal entrenada con 1.502 documentos para clasificar las líneas del OCR (la versión liviana de LayoutLMv3) logra 57,4 % con una sola lectura, frente a 51,9 % de las reglas iniciales y 81,1 % del modelo final ([`03_modelado.ipynb`](../notebooks/03_modelado.ipynb), sección 9). El límite es el OCR, no el clasificador. |
 
 El costo de esta elección es que las reglas dependen de que el OCR lea bien y de que las etiquetas del documento ("TOTAL", "IVA", "RUC") aparezcan de alguna forma reconocible. Para reducir esa fragilidad, el modelo lee cada imagen **10 veces con configuraciones y pesos distintos**, añade lecturas de rescate cuando la calidad es baja y solo corrige un importe cuando el resumen contable observado lo respalda.
 
@@ -61,7 +63,7 @@ El costo de esta elección es que las reglas dependen de que el OCR lea bien y d
 | V7 (entrega anterior) | Cinco lecturas OCR (`fast`), votación ponderada, coincidencias aproximadas, reglas aritméticas y de pago. | 70,53 % (213/302 campos, 120 documentos usados para seleccionarla) |
 | **Resumen contable (actual)** | 10 vistas (pesos `fast` y `best`, corrección de iluminación, vista inglés + español), rescate OCR adaptativo, etiquetas impresas, asociación por geometría, consistencia del documento, resumen contable observado y rescate de campos vacíos por confianza. Ya no supone total = subtotal. | 75,0–77,6 % en tres grupos aleatorios del test oficial; el más reciente, **76,35 % (184/241)** frente a 75,93 % de la misma versión sin resumen contable. Evaluación final: **81,1 %** en 100 documentos del test |
 
-Las cifras de V7 y del modelo actual son de **desarrollo**: esos documentos se usaron para decidir cambios, y casi todo el test oficial ya fue revisado. No garantizan el mismo resultado en documentos nuevos; la medición final y la prueba externa se hacen en [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) (ver [`results/`](../results/)).
+Las cifras de V7 y del modelo actual son de **desarrollo**: esos documentos se usaron para decidir cambios, y casi todo el test oficial ya fue revisado. No garantizan el mismo resultado en documentos nuevos: la medición final está en [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) y la medición con documentos nunca revisados, en [`06_validacion_escenarios.ipynb`](../notebooks/06_validacion_escenarios.ipynb) (ver [`results/`](../results/)).
 
 ## 2. Diagrama de flujo del sistema
 
@@ -350,8 +352,9 @@ flowchart LR
     M -->|run_eda| E["documents.csv, coverage.csv,<br/>incidents.csv"]
     M -->|validation_samples| V["optimización + control<br/>(notebooks 03 y 04)"]
     M -->|random_known_sample<br/>50 por base| S["muestra de test congelada<br/>(notebook 05)"]
+    M -->|validation.muestra_no_revisada<br/>50 por base| N["documentos nunca revisados<br/>+ escenarios críticos (notebook 06)"]
     X["ZIP externo anotado"] -->|load_external_test| S2["prueba externa"]
-    S & S2 -->|experiments.run| P["predictions.jsonl"]
+    S & N & S2 -->|experiments.run| P["predictions.jsonl"]
     P -->|evaluate| Q["metrics.csv, errors.csv,<br/>cer.csv, summary.json"]
 ```
 
@@ -370,6 +373,8 @@ src/
 │                        # exportación JSON/CSV, «Acerca de»; comando `python -m src.model`
 ├── train.py             # Optimización de los hiperparámetros del consenso en validación (no hay pesos que entrenar)
 ├── evaluate.py          # Test oficial, prueba externa, cumplimiento de metas, importación a results/ y reporte
+├── validation.py        # Datos nunca revisados, escenarios críticos, tipo de error, confianza, costo de revisión
+├── line_classifier.py   # Técnica de comparación: red MLP sobre líneas OCR, con historial y diagnóstico
 └── utils.py             # config.yaml + .env, rutas relativas a la raíz, logging, excepciones con mensajes de usuario
 ```
 
@@ -392,7 +397,7 @@ src/lector_facturas/
 └── frozen_runtime.py    # Pesos fijados por hash, notas de revisión y cobertura
 ```
 
-`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **153 pruebas unitarias** en [`tests/`](../tests/): 120 del motor (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador) y 33 de la interfaz pública (`test_data_processing.py`, `test_model.py`, `test_app.py`), incluida una lectura real con Tesseract. Detalle en [`tests/README.md`](../tests/README.md).
+`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **177 pruebas unitarias** en [`tests/`](../tests/): 120 del motor (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador) y 57 de la interfaz pública y la app (`test_data_processing.py`, `test_model.py`, `test_app.py`, `test_validation.py`, `test_line_classifier.py`), incluidas lecturas reales con Tesseract. Detalle en [`tests/README.md`](../tests/README.md).
 
 **Configuración y errores.** Las rutas, límites de entrada, metas, semillas y umbrales están en [`configs/config.yaml`](../configs/config.yaml) (sobreescribibles con `.env`); el modelo, en `configs/definitivo.json`. Los errores esperables se lanzan como `ErrorEntrada`, `ErrorModelo` o `ErrorConfiguracion` con un mensaje para el usuario, y una página que falla no detiene el resto del documento. Los eventos se registran con `logging` en consola y en `outputs/lector.log`.
 
@@ -409,11 +414,15 @@ src/lector_facturas/
 | matplotlib | ≥ 3.7, < 4 | Gráficos |
 | pypdfium2 | ≥ 4.25, < 6 | PDF → imagen |
 | PyYAML | ≥ 6, < 7 | Lectura de `configs/config.yaml` |
-| scikit-learn | ≥ 1.3, < 2 | Sustituto Random Forest, PDP e importancia (solo notebook 04) |
+| scikit-learn | ≥ 1.3, < 2 | Sustituto Random Forest, PDP e importancia (notebook 04); red MLP de comparación (notebook 03) |
 | setuptools | ≥ 68 | Instalación del paquete (`pyproject.toml`) |
-| Google Colab | CPU | Ejecución de los notebooks |
+| Flask / gunicorn | ≥ 3 / ≥ 22 | Interfaz web (`app/requirements.txt`) |
+| Docker (Ubuntu 24.04) | — | Imagen de la interfaz con Tesseract 5.3.4 |
+| Hugging Face Spaces | SDK Docker, CPU gratuita (2 vCPU, 16 GB) | Despliegue público de la interfaz |
+| GitHub Actions | Ubuntu 24.04, 4 vCPU | Pruebas, construcción de la imagen y ejecución de los notebooks con los datasets completos |
+| Google Colab | CPU | Ejecución interactiva de los notebooks |
 
-Los rangos vienen de [`requirements.txt`](../requirements.txt). Las 153 pruebas y los cinco notebooks se ejecutaron de punta a punta en un entorno con Python 3.13, Tesseract 5.3.4, Pillow 12.3, NumPy 2.5, pandas 3.0, matplotlib 3.11, pypdfium2 5.13 y scikit-learn 1.9 (los notebooks, con un dataset sintético de prueba).
+Los rangos vienen de [`requirements.txt`](../requirements.txt). Las pruebas se ejecutan en cada cambio con Python 3.12 y Tesseract 5.3.4 ([`pruebas.yml`](../.github/workflows/pruebas.yml)). Los seis notebooks se ejecutan con los datasets completos en GitHub Actions ([`experimentos.yml`](../.github/workflows/experimentos.yml), mismo Tesseract 5.3.4 que Colab) y se guardan con sus salidas.
 
 ## 7. Reproducibilidad
 
@@ -422,15 +431,37 @@ Los rangos vienen de [`requirements.txt`](../requirements.txt). Las 153 pruebas 
 - **Caché de OCR con huella:** la clave incluye el hash de la imagen, las opciones, la versión de Tesseract y el hash del código de OCR y preprocesamiento. Si algo cambia, no se reutiliza una lectura vieja.
 - **Partición determinista:** por SHA-256 con semilla 42.
 - **Muestras separadas:** optimización y control (validación) son disjuntas por hash y no contienen imágenes del test oficial. La muestra de test se elige por semilla, sin duplicados con desarrollo.
-- **Documentos revisados:** [`configs/documentos_revisados.json`](../configs/documentos_revisados.json) registra los 1.461 documentos que se miraron durante el desarrollo (también en [`data/processed/documentos_revisados.csv`](../data/processed/documentos_revisados.csv)). Incluye casi todo el test oficial, por lo que el test **no es inédito**; la generalización se mide con la prueba externa anotada.
+- **Documentos revisados:** [`configs/documentos_revisados.json`](../configs/documentos_revisados.json) registra los 1.461 documentos que se miraron durante el desarrollo (también en [`data/processed/documentos_revisados.csv`](../data/processed/documentos_revisados.csv)). Incluye casi todo el test oficial, por lo que el test **no es inédito**; la generalización se mide con documentos de la partición `train` que no figuran en ese registro ([notebook 06](../notebooks/06_validacion_escenarios.ipynb)) y, cuando hay facturas propias anotadas, con la prueba externa.
+- **Ejecución automatizada:** [`scripts/ejecutar_notebook.py`](../scripts/ejecutar_notebook.py) corre cualquier notebook con el código del repositorio y guarda sus salidas; el workflow de experimentos lo usa para los seis.
 - **Huella del experimento:** `experiments.run` se niega a reutilizar una carpeta con otro código, otra configuración u otra muestra.
 
-## 8. Limitaciones de la arquitectura
+## 8. Interfaz web y despliegue
+
+```mermaid
+flowchart LR
+    U(["Navegador"]) -->|"POST /api/leer<br/>imagen o PDF"| F["Flask + gunicorn<br/>app/app.py"]
+    F --> S["ServicioLector<br/>app/servicio.py"]
+    S -->|"validar_archivo<br/>(10 MB, 3 páginas)"| V{"¿Válido?"}
+    V -- No --> E["400 con mensaje claro"]
+    V -- Sí --> T["Turno: una lectura a la vez<br/>(espera hasta 2 min)"]
+    T --> L["LectorFacturas.leer_pagina<br/>(mismo modelo evaluado)"]
+    L --> R["JSON: campos, confianza, alertas en lenguaje claro,<br/>caja de evidencia, vista previa, cuadre"]
+    R --> U
+    L -.->|"carpeta temporal<br/>se borra al terminar"| X[("sin almacenamiento")]
+```
+
+- **Separación en capas.** `app/app.py` solo traduce HTTP; `app/servicio.py` concentra la lógica y se prueba sin servidor; el modelo es `src.model.LectorFacturas`, el mismo de los notebooks y la terminal.
+- **Errores.** Entrada inválida → 400; archivo de más de 10 MB → 413; modelo no disponible o servidor ocupado → 503; cualquier otro error → 500 con un mensaje genérico, registrado en el log sin exponer detalles técnicos al usuario.
+- **Contenedor.** El [`Dockerfile`](../Dockerfile) parte de Ubuntu 24.04 (Tesseract 5.3.4, la versión de la evaluación), corre con un usuario sin privilegios, descarga y verifica los pesos durante la construcción y expone `/salud` para el control de estado. gunicorn atiende con un proceso y 4 hilos; el modelo se carga una vez al arrancar.
+- **Despliegue.** Hugging Face Spaces (SDK Docker, CPU gratuita de 2 vCPU y 16 GB), publicado desde GitHub por [`despliegue.yml`](../.github/workflows/despliegue.yml). Se descartó Render gratuito (0,1 CPU: una página con 10 lecturas tardaría varios minutos) y Streamlit Community Cloud (menos memoria y CPU compartida).
+- **Verificación continua.** [`pruebas.yml`](../.github/workflows/pruebas.yml) construye la imagen en cada cambio, espera a que cargue el modelo, lee un ejemplo y comprueba los valores, y confirma que un archivo no admitido devuelve un error claro.
+
+## 9. Limitaciones de la arquitectura
 
 - **Depende del OCR.** Si Tesseract lee mal un dígito y todas las vistas cometen el mismo error, el consenso no lo puede corregir.
 - **Texto manuscrito.** Los pesos de Tesseract están entrenados con texto impreso. Fechas, montos o RUC **escritos a mano** no se reconocen de forma confiable; el sistema está pensado solo para comprobantes impresos o digitales.
 - **Reglas en inglés y español básico.** Las etiquetas cubren inglés y algunas en español y otros idiomas (`IVA`, `RUC`, `factura`, `totaal`, `moms`). Formatos con etiquetas distintas necesitan reglas nuevas.
-- **Más lento que una sola lectura.** Diez vistas (más el rescate) multiplican el tiempo de OCR: el recibo sintético toma ~3 s en un contenedor con CPU. En Colab, el modelo anterior tardaba ~13 s por recibo real con 5 vistas, así que con 10 vistas en 2 procesos se puede esperar del orden de 10–30 s por documento; la medición real sale del notebook 05.
+- **Más lento que una sola lectura.** Diez vistas (más el rescate) multiplican el tiempo de OCR. En la evaluación final (Colab, CPU) la mediana fue de 11,2 s por documento y el percentil 95 de 20,7 s; el ejemplo sintético de la app se lee en unos 5 s.
 - **Sin unión de páginas.** Una factura de varias páginas devuelve un resultado por página.
 - **Heurísticas con alertas.** El resumen contable observado y el rescate por confianza eligen entre valores leídos con reglas; las probabilidades de Tesseract no están calibradas y los campos marcados deben revisarse.
 

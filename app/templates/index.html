@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lector de Facturas</title>
+  <meta name="description" content="Extrae RUC, fecha, número, subtotal, IVA y total de facturas impresas con OCR, con la evidencia de cada valor.">
+  <link rel="preload" href="{{ url_for('static', filename='fuentes/AtkinsonHyperlegibleNext.ttf') }}" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='3' width='20' height='26' rx='2' fill='%23F4F7F4' stroke='%232F6B4F' stroke-width='2'/%3E%3Cpath d='M10 10h12M10 15h12M10 20h7' stroke='%232D50A0' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="cabecera__marca">
+      <svg class="cabecera__icono" viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="3" width="20" height="26" rx="2"/><path d="M10 10h12M10 15h12M10 20h7"/></svg>
+      <div>
+        <h1>Lector de Facturas</h1>
+        <p class="cabecera__lema">Saca el RUC, la fecha, el número, el subtotal, el IVA y el total de una factura impresa, y te muestra de dónde salió cada valor para que lo revises.</p>
+      </div>
+    </div>
+    <nav class="pestanas" aria-label="Secciones">
+      <button class="pestana" data-vista="leer" aria-current="page">Leer un documento</button>
+      <button class="pestana" data-vista="acerca">Cómo funciona</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ Leer ============ -->
+    <section id="vista-leer" class="vista">
+      <div id="mensaje" class="mensaje" role="alert" hidden>
+        <p id="mensaje-texto"></p>
+        <button id="mensaje-cerrar" class="enlace" type="button">Elegir otro archivo</button>
+      </div>
+
+      <div id="inicio" class="inicio">
+        <form id="formulario" class="carga" novalidate>
+          <input id="archivo" class="carga__input" type="file" name="archivo"
+                 accept="{{ limites.extensiones | join(',') }},image/jpeg,image/png,application/pdf">
+          <label for="archivo" id="zona" class="carga__zona" tabindex="-1">
+            <svg class="carga__dibujo" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 6h20l10 10v42H18z"/><path d="M38 6v10h10"/><path d="M24 30h18M24 37h18M24 44h11"/></svg>
+            <span class="carga__titulo">Arrastra aquí la foto o el PDF de la factura</span>
+            <span class="carga__boton">Elegir archivo</span>
+            <span class="carga__ayuda">JPG, PNG o PDF de hasta {{ limites.tamano_maximo_mb }} MB; los PDF, de hasta {{ limites.paginas_maximas_pdf }} páginas.</span>
+          </label>
+        </form>
+
+        <aside class="consejos" aria-label="Antes de subir">
+          <h2>Para una buena lectura</h2>
+          <ul>
+            <li>Factura o recibo <strong>impreso o digital</strong>. Lo escrito a mano no se reconoce bien: si un dato está a mano, digítalo tú.</li>
+            <li>Foto recta, completa y con buena luz; mejor si el comprobante ocupa toda la imagen.</li>
+            <li>El archivo solo se usa para esta lectura y se borra al terminar. Esta demostración corre en un servidor de Hugging Face: sube facturas tuyas o los ejemplos, no facturas de otras personas.</li>
+          </ul>
+          {% if ejemplos %}
+          <h2>O prueba con un ejemplo</h2>
+          <div class="ejemplos">
+            {% for e in ejemplos %}
+            <button class="ejemplo" data-ejemplo="{{ e.id }}" type="button">
+              {% if e.archivo.endswith('.pdf') %}
+              <span class="ejemplo__miniatura ejemplo__miniatura--pdf" aria-hidden="true">PDF</span>
+              {% else %}
+              <img class="ejemplo__miniatura" src="{{ url_for('archivo_ejemplo', archivo=e.archivo) }}" alt="" loading="lazy">
+              {% endif %}
+              <span class="ejemplo__texto"><strong>{{ e.titulo }}</strong>{{ e.descripcion }}</span>
+            </button>
+            {% endfor %}
+          </div>
+          <p class="nota">Los ejemplos son comprobantes inventados, sin validez tributaria.</p>
+          {% endif %}
+        </aside>
+      </div>
+
+      <div id="procesando" class="procesando" hidden aria-live="polite">
+        <div class="procesando__barra"><span></span></div>
+        <p><strong id="procesando-archivo"></strong></p>
+        <p id="procesando-paso">Leyendo el documento con 10 lecturas de Tesseract…</p>
+        <p class="nota">Suele tardar entre 5 y 30 segundos por página. Tiempo: <span id="procesando-tiempo">0</span> s</p>
+      </div>
+
+      <div id="resultado" class="resultado" hidden>
+        <div class="resultado__barra">
+          <div>
+            <h2 id="resultado-titulo"></h2>
+            <p id="resultado-resumen" class="nota"></p>
+          </div>
+          <div class="acciones">
+            <button id="descargar-csv" class="boton boton--secundario" type="button">Descargar CSV</button>
+            <button id="descargar-json" class="boton boton--secundario" type="button">Descargar JSON</button>
+            <button id="leer-otro" class="boton" type="button">Leer otro documento</button>
+          </div>
+        </div>
+        <div id="paginas-selector" class="paginas" hidden></div>
+        <div class="resultado__cuerpo">
+          <figure class="documento">
+            <div id="documento-lienzo" class="documento__lienzo"></div>
+            <figcaption class="nota">Los recuadros azules marcan dónde se leyó cada valor. Pasa por una fila para resaltarlo.</figcaption>
+          </figure>
+          <div class="libro">
+            <div id="pagina-error" class="mensaje mensaje--en-linea" hidden></div>
+            <table class="libro__tabla">
+              <caption class="sr">Campos extraídos</caption>
+              <thead><tr><th scope="col">Campo</th><th scope="col">Valor leído</th><th scope="col">Confianza</th></tr></thead>
+              <tbody id="campos"></tbody>
+            </table>
+            <p id="cuadre" class="cuadre"></p>
+            <div id="avisos" class="avisos"></div>
+            <p class="nota libro__pie">La confianza indica cuántas lecturas del OCR coinciden en el valor (10 por página, o 12 si la imagen es difícil y se activa el rescate). No reemplaza tu revisión: compara cada dato con el documento antes de registrarlo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Acerca ============ -->
+    <section id="vista-acerca" class="vista" hidden>
+      <div id="acerca" class="acerca"><p class="nota">Cargando…</p></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>Proyecto integrador de la Maestría en Inteligencia Artificial, Universidad Espíritu Santo. Jesús López y Sebastián Rojas. Versión {{ version }}.
+      <a href="https://github.com/Jesusl2202/Document-Scanner">Código y documentación</a></p>
+  </footer>
+
+  <script>window.LIMITES = {{ limites | tojson }};</script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

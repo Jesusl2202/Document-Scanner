@@ -1,9 +1,8 @@
 {
-  "fecha_utc": "2026-10-23T04:24:29.780811+00:00",
+  "fecha_utc": "2026-10-24T22:34:10.134974+00:00",
   "revision_codigo": {
-    "repositorio": "Jesusl2202/Document-Scanner",
-    "rama": "main",
-    "commit": "3e04381dba2bf209480fca9115ce08199bfacb3b"
+    "modo": "local",
+    "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
   },
   "semilla": 42,
   "muestras": {
@@ -206,7 +205,7 @@
     "usar_vista_espanol": false,
     "usar_rescate_ocr": true
   },
-  "r2_oob_sustituto": 0.7808135877660934,
+  "r2_oob_sustituto": 0.7809892370616982,
   "optimizacion": {
     "actual": 0.735024154589372,
     "seleccionada": 0.7444444444444445
@@ -217,7 +216,7 @@
       "peor_campo": 0.5714285714285714,
       "exactitud_global": 0.7755102040816326,
       "campos": 98,
-      "segundos_ocr": 34.425441343500324,
+      "segundos_ocr": 11.631180442999948,
       "grupo:sroie/date": 0.9,
       "grupo:sroie/total": 0.8947368421052632,
       "grupo:wildreceipt/date": 0.8125,
@@ -230,7 +229,7 @@
       "peor_campo": 0.5714285714285714,
       "exactitud_global": 0.7448979591836735,
       "campos": 98,
-      "segundos_ocr": 30.3376801940002,
+      "segundos_ocr": 10.461092602499889,
       "grupo:sroie/date": 0.85,
       "grupo:sroie/total": 0.8947368421052632,
       "grupo:wildreceipt/date": 0.8125,
@@ -244,18 +243,18 @@
     "nota": "Bootstrap pareado por documento, estratificado por dataset; muestra pequeña, no prueba causal."
   },
   "importancia": {
-    "vote_weight": 1.42386,
-    "usar_pesos_best": 0.28443,
-    "observed_accounting": 0.04294,
-    "structured_fields": 0.03267,
-    "primary_weight": 0.02349,
-    "confidence_rescue": 0.01592,
-    "usar_rescate_ocr": 0.00613,
-    "balance_bonus": 0.00536,
+    "vote_weight": 1.42388,
+    "usar_pesos_best": 0.28446,
+    "observed_accounting": 0.04293,
+    "structured_fields": 0.0327,
+    "primary_weight": 0.02353,
+    "confidence_rescue": 0.01591,
+    "usar_rescate_ocr": 0.00609,
+    "balance_bonus": 0.00535,
     "fuzzy_weight": 0.00476,
-    "document_consistency": 0.00447,
-    "printed_improvements": 0.00387,
-    "semantic_amounts": 0.00296,
+    "document_consistency": 0.00458,
+    "printed_improvements": 0.0039,
+    "semantic_amounts": 0.0029,
     "usar_vista_espanol": 0.0022
   },
   "recomendada": {

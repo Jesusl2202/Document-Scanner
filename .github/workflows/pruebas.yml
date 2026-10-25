@@ -1,0 +1,55 @@
+name: Pruebas
+
+on:
+  push:
+    branches: [main, entrega-final]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pruebas:
+    name: Pruebas unitarias y estilo
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar Tesseract y dependencias
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
+          pip install -r requirements.txt -r app/requirements.txt flake8
+      - name: Descargar y verificar los pesos de Tesseract (SHA-256)
+        run: python -m src.model samples/synthetic_receipt.png --salida outputs/prueba
+      - name: Pruebas (incluye lectura real de los ejemplos con Tesseract)
+        run: python -m unittest discover -s tests -v
+        env:
+          PYTHONPATH: src
+      - name: Estilo PEP 8
+        run: flake8 src app tests --exclude src/lector_facturas
+
+  docker:
+    name: Imagen de la interfaz web
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir la imagen
+        run: docker build -t lector-facturas .
+      - name: Prueba de humo del contenedor
+        run: |
+          docker run -d --name lector -p 7860:7860 lector-facturas
+          for i in $(seq 1 60); do
+            if curl -fs localhost:7860/salud | grep -q '"modelo_cargado":true'; then break; fi
+            sleep 2
+          done
+          curl -fs localhost:7860/salud
+          curl -fs localhost:7860/ | grep -q "Lector de Facturas"
+          respuesta=$(curl -fs -X POST localhost:7860/api/ejemplo/factura_impresa)
+          echo "$respuesta" | python3 -c "import json,sys; d=json.load(sys.stdin); c={x['clave']: x['normalizado'] for x in d['paginas'][0]['campos']}; print(c); assert c['total']=='42.72' and c['tax']=='5.57', c"
+          printf 'hola' > notas.txt
+          codigo=$(curl -s -o error.json -w '%{http_code}' -F "archivo=@notas.txt" localhost:7860/api/leer)
+          cat error.json; test "$codigo" = "400"
+      - name: Registro del contenedor
+        if: always()
+        run: docker logs lector || true

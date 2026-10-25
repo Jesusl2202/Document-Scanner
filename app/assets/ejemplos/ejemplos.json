@@ -1,0 +1,47 @@
+{
+  "sinteticos": true,
+  "ejemplos": [
+    {
+      "id": "factura_impresa",
+      "archivo": "factura_impresa.png",
+      "titulo": "Factura impresa",
+      "descripcion": "Escaneo limpio de una factura con RUC, número y desglose de IVA.",
+      "gold": {
+        "tax_id": "0991234567001",
+        "date": "2026-10-14",
+        "document_number": "001-002-000004521",
+        "subtotal": "37.15",
+        "tax": "5.57",
+        "total": "42.72"
+      }
+    },
+    {
+      "id": "recibo_fotografiado",
+      "archivo": "recibo_fotografiado.jpg",
+      "titulo": "Recibo fotografiado",
+      "descripcion": "Foto de celular inclinada y con sombra; incluye efectivo y cambio.",
+      "gold": {
+        "tax_id": "1790012345001",
+        "date": "2026-09-21",
+        "document_number": "002-001-000078934",
+        "subtotal": "8.15",
+        "tax": "1.22",
+        "total": "9.37"
+      }
+    },
+    {
+      "id": "factura_digital",
+      "archivo": "factura_digital.pdf",
+      "titulo": "Factura en PDF",
+      "descripcion": "La misma factura como PDF de una página.",
+      "gold": {
+        "tax_id": "0991234567001",
+        "date": "2026-10-14",
+        "document_number": "001-002-000004521",
+        "subtotal": "37.15",
+        "tax": "5.57",
+        "total": "42.72"
+      }
+    }
+  ]
+}

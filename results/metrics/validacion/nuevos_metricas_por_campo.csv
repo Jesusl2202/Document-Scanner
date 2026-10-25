@@ -1,0 +1,11 @@
+﻿dataset,field,support,exact_match,precision,recall,f1
+sroie,date,50,90.0,91.8,90.0,90.9
+sroie,total,50,82.0,83.7,82.0,82.8
+wildreceipt,date,43,72.1,81.6,72.1,76.5
+wildreceipt,subtotal,30,73.3,91.7,73.3,81.5
+wildreceipt,tax,31,58.1,69.2,58.1,63.2
+wildreceipt,total,40,65.0,76.5,65.0,70.3
+ALL,date,93,81.7,87.4,81.7,84.4
+ALL,subtotal,30,73.3,91.7,73.3,81.5
+ALL,tax,31,58.1,69.2,58.1,63.2
+ALL,total,90,74.4,80.7,74.4,77.5

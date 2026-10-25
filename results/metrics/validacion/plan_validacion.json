@@ -1,0 +1,127 @@
+{
+  "criterios": {
+    "exactitud_minima": 70.0,
+    "caida_maxima_pp": 10.0,
+    "silenciosos_max": 5.0,
+    "procesados_min": 90.0
+  },
+  "revision_codigo": {
+    "modo": "local",
+    "ruta": "/home/runner/work/Document-Scanner/Document-Scanner"
+  },
+  "configuracion": "configs/definitivo.json",
+  "codigo_sha256": {
+    "src/__init__.py": "03e2e53def079b2a786940279b967b6fff42f6b84bbeec8ee8c4f61b085b8850",
+    "src/data_processing.py": "ce938c8db2189dd456bc80eb52f75a31f83d96f4537edbcb06d98dbadc35e518",
+    "src/evaluate.py": "26f6dd7a67c7388df8deac5d0aea8108fd9fd53e53bdfce63c3134154bb007a0",
+    "src/lector_facturas/__init__.py": "c06ca29eebb6166ea027d94f3a4b735aada4734ee9ef81eca21cc609a3515114",
+    "src/lector_facturas/__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+    "src/lector_facturas/candidate_rules.py": "8fe76564424b92b858ff0925b88fdaf3bd11ee212795f82c88127d052156cb22",
+    "src/lector_facturas/cli.py": "af7cb23edbf858657990abc369ad957a8ed8c0e59c77655067d37bf0ccd537f0",
+    "src/lector_facturas/common.py": "2ffe0cb353b8dc3db43d1a38c12f33abd0db5c487a1197acaeef005da0febff8",
+    "src/lector_facturas/consensus.py": "0e39954284cf85529c5f181501638c33c1d5e823ff26c383596b47e6d85282e1",
+    "src/lector_facturas/datasets.py": "5fbf809d62ba571e67462a2a9053f44289a3b46f5c88ea4117137827b55aefb2",
+    "src/lector_facturas/eda.py": "3d9077ed0b958c3d9cd3fc3a3338424464415835272113372dd4add5d03ed24d",
+    "src/lector_facturas/evaluation.py": "8bb724b78771d732439dd37af793e64ef99ca669561de4b657cbe61c0bc33fd2",
+    "src/lector_facturas/experiments.py": "08d472b57f8af6e8dd1499e23e7095919ecbbc04a0bc2a7e90e61cbffbd086e4",
+    "src/lector_facturas/extraction.py": "be7e1cd9ab6be8321bba935605cdb744c74d7d3862fa2e55651856e88e6c9ba2",
+    "src/lector_facturas/frozen_runtime.py": "3c59ef3b41a801a13c0f40efbf6dbe2767fd8e51dbd31e6685923d7e9f79af97",
+    "src/lector_facturas/geometry.py": "7e45c1613d05bc057e164d3e290896e33d496642689a5f829908a5cdc756a261",
+    "src/lector_facturas/ocr.py": "324a1780ad6bc736bb7b8690e47a0e68f835b9e3c22df6fd1690d9f0c321607f",
+    "src/lector_facturas/preprocessing.py": "24b74b8a500b3d6367f5528ea1335ff9785a12a4033a11d5a597c7e4a9f378b4",
+    "src/line_classifier.py": "6e10315ba9abad542676a27ef8bc1e33bad6425ae0c5578e0721f55627759f61",
+    "src/model.py": "7d01ea7ba5f7562bac30512304baa9895a8f324fa05b9dbaa63efb3293849e5f",
+    "src/train.py": "0fedbbd5585cfe7e9743683e2836ef718d05812af692a1f8f7cc9b4e21918272",
+    "src/utils.py": "4fcad81a3ec6d086ca21e0565039611530ccbfa830a268e0d64f806eb42f33f7",
+    "src/validation.py": "396fff7cb99b1180a89b719a875407dd92b0958b29654b5b0ee7805065227ab8"
+  },
+  "escenarios": [
+    {
+      "clave": "referencia",
+      "nivel": null,
+      "nombre": "Sin perturbar",
+      "simula": "Imagen original"
+    },
+    {
+      "clave": "ruido",
+      "nivel": 12,
+      "nombre": "Ruido σ = 12",
+      "simula": "Foto con poca luz o sensor de gama baja"
+    },
+    {
+      "clave": "ruido",
+      "nivel": 30,
+      "nombre": "Ruido σ = 30",
+      "simula": "Foto nocturna o muy granulada"
+    },
+    {
+      "clave": "desenfoque",
+      "nivel": 1.5,
+      "nombre": "Desenfoque leve",
+      "simula": "Foto ligeramente movida o desenfocada"
+    },
+    {
+      "clave": "desenfoque",
+      "nivel": 3.0,
+      "nombre": "Desenfoque fuerte",
+      "simula": "Foto movida"
+    },
+    {
+      "clave": "resolucion",
+      "nivel": 0.5,
+      "nombre": "Mitad de resolución",
+      "simula": "Foto tomada de lejos o reenviada reducida"
+    },
+    {
+      "clave": "resolucion",
+      "nivel": 0.3,
+      "nombre": "30 % de resolución",
+      "simula": "Captura de pantalla o miniatura"
+    },
+    {
+      "clave": "jpeg",
+      "nivel": 12,
+      "nombre": "JPEG calidad 12",
+      "simula": "Imagen recomprimida por mensajería"
+    },
+    {
+      "clave": "rotacion",
+      "nivel": 6,
+      "nombre": "Rotación 6°",
+      "simula": "Foto torcida"
+    },
+    {
+      "clave": "sombra",
+      "nivel": 0.55,
+      "nombre": "Sombra lateral",
+      "simula": "Iluminación desigual o sombra de la mano"
+    },
+    {
+      "clave": "recorte",
+      "nivel": 0.2,
+      "nombre": "Falta el 20 % inferior",
+      "simula": "Comprobante cortado: el pie no aparece"
+    }
+  ],
+  "fecha_utc": "2026-10-24T22:01:53.366498+00:00",
+  "muestra_no_revisada": {
+    "semilla": 42,
+    "particion": "train",
+    "elegibles_por_base": {
+      "sroie": 242,
+      "wildreceipt": 836
+    },
+    "exclusiones": {
+      "ya_revisado": 437,
+      "imagen_en_otra_particion": 2,
+      "imagen_duplicada": 0
+    },
+    "documentos": 100,
+    "por_base": {
+      "sroie": 50,
+      "wildreceipt": 50
+    },
+    "firma_muestra": "3adf73088370639002606f3cb051beba602cfb08d95d28466a66af0ab0759825",
+    "nota": "Documentos nunca revisados durante el desarrollo; configuración fija antes de leerlos."
+  }
+}

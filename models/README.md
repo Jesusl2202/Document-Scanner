@@ -24,6 +24,6 @@ En lugar de `model_v1.pkl`, las versiones anteriores están en el historial de G
 | Versión | Dónde | Resultado de desarrollo |
 |---|---|---|
 | V7 (cinco vistas `fast`) | commit `1636f65` | 213/302 (70,53 %), retrospectivo |
-| Resumen contable (actual) | rama `main` | 75,0–77,6 % en tres grupos del test con reutilización; **81,1 %** en la evaluación final (100 documentos) |
+| Resumen contable (actual) | rama `main` | 75,0–77,6 % en tres grupos del test con reutilización; **81,1 %** en la evaluación final (100 documentos) y **75,0 %** en 100 documentos nunca revisados |
 
 Detalle en [`results/reports/resultados_desarrollo.md`](../results/reports/resultados_desarrollo.md).

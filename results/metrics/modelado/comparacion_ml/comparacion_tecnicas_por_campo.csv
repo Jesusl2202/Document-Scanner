@@ -1,0 +1,9 @@
+﻿modelo,campo,exactitud,f1
+M0 reglas (1 vista),date,65.2,0.741
+M0 reglas (1 vista),subtotal,29.4,0.408
+M0 reglas (1 vista),tax,33.3,0.45
+M0 reglas (1 vista),total,52.2,0.623
+Red MLP (1 vista),date,67.4,0.752
+Red MLP (1 vista),subtotal,38.2,0.419
+Red MLP (1 vista),tax,37.0,0.465
+Red MLP (1 vista),total,57.8,0.642
