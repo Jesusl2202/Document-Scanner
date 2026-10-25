@@ -41,6 +41,7 @@ interfaz:
   tamano_maximo_mb: 10
   paginas_maximas_pdf: 3
   lecturas_simultaneas: 1
+  documentos_por_lote: 20     # archivos que se pueden subir de una vez (se leen uno tras otro)
   espera_maxima_s: 120
 
 confianza:

@@ -44,12 +44,13 @@ def obtener_servicio() -> ServicioLector:
 
 
 def estado_inicial() -> None:
-    for clave, valor in {"respuesta": None, "error": None, "pagina": 0, "subida": 0}.items():
+    for clave, valor in {"respuesta": None, "lote": None, "error": None, "pagina": 0, "subida": 0}.items():
         st.session_state.setdefault(clave, valor)
 
 
 def nuevo_documento() -> None:
     st.session_state.respuesta = None
+    st.session_state.lote = None
     st.session_state.error = None
     st.session_state.pagina = 0
     st.session_state.subida += 1          # cambia la clave del cargador para vaciarlo
@@ -75,12 +76,41 @@ def leer(servicio: ServicioLector, ruta: Path, nombre: str) -> None:
     st.rerun()
 
 
-def leer_subida(servicio: ServicioLector, archivo) -> None:
-    nombre = Path(archivo.name).name or "documento"
+def leer_varios(servicio: ServicioLector, entradas: list[tuple[Path, str]]) -> None:
+    """Lee un lote con barra de avance y guarda el resultado (o el mensaje de error) en la sesión."""
+    barra = st.progress(0.0, text="Preparando la lectura…")
+
+    def avanzar(indice: int, total: int, nombre: str) -> None:
+        barra.progress((indice - 1) / total, text=f"Leyendo {indice} de {total}: {nombre}. Cada página tarda entre "
+                                                  "5 y 30 segundos.")
+
+    try:
+        st.session_state.lote = servicio.leer_lote(entradas, avanzar)
+        st.session_state.respuesta = None
+        st.session_state.error = None
+        st.session_state.pagina = 0
+    except Exception as exc:  # noqa: BLE001
+        st.session_state.lote = None
+        st.session_state.error = respuesta_error(exc)[0]["error"]
+    finally:
+        barra.empty()
+    st.session_state.subida += 1
+    st.rerun()
+
+
+def leer_subidas(servicio: ServicioLector, archivos: list) -> None:
     with tempfile.TemporaryDirectory(prefix="lector_streamlit_") as temporal:
-        ruta = Path(temporal) / nombre
-        ruta.write_bytes(archivo.getvalue())
-        leer(servicio, ruta, nombre)
+        entradas = []
+        for indice, archivo in enumerate(archivos, 1):
+            nombre = Path(archivo.name).name or "documento"
+            carpeta = Path(temporal) / str(indice)          # una carpeta por archivo: admite nombres repetidos
+            carpeta.mkdir()
+            (carpeta / nombre).write_bytes(archivo.getvalue())
+            entradas.append((carpeta / nombre, nombre))
+        if len(entradas) == 1:
+            leer(servicio, *entradas[0])
+        else:
+            leer_varios(servicio, entradas)
 
 
 def vista_inicio(servicio: ServicioLector) -> None:
@@ -88,10 +118,10 @@ def vista_inicio(servicio: ServicioLector) -> None:
         st.html(P.html_mensaje(st.session_state.error))
     izquierda, derecha = st.columns([1.35, 1], gap="large")
     with izquierda:
-        archivo = st.file_uploader("Foto o PDF de la factura", key=f"subida_{st.session_state.subida}",
-                                   label_visibility="collapsed")
-        if archivo is not None:
-            leer_subida(servicio, archivo)
+        archivos = st.file_uploader("Fotos o PDF de las facturas", key=f"subida_{st.session_state.subida}",
+                                    accept_multiple_files=True, label_visibility="collapsed")
+        if archivos:
+            leer_subidas(servicio, archivos)
     with derecha:
         st.html(P.html_consejos(ALOJAMIENTO))
         ejemplos = servicio.ejemplos()
@@ -111,7 +141,10 @@ def vista_inicio(servicio: ServicioLector) -> None:
                                 f'{P._e(ejemplo["descripcion"])}</p>')
                         if st.button("Leer este ejemplo", key=f"ejemplo_{ejemplo['id']}"):
                             leer(servicio, ruta, f"Ejemplo: {ejemplo['titulo']}")
-            st.html('<p class="lf-nota">Los ejemplos son comprobantes inventados, sin validez tributaria.</p>')
+            if st.button("Leer los tres ejemplos juntos", key="ejemplos_lote", type="primary"):
+                leer_varios(servicio, [(CARPETA_EJEMPLOS / e["archivo"], e["archivo"]) for e in ejemplos])
+            st.html('<p class="lf-nota">Los ejemplos son comprobantes inventados, sin validez tributaria. «Leer los '
+                    'tres ejemplos juntos» muestra cómo funciona la lectura por lotes.</p>')
 
 
 def vista_resultado(respuesta: dict) -> None:
@@ -133,11 +166,43 @@ def vista_resultado(respuesta: dict) -> None:
         st.html(P.html_pagina(paginas[min(st.session_state.pagina, len(paginas) - 1)]))
 
 
+def vista_lote(lote: dict) -> None:
+    titulo, csv, json_, otro = st.columns([3, 1, 1, 1.3], vertical_alignment="bottom")
+    with titulo:
+        st.html('<div class="lf-titulo"><h2>Lectura por lotes</h2></div>')
+    csv.download_button("Descargar CSV", P.exportar_csv_lote(lote), "lote_campos.csv", "text/csv",
+                        use_container_width=True)
+    json_.download_button("Descargar JSON", P.exportar_json_lote(lote), "lote_campos.json", "application/json",
+                          use_container_width=True)
+    otro.button("Leer otros documentos", type="primary", on_click=nuevo_documento, use_container_width=True)
+    st.html(P.html_lote(lote))
+    leidos = [d for d in lote.get("documentos", []) if d.get("paginas")]
+    if not leidos:
+        return
+    st.html('<p class="lf-detalle-titulo">Revisar un documento</p>')
+
+    def etiqueta(indice: int) -> str:
+        documento = leidos[indice]
+        dudosos = sum(c.get("confianza") in P.POR_REVISAR for p in documento["paginas"] for c in p.get("campos") or [])
+        return f"{indice + 1}. {documento['archivo']} ({dudosos} por revisar)" if dudosos else \
+            f"{indice + 1}. {documento['archivo']} (todo en confianza alta)"
+
+    elegido = st.selectbox("Documento", list(range(len(leidos))), format_func=etiqueta, label_visibility="collapsed")
+    documento = leidos[elegido]
+    paginas = documento["paginas"]
+    pagina = 0
+    if len(paginas) > 1:
+        pagina = st.radio("Página", list(range(len(paginas))), format_func=lambda i: f"Página {paginas[i]['numero']}",
+                          horizontal=True, key=f"pagina_lote_{elegido}")
+    st.html(P.html_titulo_resultado(documento))
+    st.html(P.html_pagina(paginas[pagina]))
+
+
 def main() -> None:
     estado_inicial()
     st.html(f"<style>{ESTILOS.read_text(encoding='utf-8')}</style>")
     st.html(P.html_cabecera())
-    leer_tab, acerca_tab = st.tabs(["Leer un documento", "Cómo funciona"])
+    leer_tab, acerca_tab = st.tabs(["Leer documentos", "Cómo funciona"])
     try:
         servicio = obtener_servicio()
     except Exception as exc:  # noqa: BLE001
@@ -145,8 +210,14 @@ def main() -> None:
         with leer_tab:
             st.html(P.html_mensaje(respuesta_error(exc)[0]["error"]))
         return
+    limites = servicio.limites()
+    ayuda = (f'Hasta {limites["documentos_por_lote"]} archivos a la vez. JPG, PNG o PDF de hasta '
+             f'{limites["tamano_maximo_mb"]} MB cada uno; los PDF, de hasta {limites["paginas_maximas_pdf"]} páginas.')
+    st.html(f'<style>[data-testid="stFileUploaderDropzoneInstructions"] > div::after {{ content: "{ayuda}"; }}</style>')
     with leer_tab:
-        if st.session_state.respuesta:
+        if st.session_state.lote:
+            vista_lote(st.session_state.lote)
+        elif st.session_state.respuesta:
             vista_resultado(st.session_state.respuesta)
         else:
             vista_inicio(servicio)

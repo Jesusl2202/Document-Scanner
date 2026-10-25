@@ -132,6 +132,47 @@ def pagina_simulada(ruta, numero=1):
                            texto="FERRETERIA CLIENTE JUAN PEREZ", segundos=0.1)
 
 
+class LoteTests(unittest.TestCase):
+    """Lectura de varios archivos seguidos (versión de Streamlit), con un lector simulado."""
+
+    def setUp(self):
+        from app.servicio import ServicioLector
+        lector = LectorFacturas(cargar_configuracion())
+        lector.configuracion_modelo = json.loads((RAIZ / "configs" / "definitivo.json").read_text(encoding="utf-8"))
+        lector.leer_pagina = pagina_simulada
+        self.servicio = ServicioLector(cargar_configuracion(), lector)
+        self.carpeta = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        self.carpeta.cleanup()
+
+    def archivo(self, nombre, contenido=None):
+        ruta = Path(self.carpeta.name) / nombre
+        if contenido is None:
+            Image.new("RGB", (600, 800), "white").save(ruta, "PNG")
+        else:
+            ruta.write_bytes(contenido)
+        return ruta, nombre
+
+    def test_un_archivo_invalido_no_detiene_el_lote(self):
+        avance = []
+        lote = self.servicio.leer_lote([self.archivo("a.png"), self.archivo("notas.txt", b"hola"),
+                                        self.archivo("b.png")], lambda i, n, nombre: avance.append((i, n, nombre)))
+        self.assertEqual([d["estado"] for d in lote["documentos"]], ["ok", "error", "ok"])
+        self.assertIn("no admitido", lote["documentos"][1]["error"])
+        self.assertEqual(lote["resumen"], {"ok": 2, "parcial": 0, "error": 1})
+        self.assertEqual(avance, [(1, 3, "a.png"), (2, 3, "notas.txt"), (3, 3, "b.png")])
+
+    def test_limite_de_archivos_por_lote(self):
+        self.servicio.documentos_por_lote = 2
+        with self.assertRaises(ErrorEntrada) as error:
+            self.servicio.leer_lote([self.archivo(f"{i}.png") for i in range(3)])
+        self.assertIn("máximo por lote es 2", str(error.exception))
+        with self.assertRaises(ErrorEntrada):
+            self.servicio.leer_lote([])
+        self.assertEqual(self.servicio.limites()["documentos_por_lote"], 2)
+
+
 @unittest.skipUnless(HAY_FLASK, "Flask no está instalado (pip install -r app/requirements.txt)")
 class RutasTests(unittest.TestCase):
     def setUp(self):

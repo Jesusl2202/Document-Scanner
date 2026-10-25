@@ -61,19 +61,20 @@ header[data-testid="stHeader"] { background: transparent; height: 0; }
 [data-testid="stFileUploaderDropzoneInstructions"] > div > span,
 [data-testid="stFileUploaderDropzoneInstructions"] > div > small { display: none; }
 [data-testid="stFileUploaderDropzoneInstructions"] > div::before {
-  content: "Arrastra aquí la foto o el PDF de la factura"; display: block;
+  content: "Arrastra aquí una o varias facturas (foto o PDF)"; display: block;
   font: 700 1.3rem/1.3 var(--lf-fuente); color: var(--lf-tinta); max-width: 20rem; margin: 0 auto;
 }
 [data-testid="stFileUploaderDropzoneInstructions"] > div::after {
-  content: "JPG, PNG o PDF de hasta 10 MB; los PDF, de hasta 3 páginas."; display: block;
+  content: "Hasta 20 archivos a la vez. JPG, PNG o PDF de hasta 10 MB cada uno; los PDF, de hasta 3 páginas."; display: block;
   margin-top: 0.5rem; font: 400 0.92rem/1.4 var(--lf-fuente); color: var(--lf-tinta-suave);
 }
-[data-testid="stFileUploaderDropzone"] button {
+[data-testid="stFileChips"] { display: none; }   /* la barra de avance dice qué archivo se está leyendo */
+[data-testid="stFileUploaderDropzone"] button:not([kind="minimal"]) {
   font-size: 0; background: var(--lf-verde); border-color: var(--lf-verde); color: #fff; padding: 0.55rem 1.3rem;
 }
-[data-testid="stFileUploaderDropzone"] button > * { display: none; }
-[data-testid="stFileUploaderDropzone"] button::after { content: "Elegir archivo"; font: 700 1rem var(--lf-fuente); }
-[data-testid="stFileUploaderDropzone"] button:hover { filter: brightness(1.08); color: #fff; }
+[data-testid="stFileUploaderDropzone"] button:not([kind="minimal"]) > * { display: none; }
+[data-testid="stFileUploaderDropzone"] button:not([kind="minimal"])::after { content: "Elegir archivos"; font: 700 1rem var(--lf-fuente); }
+[data-testid="stFileUploaderDropzone"] button:not([kind="minimal"]):hover { filter: brightness(1.08); color: #fff; }
 
 /* Ejemplos */
 .lf-ejemplo-texto { font-size: 0.9rem; color: var(--lf-tinta-suave); margin: 0; line-height: 1.4; }
@@ -167,6 +168,28 @@ header[data-testid="stHeader"] { background: transparent; height: 0; }
 .lf-pie { margin-top: 2.5rem; padding-top: 1.25rem; color: var(--lf-tinta-suave); font-size: 0.88rem; border-top: 1px solid var(--lf-renglon); }
 .lf-pie a, .lf-acerca a { color: var(--lf-carbon); }
 
+/* Lectura por lotes */
+.lf-lote__resumen { font-size: 1.05rem; font-weight: 700; margin: 0; }
+.lf-leyenda { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0; font-size: 0.85rem; }
+.lf-leyenda .lf-celda { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; }
+.lf-lote__marco { overflow-x: auto; background: var(--lf-hoja); border: 1px solid var(--lf-renglon); border-radius: var(--lf-radio); padding: 0.5rem 1rem 0.75rem; }
+.lf-tabla-lote { min-width: 56rem; font-variant-numeric: tabular-nums; }
+.lf-tabla-lote th, .lf-tabla-lote td { padding: 0.5rem 0.6rem 0.5rem 0; white-space: nowrap; }
+.lf-tabla-lote td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; max-width: 14rem; font-weight: 500; }
+.lf-tabla-lote td:first-child { color: var(--lf-tinta-suave); }
+.lf-celda--alta { color: var(--lf-tinta); }
+.lf-celda--media { background: var(--lf-ambar-fondo); color: #7A4C0C; box-shadow: inset 3px 0 0 var(--lf-ambar); padding-left: 0.5rem !important; }
+.lf-celda--baja { background: var(--lf-rojo-fondo); color: var(--lf-rojo); font-weight: 700; box-shadow: inset 3px 0 0 var(--lf-rojo); padding-left: 0.5rem !important; }
+.lf-celda--sin_valor { color: var(--lf-tinta-suave); }
+.lf-leyenda .lf-celda--alta { border: 1px solid var(--lf-renglon); }
+.lf-leyenda .lf-celda--sin_valor { border: 1px dashed var(--lf-tinta-suave); }
+.lf-cuadre-celda--ok { color: var(--lf-verde); font-weight: 700; }
+.lf-cuadre-celda--aviso { color: var(--lf-ambar); font-weight: 700; }
+.lf-revisar { font-weight: 700; text-align: center; }
+.lf-tabla-lote th:last-child { text-align: center; }
+.lf-fila-error td { background: var(--lf-rojo-fondo); color: var(--lf-rojo); white-space: normal; }
+.lf-detalle-titulo { font: 700 1.15rem/1.3 var(--lf-fuente); margin: 1.5rem 0 0; color: var(--lf-tinta); }
+
 @media (max-width: 860px) {
   .lf-resultado { grid-template-columns: 1fr; }
   .lf-documento { position: static; }
@@ -175,10 +198,10 @@ header[data-testid="stHeader"] { background: transparent; height: 0; }
 @media (max-width: 520px) {
   .lf-libro { padding-left: 2.2rem; }
   .lf-libro::before { left: 1.2rem; } .lf-libro::after { left: calc(1.2rem + 3px); }
-  .lf-tabla thead { display: none; }
-  .lf-tabla tr { display: grid; grid-template-columns: 1fr auto; column-gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--lf-renglon); }
-  .lf-tabla td { border: 0; padding: 0; }
-  .lf-tabla td:first-child { grid-column: 1 / -1; margin-bottom: 0.2rem; }
+  .lf-tabla:not(.lf-tabla-lote) thead { display: none; }
+  .lf-tabla:not(.lf-tabla-lote) tr { display: grid; grid-template-columns: 1fr auto; column-gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--lf-renglon); }
+  .lf-tabla:not(.lf-tabla-lote) td { border: 0; padding: 0; }
+  .lf-tabla:not(.lf-tabla-lote) td:first-child { grid-column: 1 / -1; margin-bottom: 0.2rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lf-espera__barra span { animation: none; width: 100%; opacity: 0.6; }

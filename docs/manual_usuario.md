@@ -43,13 +43,23 @@ La aplicación publicada en Streamlit Community Cloud (enlace en el [README](../
 
 ![Pantalla inicial de la aplicación](../app/assets/capturas/inicio.png)
 
-1. **Sube el documento.** Arrastra la foto o el PDF a la zona de carga, o pulsa **Elegir archivo**. Si no tienes una factura a mano, pulsa uno de los **ejemplos** (comprobantes inventados, sin validez tributaria).
+1. **Sube el documento.** Arrastra la foto o el PDF a la zona de carga, o pulsa **Elegir archivos**. Si no tienes una factura a mano, pulsa uno de los **ejemplos** (comprobantes inventados, sin validez tributaria).
 2. **Espera la lectura.** Verás una barra de progreso con el nombre del archivo. Una página suele tardar entre 5 y 30 segundos: se lee 10 veces con distintas configuraciones de Tesseract.
 3. **Revisa el resultado.** A la izquierda está el documento con **recuadros azules** donde se leyó cada valor; a la derecha, los seis campos con su valor, la línea del documento de donde salió («Leído en») y su **nivel de confianza**. Al pasar el cursor por una fila (o recorrerlas con la tecla Tab) se resalta su recuadro.
 4. **Comprueba el cuadre y los avisos.** Debajo de la tabla aparece si subtotal + IVA = total y cualquier aviso de revisión (fecha ambigua, valores en conflicto, factura electrónica con XML disponible).
 5. **Corrige y descarga.** Compara cada valor con el documento. **Descargar CSV** o **Descargar JSON** guarda los campos (sin el texto completo de la factura). **Leer otro documento** vuelve a la pantalla de carga.
 
 ![Resultado con evidencia y confianza por campo](../app/assets/capturas/resultado.png)
+
+**Varias facturas a la vez.** En el paso 1 puedes elegir o arrastrar hasta 20 archivos juntos (también sirve el botón **Leer los tres ejemplos juntos**). La app los lee uno tras otro y muestra «Leyendo 3 de 12: archivo». Al terminar verás:
+
+- **Una tabla con todos los documentos**: los seis campos de cada uno, el cuadre (✓ si subtotal + IVA = total) y cuántos campos hay que revisar con atención. Los valores con confianza media aparecen en ámbar, los de confianza baja en rojo y los no detectados como «—».
+- **Revisar un documento**: elige cualquiera en la lista debajo de la tabla para ver su imagen con los recuadros de evidencia, igual que cuando se lee uno solo.
+- **Descargar CSV o JSON** con todos los documentos (una fila por página, con el nombre del archivo).
+
+Si un archivo no se puede leer (formato no admitido, imagen dañada…), aparece en rojo en la tabla con el motivo y los demás se leen igual. Cada página tarda entre 5 y 30 segundos, así que un lote de 20 facturas toma unos minutos; no cierres la pestaña mientras avanza.
+
+![Lectura por lotes](../app/assets/capturas/lote.png)
 
 **Qué significa la confianza:**
 
@@ -73,6 +83,7 @@ La confianza no es una probabilidad: es cuántas lecturas independientes coincid
 | «La imagen está dañada o no es una imagen válida» | El archivo tiene extensión de imagen pero no lo es, o está incompleto | Vuelve a exportar o descargar la imagen |
 | «La imagen es demasiado pequeña…» | El lado menor tiene menos de 100 píxeles | Usa una foto más grande o más cercana |
 | «El PDF tiene N páginas; el máximo es 3» | PDF largo | Divide el PDF o exporta solo las páginas de la factura |
+| «Elegiste N archivos y el máximo por lote es 20» | Demasiados archivos de una vez | Súbelos en varios lotes |
 | «El servidor está atendiendo otras lecturas» | Otra persona está leyendo un documento | Espera unos segundos y vuelve a intentar |
 | «No se encontró ningún campo…» | Imagen muy borrosa, de lejos, sin texto impreso o manuscrita | Toma otra foto más cercana, recta y con buena luz |
 
