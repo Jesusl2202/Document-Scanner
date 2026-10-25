@@ -1,3 +1,6 @@
-# Dependencias de la interfaz web, además de las de requirements.txt (raíz).
+# Dependencias de la interfaz web: las del lector (raíz) más los servidores web.
+# Streamlit Community Cloud instala este archivo porque está junto a app/streamlit_app.py.
+-r ../requirements.txt
+streamlit>=1.45,<2
 Flask>=3,<4
 gunicorn>=22,<24

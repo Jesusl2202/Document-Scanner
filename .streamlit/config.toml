@@ -1,0 +1,27 @@
+# Configuración de la interfaz de Streamlit (app/streamlit_app.py).
+# Streamlit Community Cloud la lee desde la raíz del repositorio.
+
+[server]
+# Streamlit acepta hasta 25 MB para que el límite de 10 MB lo aplique la app con un mensaje en español.
+maxUploadSize = 25
+# Sirve app/static/ (la fuente de la interfaz) en la ruta app/static/.
+enableStaticServing = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = false
+
+[[theme.fontFaces]]
+family = "Atkinson Hyperlegible Next"
+url = "app/static/fuentes/AtkinsonHyperlegibleNext.ttf"
+
+[theme]
+base = "light"
+primaryColor = "#2F6B4F"
+backgroundColor = "#F4F7F4"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1E2A36"
+font = "Atkinson Hyperlegible Next, sans-serif"

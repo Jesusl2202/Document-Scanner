@@ -314,7 +314,7 @@
         <li>Para aprobar pagos o declarar impuestos sin que una persona revise cada valor.</li></ul>
       <h2>Privacidad</h2>
       <p>El archivo se procesa en este servidor solo durante la lectura y se borra al terminar: no se guarda ni se envía a otros servicios. Las descargas CSV y JSON se generan en tu navegador e incluyen solo los campos, no el texto completo de la factura.</p>
-      <p>Esta versión de demostración está alojada en Hugging Face, fuera de Ecuador. Para facturas con datos de terceros usa la versión local (instrucciones en el repositorio), que procesa todo en tu equipo.</p>
+      <p>Esta versión se ejecuta en el equipo o servidor donde se instaló, así que los documentos no salen de él. Es la indicada para facturas con datos de terceros, siempre que ese servidor esté bajo control de quien es responsable de los datos.</p>
       <h2>Límites de esta versión</h2>
       <p>Imágenes JPG o PNG y PDF de hasta ${info.limites.tamano_maximo_mb} MB; los PDF, de hasta ${info.limites.paginas_maximas_pdf} páginas. Cada página se lee como un comprobante separado.</p>
       <p><a href="https://github.com/Jesusl2202/Document-Scanner">Código, datos, métricas y documentación del proyecto</a>.</p>`;

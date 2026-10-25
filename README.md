@@ -219,7 +219,7 @@ page,status,tax_id,date,document_number,subtotal,tax,total,revision
 
 ```bash
 python -m pip install -e .                         # habilita el comando `lector archivo.pdf --out carpeta`
-python -m unittest discover -s tests -v            # 177 pruebas (ver tests/README.md)
+python -m unittest discover -s tests -v            # 184 pruebas (ver tests/README.md)
 python -m flake8 src app tests                     # estilo PEP 8
 python scripts/download_data.py wildreceipt --out data/raw
 python scripts/download_data.py sroie --out data/raw   # Kaggle puede pedir descarga manual
@@ -231,18 +231,25 @@ Guía completa en el [manual de usuario](docs/manual_usuario.md).
 
 ## 6. Interfaz de usuario
 
-Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en Hugging Face Spaces.
+Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en **Streamlit Community Cloud**.
 
 ![Resultado de una lectura en la aplicación](app/assets/capturas/resultado.png)
 
-- **Carga validada:** imagen JPG/PNG o PDF (hasta 10 MB y 3 páginas), arrastrando o eligiendo el archivo; se rechazan con un mensaje claro los formatos no admitidos, archivos vacíos o dañados, imágenes demasiado pequeñas y PDF largos.
-- **Procesamiento con indicador:** barra de progreso, paso en curso y tiempo transcurrido.
+- **Carga validada:** imagen JPG/PNG o PDF (hasta 10 MB y 3 páginas), arrastrando o eligiendo el archivo; se rechazan con un mensaje claro en español los formatos no admitidos, archivos vacíos o dañados, imágenes demasiado pequeñas y PDF largos.
+- **Procesamiento con indicador** mientras se hacen las 10 lecturas de la página.
 - **Resultado revisable:** los seis campos con su valor, la línea del documento de donde salió, el nivel de confianza (alta, media, baja, no detectado) y alertas en lenguaje claro; recuadros sobre la imagen que se resaltan al pasar por cada fila; comprobación de subtotal + IVA = total; aviso cuando el comprobante es una factura electrónica del SRI con XML disponible.
 - **«Cómo funciona»:** métricas de la evaluación, resultados con imágenes degradadas, casos en que no debe usarse y privacidad.
-- **Ejemplos precargados** (comprobantes sintéticos) y **descarga CSV/JSON** generada en el navegador, sin el texto completo de la factura.
-- **Privacidad:** el archivo se procesa en una carpeta temporal que se borra al terminar; la página no hace peticiones a servicios externos.
+- **Ejemplos precargados** (comprobantes sintéticos) y **descarga CSV/JSON** solo con los campos, sin el texto completo de la factura.
+- **Privacidad:** el archivo se procesa en una carpeta temporal que se borra al terminar; la app avisa que la demostración corre fuera de Ecuador y que los documentos de terceros deben leerse en una instalación propia.
 
-En local: `pip install -r app/requirements.txt` y `python -m app.app`, o con Docker `docker build -t lector-facturas .` y `docker run -p 7860:7860 lector-facturas`. Detalle en [`app/README.md`](app/README.md) y en el [manual de usuario](docs/manual_usuario.md#2-usar-la-aplicación-web).
+Hay dos versiones de la interfaz sobre la misma lógica ([`app/servicio.py`](app/servicio.py)), con el mismo modelo, límites y mensajes:
+
+| Versión | Para qué | Cómo se ejecuta |
+|---|---|---|
+| **Streamlit** ([`app/streamlit_app.py`](app/streamlit_app.py)) | Demostración pública en Streamlit Community Cloud | `pip install -r app/requirements.txt` y `streamlit run app/streamlit_app.py` |
+| **Flask + Docker** ([`app/app.py`](app/app.py), [`Dockerfile`](Dockerfile)) | Instalación en un equipo o servidor propio, para documentos con datos de terceros | `docker build -t lector-facturas .` y `docker run -p 7860:7860 lector-facturas` |
+
+Detalle en [`app/README.md`](app/README.md) y en el [manual de usuario](docs/manual_usuario.md#2-usar-la-aplicación-web).
 
 ## 7. Estructura del proyecto
 
@@ -262,22 +269,25 @@ Document-Scanner/
 │   └── lector_facturas/      # Motor: OCR, extractor de reglas y consenso, métricas
 ├── configs/                  # config.yaml (app), definitivo.json (modelo final), documentos_revisados.json
 ├── models/                   # Ficha del modelo; los pesos de Tesseract se descargan aquí (no versionados)
-├── app/                      # Interfaz web (Flask): app.py, servicio.py, templates/, static/, assets/
-├── tests/                    # 177 pruebas: interfaz pública, app, validación, comparador y motor
+├── app/                      # Interfaz web: streamlit_app.py (publicada), app.py (Flask), servicio.py,
+│                             # presentacion.py, templates/, static/, assets/
+├── tests/                    # 184 pruebas: interfaz pública, app, validación, comparador y motor
 ├── results/                  # Figuras, métricas y reportes
-├── scripts/                  # Lectura, descarga de datos, ejemplos, ejecución de notebooks, despliegue
+├── scripts/                  # Lectura, descarga de datos, ejemplos y ejecución de notebooks
 ├── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación
-├── Dockerfile                # Imagen de la app (Ubuntu 24.04 + Tesseract 5.3.4)
-└── .github/workflows/        # Pruebas y prueba de la imagen, notebooks con datos completos, despliegue
+├── Dockerfile                # Imagen de la versión Flask (Ubuntu 24.04 + Tesseract 5.3.4)
+├── packages.txt              # Paquetes del sistema para Streamlit Community Cloud (Tesseract)
+├── .streamlit/config.toml    # Tema, fuente y límites de la versión de Streamlit
+└── .github/workflows/        # Pruebas (incluye la app y la imagen) y notebooks con datos completos
 ```
 
 | Carpeta | Qué contiene |
 |---|---|
 | [`src/`](src/) | `data_processing.py` (validación de entrada, PDF, preprocesamiento, normalización, datasets), `model.py` (clase `LectorFacturas`, confianza por campo), `train.py` (optimización de la configuración: el modelo no entrena pesos), `evaluate.py` (métricas, test, prueba externa, importación de resultados y reporte), `validation.py` (datos nuevos, escenarios críticos, costo del error), `line_classifier.py` (red de comparación), `utils.py` (configuración, rutas, registro, errores). El motor `lector_facturas/` es el modelo tal como se evaluó. Ver [`src/README.md`](src/README.md). |
-| [`app/`](app/) | Interfaz web: rutas Flask, servicio de lectura probado sin servidor, página y ejemplos sintéticos. Ver [`app/README.md`](app/README.md). |
+| [`app/`](app/) | Interfaz web: versión de Streamlit (publicada) y versión Flask (instalación propia) sobre el mismo servicio de lectura, probado sin servidor; ejemplos sintéticos. Ver [`app/README.md`](app/README.md). |
 | [`notebooks/`](notebooks/) | Los seis notebooks se ejecutan con los datasets completos en GitHub Actions y se guardan con sus salidas; también se abren en Colab. |
 | [`models/`](models/) | En lugar de `best_model.pkl`: `ficha_modelo.json` + `configs/definitivo.json` + pesos verificados por hash. Versiones anteriores en el historial de Git. |
-| [`tests/`](tests/) | `test_data_processing.py`, `test_model.py`, `test_app.py`, `test_validation.py`, `test_line_classifier.py` y las pruebas del motor. Ver [`tests/README.md`](tests/README.md). |
+| [`tests/`](tests/) | `test_data_processing.py`, `test_model.py`, `test_app.py`, `test_presentacion.py`, `test_validation.py`, `test_line_classifier.py` y las pruebas del motor. Ver [`tests/README.md`](tests/README.md). |
 | [`results/`](results/) | `figures/`, `metrics/` y `reports/`. Ver [`results/README.md`](results/README.md). |
 
 ## 8. Consideraciones éticas y limitaciones

@@ -397,7 +397,7 @@ src/lector_facturas/
 └── frozen_runtime.py    # Pesos fijados por hash, notas de revisión y cobertura
 ```
 
-`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **177 pruebas unitarias** en [`tests/`](../tests/): 120 del motor (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador) y 57 de la interfaz pública y la app (`test_data_processing.py`, `test_model.py`, `test_app.py`, `test_validation.py`, `test_line_classifier.py`), incluidas lecturas reales con Tesseract. Detalle en [`tests/README.md`](../tests/README.md).
+`extraction.py` expone **una sola implementación**. `candidate_rules.py` y `consensus.py` no son modelos alternativos: trabajan juntos. Las versiones anteriores quedan en el historial de Git. Hay **184 pruebas unitarias** en [`tests/`](../tests/): 120 del motor (OCR simulado, preprocesamiento, consenso y etapas, adaptadores, evaluación, muestreo y optimizador) y 64 de la interfaz pública y la app (`test_data_processing.py`, `test_model.py`, `test_app.py`, `test_presentacion.py`, `test_validation.py`, `test_line_classifier.py`), incluidas lecturas reales con Tesseract. Detalle en [`tests/README.md`](../tests/README.md).
 
 **Configuración y errores.** Las rutas, límites de entrada, metas, semillas y umbrales están en [`configs/config.yaml`](../configs/config.yaml) (sobreescribibles con `.env`); el modelo, en `configs/definitivo.json`. Los errores esperables se lanzan como `ErrorEntrada`, `ErrorModelo` o `ErrorConfiguracion` con un mensaje para el usuario, y una página que falla no detiene el resto del documento. Los eventos se registran con `logging` en consola y en `outputs/lector.log`.
 
@@ -416,13 +416,14 @@ src/lector_facturas/
 | PyYAML | ≥ 6, < 7 | Lectura de `configs/config.yaml` |
 | scikit-learn | ≥ 1.3, < 2 | Sustituto Random Forest, PDP e importancia (notebook 04); red MLP de comparación (notebook 03) |
 | setuptools | ≥ 68 | Instalación del paquete (`pyproject.toml`) |
-| Flask / gunicorn | ≥ 3 / ≥ 22 | Interfaz web (`app/requirements.txt`) |
-| Docker (Ubuntu 24.04) | — | Imagen de la interfaz con Tesseract 5.3.4 |
-| Hugging Face Spaces | SDK Docker, CPU gratuita (2 vCPU, 16 GB) | Despliegue público de la interfaz |
+| Streamlit | ≥ 1.45 (verificado 1.66) | Interfaz web publicada (`app/requirements.txt`) |
+| Flask / gunicorn | ≥ 3 / ≥ 22 | Interfaz web para instalación propia (`app/requirements.txt`) |
+| Docker (Ubuntu 24.04) | — | Imagen de la versión Flask con Tesseract 5.3.4 |
+| Streamlit Community Cloud | Debian 13, Tesseract 5.5, hasta 2 CPU y 2,7 GB | Despliegue público de la interfaz |
 | GitHub Actions | Ubuntu 24.04, 4 vCPU | Pruebas, construcción de la imagen y ejecución de los notebooks con los datasets completos |
 | Google Colab | CPU | Ejecución interactiva de los notebooks |
 
-Los rangos vienen de [`requirements.txt`](../requirements.txt). Las pruebas se ejecutan en cada cambio con Python 3.12 y Tesseract 5.3.4 ([`pruebas.yml`](../.github/workflows/pruebas.yml)). Los seis notebooks se ejecutan con los datasets completos en GitHub Actions ([`experimentos.yml`](../.github/workflows/experimentos.yml), mismo Tesseract 5.3.4 que Colab) y se guardan con sus salidas.
+Los rangos vienen de [`requirements.txt`](../requirements.txt). Las pruebas se ejecutan en cada cambio con Python 3.12 y Tesseract 5.3.4, y las de la app también en Debian 13 con Tesseract 5.5, el sistema de Streamlit Community Cloud ([`pruebas.yml`](../.github/workflows/pruebas.yml)). Los seis notebooks se ejecutan con los datasets completos en GitHub Actions ([`experimentos.yml`](../.github/workflows/experimentos.yml), mismo Tesseract 5.3.4 que Colab) y se guardan con sus salidas.
 
 ## 7. Reproducibilidad
 
@@ -439,22 +440,26 @@ Los rangos vienen de [`requirements.txt`](../requirements.txt). Las pruebas se e
 
 ```mermaid
 flowchart LR
-    U(["Navegador"]) -->|"POST /api/leer<br/>imagen o PDF"| F["Flask + gunicorn<br/>app/app.py"]
-    F --> S["ServicioLector<br/>app/servicio.py"]
+    U(["Navegador"]) --> ST["Streamlit<br/>app/streamlit_app.py<br/>(demostración pública)"]
+    U --> FL["Flask + gunicorn<br/>app/app.py<br/>(instalación propia, Docker)"]
+    ST --> S["ServicioLector<br/>app/servicio.py"]
+    FL --> S
     S -->|"validar_archivo<br/>(10 MB, 3 páginas)"| V{"¿Válido?"}
-    V -- No --> E["400 con mensaje claro"]
+    V -- No --> E["Mensaje claro en español"]
     V -- Sí --> T["Turno: una lectura a la vez<br/>(espera hasta 2 min)"]
     T --> L["LectorFacturas.leer_pagina<br/>(mismo modelo evaluado)"]
-    L --> R["JSON: campos, confianza, alertas en lenguaje claro,<br/>caja de evidencia, vista previa, cuadre"]
-    R --> U
+    L --> R["Campos, confianza, alertas en lenguaje claro,<br/>caja de evidencia, vista previa, cuadre"]
+    R --> P["app/presentacion.py (Streamlit)<br/>app/static/app.js (Flask)"]
     L -.->|"carpeta temporal<br/>se borra al terminar"| X[("sin almacenamiento")]
 ```
 
-- **Separación en capas.** `app/app.py` solo traduce HTTP; `app/servicio.py` concentra la lógica y se prueba sin servidor; el modelo es `src.model.LectorFacturas`, el mismo de los notebooks y la terminal.
-- **Errores.** Entrada inválida → 400; archivo de más de 10 MB → 413; modelo no disponible o servidor ocupado → 503; cualquier otro error → 500 con un mensaje genérico, registrado en el log sin exponer detalles técnicos al usuario.
-- **Contenedor.** El [`Dockerfile`](../Dockerfile) parte de Ubuntu 24.04 (Tesseract 5.3.4, la versión de la evaluación), corre con un usuario sin privilegios, descarga y verifica los pesos durante la construcción y expone `/salud` para el control de estado. gunicorn atiende con un proceso y 4 hilos; el modelo se carga una vez al arrancar.
-- **Despliegue.** Hugging Face Spaces (SDK Docker, CPU gratuita de 2 vCPU y 16 GB), publicado desde GitHub por [`despliegue.yml`](../.github/workflows/despliegue.yml). Se descartó Render gratuito (0,1 CPU: una página con 10 lecturas tardaría varios minutos) y Streamlit Community Cloud (menos memoria y CPU compartida).
-- **Verificación continua.** [`pruebas.yml`](../.github/workflows/pruebas.yml) construye la imagen en cada cambio, espera a que cargue el modelo, lee un ejemplo y comprueba los valores, y confirma que un archivo no admitido devuelve un error claro.
+- **Separación en capas.** `app/servicio.py` concentra la lógica (validación, turnos, evidencia, alertas, errores) y se prueba sin servidor; las dos interfaces solo la presentan. `app/presentacion.py` arma el HTML y las descargas de la versión de Streamlit con funciones puras; el resaltado de la evidencia usa solo CSS (`:has()`), sin JavaScript. El modelo es `src.model.LectorFacturas`, el mismo de los notebooks y la terminal.
+- **Errores.** Toda excepción termina en un mensaje en español sin detalles técnicos: entrada inválida, archivo de más de 10 MB, modelo no disponible, servidor ocupado o error inesperado (este último se registra en el log). En Flask se devuelven además con su código HTTP (400, 413, 503, 500).
+- **Despliegue público.** Streamlit Community Cloud instala Tesseract desde [`packages.txt`](../packages.txt) y las dependencias desde [`app/requirements.txt`](../app/requirements.txt); el tema y la fuente están en [`.streamlit/config.toml`](../.streamlit/config.toml). Se vuelve a publicar solo con cada cambio en `main`. El modelo se carga una vez por servidor (`st.cache_resource`) y la primera visita descarga y verifica los pesos.
+- **Por qué Streamlit Community Cloud.** Es gratuito, da hasta 2 CPU y 2,7 GB de memoria, suficientes para las 10 lecturas por página, y permite instalar Tesseract. Hugging Face Spaces dejó de ofrecer gratis los Spaces con Docker o Gradio en julio de 2026 (hoy exige suscripción PRO) y Render gratuito ofrece 0,1 CPU y 512 MB, con los que una página con 10 lecturas tardaría minutos.
+- **Versión de Tesseract.** Streamlit Community Cloud usa Debian 13 con Tesseract 5.5.0; la evaluación se hizo con 5.3.4 (la de la imagen Docker). Las pruebas automáticas leen los tres ejemplos en Debian 13 y obtienen los mismos valores que con 5.3.4; las métricas reportadas corresponden a 5.3.4.
+- **Instalación propia.** El [`Dockerfile`](../Dockerfile) parte de Ubuntu 24.04 (Tesseract 5.3.4, la versión de la evaluación), corre con un usuario sin privilegios, descarga y verifica los pesos durante la construcción y expone `/salud` para el control de estado. Es la opción para leer documentos con datos de terceros sin que salgan de un servidor bajo control de la organización.
+- **Verificación continua.** [`pruebas.yml`](../.github/workflows/pruebas.yml) ejecuta en cada cambio la app de Streamlit de punta a punta (Ubuntu y Debian 13), construye la imagen Docker, lee un ejemplo y comprueba los valores, y confirma que un archivo no admitido devuelve un error claro.
 
 ## 9. Limitaciones de la arquitectura
 
