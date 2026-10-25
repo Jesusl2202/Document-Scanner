@@ -94,6 +94,26 @@ class PresentacionTests(unittest.TestCase):
         self.assertEqual(filas[1]["estado"], "error")
         self.assertEqual(P.nombre_base(respuesta), "factura")
 
+    def test_lote_tabla_resumen_y_descargas(self):
+        bien = respuesta_de_prueba()
+        bien["paginas"] = bien["paginas"][:1]
+        bien["estado"], bien["archivo"] = "ok", "a.png"
+        lote = {"segundos": 75.4, "documentos": [
+            bien, {"archivo": "notas.txt", "estado": "error", "error": "Formato «.txt» no admitido.", "paginas": []}]}
+        self.assertEqual(P.resumen_lote(lote), "2 documentos leídos en 1 min 15 s. 0 con todos los campos en "
+                         "confianza alta y 1 con campos para revisar con atención. 1 no se pudo leer.")
+        html = P.html_lote(lote)
+        self.assertIn('lf-celda--baja" title="Confianza baja: 9 de 10 lecturas">001-002-000004521', html)
+        self.assertIn('lf-celda--sin_valor" title="No detectado: digítalo">—', html)
+        self.assertIn('<td class="lf-revisar">2</td>', html)              # RUC vacío y número con confianza baja
+        self.assertIn("Formato «.txt» no admitido.", html)
+        filas = list(csv.DictReader(io.StringIO(P.exportar_csv_lote(lote).lstrip("\ufeff"))))
+        self.assertEqual([(f["archivo"], f["estado"], f["total"]) for f in filas],
+                         [("a.png", "ok", "42.72"), ("notas.txt", "error", "")])
+        datos = json.loads(P.exportar_json_lote(lote))
+        self.assertEqual(datos["documentos"][0]["paginas"][0]["campos"]["total"]["valor"], "42.72")
+        self.assertEqual(datos["documentos"][1]["error"], "Formato «.txt» no admitido.")
+
     def test_acerca_y_piezas_fijas(self):
         info = {"vistas_ocr": 10, "evaluacion_final": {"exactitud_por_campo": "81,1 % (IC95 75,0-86,9 %)",
                                                        "campos_evaluados": 244},
@@ -118,7 +138,7 @@ class StreamlitAppTests(unittest.TestCase):
     def test_inicio_y_lectura_de_un_ejemplo(self):
         app = self.app.run()
         self.assertFalse(app.exception, app.exception)
-        self.assertEqual([t.label for t in app.tabs], ["Leer un documento", "Cómo funciona"])
+        self.assertEqual([t.label for t in app.tabs], ["Leer documentos", "Cómo funciona"])
         app.button(key="ejemplo_factura_impresa").click().run()
         self.assertFalse(app.exception, app.exception)
         respuesta = app.session_state["respuesta"]
@@ -127,6 +147,16 @@ class StreamlitAppTests(unittest.TestCase):
         self.assertEqual([b.label for b in app.button][-1], "Leer otro documento")
         app.button[-1].click().run()
         self.assertIsNone(app.session_state["respuesta"])
+
+    def test_lectura_por_lotes_de_los_ejemplos(self):
+        app = self.app.run()
+        app.button(key="ejemplos_lote").click().run()
+        self.assertFalse(app.exception, app.exception)
+        lote = app.session_state["lote"]
+        self.assertEqual(lote["resumen"], {"ok": 3, "parcial": 0, "error": 0})
+        totales = [d["paginas"][0]["campos"][-1]["normalizado"] for d in lote["documentos"]]
+        self.assertEqual(totales, ["42.72", "9.37", "42.72"])
+        self.assertEqual(len(app.selectbox), 1)                             # elegir un documento para revisarlo
 
 
 if __name__ == "__main__":

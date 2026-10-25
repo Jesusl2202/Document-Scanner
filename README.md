@@ -219,7 +219,7 @@ page,status,tax_id,date,document_number,subtotal,tax,total,revision
 
 ```bash
 python -m pip install -e .                         # habilita el comando `lector archivo.pdf --out carpeta`
-python -m unittest discover -s tests -v            # 184 pruebas (ver tests/README.md)
+python -m unittest discover -s tests -v            # 188 pruebas (ver tests/README.md)
 python -m flake8 src app tests                     # estilo PEP 8
 python scripts/download_data.py wildreceipt --out data/raw
 python scripts/download_data.py sroie --out data/raw   # Kaggle puede pedir descarga manual
@@ -236,18 +236,21 @@ Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en **St
 ![Resultado de una lectura en la aplicación](app/assets/capturas/resultado.png)
 
 - **Carga validada:** imagen JPG/PNG o PDF (hasta 10 MB y 3 páginas), arrastrando o eligiendo el archivo; se rechazan con un mensaje claro en español los formatos no admitidos, archivos vacíos o dañados, imágenes demasiado pequeñas y PDF largos.
-- **Procesamiento con indicador** mientras se hacen las 10 lecturas de la página.
+- **Uno o varios documentos a la vez:** hasta 20 archivos por lote, leídos uno tras otro con una barra de avance. El resultado del lote es una tabla con todos los documentos, cada valor marcado por su confianza y la cantidad de campos por revisar, y un solo CSV para descargar; desde la tabla se abre cualquier documento con su evidencia. Un archivo con problemas no detiene el resto.
+- **Procesamiento con indicador** mientras se hacen las 10 lecturas de cada página.
 - **Resultado revisable:** los seis campos con su valor, la línea del documento de donde salió, el nivel de confianza (alta, media, baja, no detectado) y alertas en lenguaje claro; recuadros sobre la imagen que se resaltan al pasar por cada fila; comprobación de subtotal + IVA = total; aviso cuando el comprobante es una factura electrónica del SRI con XML disponible.
 - **«Cómo funciona»:** métricas de la evaluación, resultados con imágenes degradadas, casos en que no debe usarse y privacidad.
 - **Ejemplos precargados** (comprobantes sintéticos) y **descarga CSV/JSON** solo con los campos, sin el texto completo de la factura.
 - **Privacidad:** el archivo se procesa en una carpeta temporal que se borra al terminar; la app avisa que la demostración corre fuera de Ecuador y que los documentos de terceros deben leerse en una instalación propia.
 
+![Lectura por lotes: todos los documentos en una tabla](app/assets/capturas/lote.png)
+
 Hay dos versiones de la interfaz sobre la misma lógica ([`app/servicio.py`](app/servicio.py)), con el mismo modelo, límites y mensajes:
 
 | Versión | Para qué | Cómo se ejecuta |
 |---|---|---|
-| **Streamlit** ([`app/streamlit_app.py`](app/streamlit_app.py)) | Demostración pública en Streamlit Community Cloud | `pip install -r app/requirements.txt` y `streamlit run app/streamlit_app.py` |
-| **Flask + Docker** ([`app/app.py`](app/app.py), [`Dockerfile`](Dockerfile)) | Instalación en un equipo o servidor propio, para documentos con datos de terceros | `docker build -t lector-facturas .` y `docker run -p 7860:7860 lector-facturas` |
+| **Streamlit** ([`app/streamlit_app.py`](app/streamlit_app.py)) | Demostración pública en Streamlit Community Cloud; lee un documento o un lote | `pip install -r app/requirements.txt` y `streamlit run app/streamlit_app.py` |
+| **Flask + Docker** ([`app/app.py`](app/app.py), [`Dockerfile`](Dockerfile)) | Instalación en un equipo o servidor propio, para documentos con datos de terceros; lee un documento a la vez | `docker build -t lector-facturas .` y `docker run -p 7860:7860 lector-facturas` |
 
 Detalle en [`app/README.md`](app/README.md) y en el [manual de usuario](docs/manual_usuario.md#2-usar-la-aplicación-web).
 
@@ -271,7 +274,7 @@ Document-Scanner/
 ├── models/                   # Ficha del modelo; los pesos de Tesseract se descargan aquí (no versionados)
 ├── app/                      # Interfaz web: streamlit_app.py (publicada), app.py (Flask), servicio.py,
 │                             # presentacion.py, templates/, static/, assets/
-├── tests/                    # 184 pruebas: interfaz pública, app, validación, comparador y motor
+├── tests/                    # 188 pruebas: interfaz pública, app, validación, comparador y motor
 ├── results/                  # Figuras, métricas y reportes
 ├── scripts/                  # Lectura, descarga de datos, ejemplos y ejecución de notebooks
 ├── samples/                  # Recibo sintético (PNG, PDF y referencia) para probar la instalación

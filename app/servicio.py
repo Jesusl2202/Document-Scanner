@@ -19,7 +19,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterable
 
 from PIL import Image, ImageOps
 
@@ -142,13 +142,15 @@ class ServicioLector:
         self.lector = lector or LectorFacturas(self.config)
         self.turnos = threading.BoundedSemaphore(web.get("lecturas_simultaneas", 1))
         self.espera_maxima = float(web.get("espera_maxima_s", 120))
+        self.documentos_por_lote = int(web.get("documentos_por_lote", 20))
 
     # ---- información estática -------------------------------------------------------------
     def limites(self) -> dict[str, Any]:
         entrada = self.config_web["entrada"]
         return {"extensiones": entrada["extensiones"], "tamano_maximo_mb": entrada["tamano_maximo_mb"],
                 "paginas_maximas_pdf": entrada["paginas_maximas_pdf"],
-                "dimension_minima_px": entrada["dimension_minima_px"]}
+                "dimension_minima_px": entrada["dimension_minima_px"],
+                "documentos_por_lote": self.documentos_por_lote}
 
     def ejemplos(self) -> list[dict[str, Any]]:
         catalogo = CARPETA_EJEMPLOS / "ejemplos.json"
@@ -201,6 +203,43 @@ class ServicioLector:
         LOGGER.info("Lectura web %s: %s, %d página(s), %.1f s", identificador, estado, len(resultado), segundos)
         return {"id": identificador, "archivo": nombre, "tipo": validado.tipo, "estado": estado,
                 "segundos": segundos, "avisos_entrada": list(validado.avisos), "paginas": resultado}
+
+    def leer_lote(self, archivos: Iterable[tuple[str | Path, str]],
+                  al_avanzar: Callable[[int, int, str], None] | None = None) -> dict[str, Any]:
+        """Lee varios archivos uno tras otro; un archivo con problemas no detiene el resto.
+
+        Args:
+            archivos: pares (ruta, nombre para mostrar).
+            al_avanzar: se llama antes de cada archivo con (índice desde 1, total, nombre).
+
+        Returns:
+            ``documentos`` (una respuesta de :meth:`leer` por archivo, o ``estado="error"`` con el
+            mensaje para el usuario), ``segundos`` y el resumen de estados.
+
+        Raises:
+            ErrorEntrada: si se envían más archivos que ``documentos_por_lote`` o ninguno.
+        """
+        lista = list(archivos)
+        if not lista:
+            raise ErrorEntrada("No se eligió ningún archivo.")
+        if len(lista) > self.documentos_por_lote:
+            raise ErrorEntrada(f"Elegiste {len(lista)} archivos y el máximo por lote es {self.documentos_por_lote}. "
+                               "Divide los documentos en varios lotes.")
+        inicio = time.perf_counter()
+        documentos = []
+        for indice, (ruta, nombre) in enumerate(lista, 1):
+            if al_avanzar:
+                al_avanzar(indice, len(lista), nombre)
+            try:
+                documentos.append(self.leer(ruta, nombre))
+            except Exception as exc:  # noqa: BLE001 — se informa por archivo
+                cuerpo, codigo = respuesta_error(exc)
+                if codigo >= 500 and not isinstance(exc, TimeoutError):
+                    LOGGER.exception("Error en la lectura por lote de %s", nombre)
+                documentos.append({"archivo": nombre, "estado": "error", "error": cuerpo["error"], "paginas": []})
+        estados = [d["estado"] for d in documentos]
+        return {"documentos": documentos, "segundos": round(time.perf_counter() - inicio, 1),
+                "resumen": {e: estados.count(e) for e in ("ok", "parcial", "error")}}
 
     def _pagina(self, pagina: ResultadoPagina, ruta_imagen: Path) -> dict[str, Any]:
         datos: dict[str, Any] = {"numero": pagina.pagina, "estado": pagina.estado, "segundos": pagina.segundos}

@@ -53,6 +53,8 @@ def html_consejos(alojamiento: str) -> str:
             '<li>Factura o recibo <strong>impreso o digital</strong>. Lo escrito a mano no se reconoce bien: '
             'si un dato está a mano, digítalo tú.</li>'
             '<li>Foto recta, completa y con buena luz; mejor si el comprobante ocupa toda la imagen.</li>'
+            '<li>Puedes elegir <strong>varias facturas a la vez</strong>: se leen una tras otra y al final ves una '
+            'tabla con todas, con los valores dudosos marcados.</li>'
             f'<li>El archivo solo se usa para esta lectura y se borra al terminar. {_e(alojamiento)}</li>'
             '</ul></section>')
 
@@ -269,3 +271,113 @@ def exportar_csv(respuesta: dict[str, Any]) -> str:
                            *((por_clave.get(c) or {}).get("confianza") or "" for c in CAMPOS),
                            (pagina.get("cuadre") or {}).get("estado") or ""])
     return "﻿" + salida.getvalue()
+
+
+# ---- lectura por lotes ----------------------------------------------------------------------
+
+POR_REVISAR = ("media", "baja", "sin_valor")
+
+
+def _duracion(segundos: float) -> str:
+    """75.4 → «1 min 15 s»; 12.3 → «12,3 s»."""
+    if segundos < 60:
+        return f"{_coma(round(segundos, 1))} s"
+    minutos, resto = divmod(round(segundos), 60)
+    return f"{minutos} min {resto} s" if resto else f"{minutos} min"
+
+
+def paginas_lote(lote: dict[str, Any]) -> list[dict[str, Any]]:
+    """Una fila por página leída (o por archivo que no se pudo leer), en el orden de subida."""
+    filas = []
+    for documento in lote.get("documentos", []):
+        paginas = documento.get("paginas") or []
+        if documento.get("estado") == "error" and not paginas:
+            filas.append({"archivo": documento.get("archivo"), "pagina": None, "varias": False, "estado": "error",
+                          "error": documento.get("error"), "campos": {}, "por_revisar": 0, "cuadre": None})
+            continue
+        for pagina in paginas:
+            campos = {c["clave"]: c for c in pagina.get("campos") or []}
+            filas.append({"archivo": documento.get("archivo"), "pagina": pagina.get("numero"),
+                          "varias": len(paginas) > 1, "estado": pagina.get("estado"), "error": pagina.get("error"),
+                          "campos": campos, "cuadre": pagina.get("cuadre"),
+                          "por_revisar": sum(c.get("confianza") in POR_REVISAR for c in campos.values())})
+    return filas
+
+
+def resumen_lote(lote: dict[str, Any]) -> str:
+    filas = paginas_lote(lote)
+    documentos = len(lote.get("documentos", []))
+    leidas = [f for f in filas if f["estado"] == "ok"]
+    limpias = sum(f["por_revisar"] == 0 for f in leidas)
+    partes = [f"{documentos} {'documento leído' if documentos == 1 else 'documentos leídos'} en "
+              f"{_duracion(lote.get('segundos', 0))}."]
+    if len(filas) != documentos:
+        partes.append(f"{len(filas)} páginas en total.")
+    partes.append(f"{limpias} con todos los campos en confianza alta y {len(leidas) - limpias} con campos para "
+                  "revisar con atención.")
+    fallidas = len(filas) - len(leidas)
+    if fallidas:
+        partes.append(f"{fallidas} no se {'pudo' if fallidas == 1 else 'pudieron'} leer.")
+    return " ".join(partes)
+
+
+def _celda(campo: dict[str, Any] | None) -> str:
+    if not campo or campo.get("valor") is None:
+        return '<td class="lf-celda lf-celda--sin_valor" title="No detectado: digítalo">—</td>'
+    nivel = campo.get("confianza", "sin_valor")
+    titulo = f'Confianza {CONFIANZA.get(nivel, nivel).lower()}: {campo.get("vistas")} de {campo.get("de")} lecturas'
+    return f'<td class="lf-celda lf-celda--{_e(nivel)}" title="{_e(titulo)}">{_e(campo["valor"])}</td>'
+
+
+def html_lote(lote: dict[str, Any]) -> str:
+    """Resumen y tabla de todos los documentos del lote, con cada valor marcado por su confianza."""
+    encabezado = "".join(f'<th scope="col">{_e(CORTO[c])}</th>' for c in CAMPOS)
+    filas = []
+    for numero, fila in enumerate(paginas_lote(lote), 1):
+        nombre = _e(fila["archivo"]) + (f' <span class="lf-nota">(página {fila["pagina"]})</span>'
+                                        if fila["varias"] else "")
+        if fila["estado"] != "ok":
+            filas.append(f'<tr class="lf-fila-error"><td>{numero}</td><td>{nombre}</td>'
+                         f'<td colspan="{len(CAMPOS) + 2}">{_e(fila["error"] or "No se pudo leer.")}</td></tr>')
+            continue
+        cuadre = fila.get("cuadre") or {}
+        marca = {"ok": "✓", "aviso": "Revisar"}.get(cuadre.get("nivel"), "—")
+        revisar = fila["por_revisar"]
+        filas.append(f'<tr><td>{numero}</td><td>{nombre}</td>'
+                     + "".join(_celda(fila["campos"].get(c)) for c in CAMPOS)
+                     + f'<td class="lf-cuadre-celda lf-cuadre-celda--{_e(cuadre.get("nivel", "neutro"))}" '
+                       f'title="{_e(cuadre.get("texto", ""))}">{marca}</td>'
+                     + f'<td class="lf-revisar">{revisar if revisar else "—"}</td></tr>')
+    leyenda = ('<p class="lf-leyenda"><span class="lf-celda lf-celda--alta">Alta</span>'
+               '<span class="lf-celda lf-celda--media">Media</span><span class="lf-celda lf-celda--baja">Baja</span>'
+               '<span class="lf-celda lf-celda--sin_valor">— No detectado</span></p>')
+    return ('<div class="lf-lote">'
+            f'<p class="lf-lote__resumen">{_e(resumen_lote(lote))}</p>'
+            '<p class="lf-nota">Compara todos los valores con su documento: los marcados en ámbar o rojo tienen más '
+            'probabilidad de error y los vacíos hay que digitarlos. Elige un documento debajo de la tabla para ver '
+            f'de dónde salió cada valor.</p>{leyenda}'
+            '<div class="lf-lote__marco"><table class="lf-tabla lf-tabla-lote"><caption class="lf-oculto">Campos de '
+            f'todos los documentos</caption><thead><tr><th scope="col">#</th><th scope="col">Documento</th>{encabezado}'
+            '<th scope="col">Cuadre</th><th scope="col">Por revisar</th></tr></thead>'
+            f'<tbody>{"".join(filas)}</tbody></table></div></div>')
+
+
+def exportar_csv_lote(lote: dict[str, Any]) -> str:
+    """Una fila por página de cada documento, con el nombre del archivo (UTF-8 con BOM para Excel)."""
+    salida = io.StringIO()
+    escritor = csv.writer(salida, lineterminator="\r\n")
+    escritor.writerow(["archivo", "pagina", "estado", *CAMPOS, *(f"confianza_{c}" for c in CAMPOS), "cuadre",
+                       "error"])
+    for fila in paginas_lote(lote):
+        escritor.writerow([fila["archivo"], fila["pagina"] or "", fila["estado"],
+                           *((fila["campos"].get(c) or {}).get("valor") or "" for c in CAMPOS),
+                           *((fila["campos"].get(c) or {}).get("confianza") or "" for c in CAMPOS),
+                           (fila.get("cuadre") or {}).get("estado") or "", fila.get("error") or ""])
+    return "﻿" + salida.getvalue()
+
+
+def exportar_json_lote(lote: dict[str, Any]) -> str:
+    documentos = [json.loads(exportar_json(d)) if d.get("paginas") else
+                  {"archivo": d.get("archivo"), "estado": d.get("estado"), "error": d.get("error"), "paginas": []}
+                  for d in lote.get("documentos", [])]
+    return json.dumps({"segundos": lote.get("segundos"), "documentos": documentos}, ensure_ascii=False, indent=2)
