@@ -39,15 +39,15 @@ Hay tres formas de usarlo: la **aplicación web** (sección 2, la más sencilla)
 
 ## 2. Usar la aplicación web
 
-La aplicación publicada (enlace en el [README](../README.md#6-interfaz-de-usuario)) usa el mismo modelo que la terminal. No hay que instalar nada.
+La aplicación publicada en Streamlit Community Cloud (enlace en el [README](../README.md#6-interfaz-de-usuario)) usa el mismo modelo que la terminal. No hay que instalar nada. Si la app estuvo un tiempo sin visitas, Streamlit la «despierta» al abrirla y la primera carga tarda alrededor de un minuto.
 
 ![Pantalla inicial de la aplicación](../app/assets/capturas/inicio.png)
 
 1. **Sube el documento.** Arrastra la foto o el PDF a la zona de carga, o pulsa **Elegir archivo**. Si no tienes una factura a mano, pulsa uno de los **ejemplos** (comprobantes inventados, sin validez tributaria).
-2. **Espera la lectura.** Verás una barra de progreso, el paso en curso y los segundos transcurridos. Una página suele tardar entre 5 y 30 segundos: se lee 10 veces con distintas configuraciones de Tesseract.
+2. **Espera la lectura.** Verás una barra de progreso con el nombre del archivo. Una página suele tardar entre 5 y 30 segundos: se lee 10 veces con distintas configuraciones de Tesseract.
 3. **Revisa el resultado.** A la izquierda está el documento con **recuadros azules** donde se leyó cada valor; a la derecha, los seis campos con su valor, la línea del documento de donde salió («Leído en») y su **nivel de confianza**. Al pasar el cursor por una fila (o recorrerlas con la tecla Tab) se resalta su recuadro.
 4. **Comprueba el cuadre y los avisos.** Debajo de la tabla aparece si subtotal + IVA = total y cualquier aviso de revisión (fecha ambigua, valores en conflicto, factura electrónica con XML disponible).
-5. **Corrige y descarga.** Compara cada valor con el documento. **Descargar CSV** o **Descargar JSON** guarda los campos (sin el texto completo de la factura); los archivos se generan en tu navegador.
+5. **Corrige y descarga.** Compara cada valor con el documento. **Descargar CSV** o **Descargar JSON** guarda los campos (sin el texto completo de la factura). **Leer otro documento** vuelve a la pantalla de carga.
 
 ![Resultado con evidencia y confianza por campo](../app/assets/capturas/resultado.png)
 
@@ -76,7 +76,7 @@ La confianza no es una probabilidad: es cuántas lecturas independientes coincid
 | «El servidor está atendiendo otras lecturas» | Otra persona está leyendo un documento | Espera unos segundos y vuelve a intentar |
 | «No se encontró ningún campo…» | Imagen muy borrosa, de lejos, sin texto impreso o manuscrita | Toma otra foto más cercana, recta y con buena luz |
 
-**Privacidad.** El archivo solo se usa durante la lectura y se borra al terminar; no se guarda en el servidor. La versión publicada está alojada en Hugging Face, fuera de Ecuador: úsala con facturas propias o con los ejemplos. Para facturas con datos de terceros usa la aplicación en tu computador (sección 4.2), que procesa todo localmente.
+**Privacidad.** El archivo solo se usa durante la lectura y se borra al terminar; no se guarda en el servidor. La versión publicada está alojada en Streamlit Community Cloud, fuera de Ecuador: úsala con facturas propias o con los ejemplos. Para facturas con datos de terceros usa la aplicación en tu computador o en un servidor propio (sección 4.2), que procesa todo ahí.
 
 ## 3. Leer una factura en Google Colab
 
@@ -124,14 +124,15 @@ En `outputs/mi_factura/` quedan:
 
 ### 4.2 La aplicación web en tu equipo
 
-Con Python (además de lo anterior):
+Con Python (además de lo anterior), en cualquiera de sus dos versiones:
 
 ```bash
 python -m pip install -r app/requirements.txt
-python -m app.app            # abre http://127.0.0.1:7860
+streamlit run app/streamlit_app.py     # la misma de la versión publicada: http://localhost:8501
+python -m app.app                      # versión Flask: http://127.0.0.1:7860
 ```
 
-Con Docker (incluye Tesseract 5.3.4 y los pesos verificados):
+Con Docker, para instalarla en un servidor propio (versión Flask; incluye Tesseract 5.3.4 y los pesos verificados):
 
 ```bash
 docker build -t lector-facturas .
@@ -201,7 +202,7 @@ La cobertura **no** es exactitud: un campo encontrado puede estar mal leído.
 ## 7. Preguntas frecuentes
 
 **¿Mis facturas se suben a algún servidor?**
-En tu computador, no: todo se procesa localmente, incluida la aplicación web levantada en tu equipo. En la aplicación publicada, el archivo se procesa en el servidor de Hugging Face y se borra al terminar; en Colab, se sube a la máquina de Google de tu sesión. Para facturas de terceros es preferible la ejecución local.
+En tu computador, no: todo se procesa localmente, incluida la aplicación web levantada en tu equipo. En la aplicación publicada, el archivo se procesa en el servidor de Streamlit Community Cloud y se borra al terminar; en Colab, se sube a la máquina de Google de tu sesión. Para facturas de terceros es preferible la ejecución local.
 
 **¿Puedo confiar en los valores sin revisarlos?**
 No. En la evaluación final acertó el 81 % de los campos (89 % en escaneos y 76 % en fotos de celular), y no todas las facturas salen completas. Está pensado para **asistir** a la persona que digita, no para reemplazar la revisión. Los resultados por documento y el tiempo de revisión estimado están en [Consideraciones éticas](consideraciones_eticas.md).

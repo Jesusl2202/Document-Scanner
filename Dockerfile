@@ -1,4 +1,4 @@
-# Imagen de la interfaz web del Lector de Facturas (Hugging Face Spaces, Render o cualquier Docker).
+# Imagen de la interfaz web (versión Flask) para instalar el Lector de Facturas en un servidor propio.
 # Ubuntu 24.04 trae Tesseract 5.3.4, la misma versión con la que se evaluó el modelo.
 FROM ubuntu:24.04
 
@@ -13,7 +13,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends tesseract-ocr python3 python3-pip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# Hugging Face Spaces ejecuta el contenedor con el usuario 1000.
+# Usuario sin privilegios para ejecutar la app.
 RUN userdel -r ubuntu 2>/dev/null || true \
  && useradd -m -u 1000 lector
 WORKDIR /home/lector/app

@@ -4,7 +4,7 @@ Ejecutar en local, desde la raíz del repositorio::
 
     python -m app.app                 # http://127.0.0.1:7860
 
-En producción (Docker / Hugging Face Spaces) la sirve gunicorn: ``gunicorn "app.app:crear_app()"``.
+En un servidor propio (Docker) la sirve gunicorn: ``gunicorn "app.app:crear_app()"``.
 
 Rutas:
 
