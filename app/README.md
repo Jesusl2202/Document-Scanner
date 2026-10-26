@@ -1,6 +1,6 @@
 # app/ — interfaz web
 
-Aplicación web del lector para que cualquier persona pruebe el modelo con sus propios documentos, sin instalar nada. Usa exactamente el mismo modelo que la terminal y los notebooks (`src.model.LectorFacturas` con `configs/definitivo.json`). La guía de uso está en el [manual de usuario](../docs/manual_usuario.md#2-usar-la-aplicación-web).
+Aplicación web del lector para que cualquier persona pruebe el modelo con sus propios documentos, sin instalar nada: **[document-scanner-project-uees.streamlit.app](https://document-scanner-project-uees.streamlit.app)**. Usa exactamente el mismo modelo que la terminal y los notebooks (`src.model.LectorFacturas` con `configs/definitivo.json`). La guía de uso está en el [manual de usuario](../docs/manual_usuario.md#2-usar-la-aplicación-web).
 
 ![Resultado de una lectura](assets/capturas/resultado.png)
 

@@ -39,7 +39,7 @@ Hay tres formas de usarlo: la **aplicación web** (sección 2, la más sencilla)
 
 ## 2. Usar la aplicación web
 
-La aplicación publicada en Streamlit Community Cloud (enlace en el [README](../README.md#6-interfaz-de-usuario)) usa el mismo modelo que la terminal. No hay que instalar nada. Si la app estuvo un tiempo sin visitas, Streamlit la «despierta» al abrirla y la primera carga tarda alrededor de un minuto.
+La aplicación publicada en Streamlit Community Cloud ([document-scanner-project-uees.streamlit.app](https://document-scanner-project-uees.streamlit.app)) usa el mismo modelo que la terminal. No hay que instalar nada. Si la app estuvo un tiempo sin visitas, Streamlit la «despierta» al abrirla y la primera carga tarda alrededor de un minuto.
 
 ![Pantalla inicial de la aplicación](../app/assets/capturas/inicio.png)
 
