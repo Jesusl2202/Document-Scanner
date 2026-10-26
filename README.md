@@ -10,6 +10,8 @@
 
 Sistema que lee una **foto o un PDF de una factura o recibo impreso** y devuelve seis campos estructurados —identificador fiscal (RUC), fecha, número de comprobante, subtotal, impuesto (IVA) y total— con la evidencia de dónde salió cada valor y alertas para revisión humana. Usa Tesseract preentrenado en CPU, un consenso de 10 lecturas de la misma imagen y un **resumen contable observado** que solo corrige un monto cuando los descuentos o cargos visibles lo respaldan.
 
+**Pruébalo en línea:** [document-scanner-project-uees.streamlit.app](https://document-scanner-project-uees.streamlit.app) (si la app estuvo un tiempo sin visitas, tarda alrededor de un minuto en despertar).
+
 Proyecto integrador de la Maestría en Inteligencia Artificial — Universidad Espíritu Santo.
 
 ## Tabla de contenidos
@@ -230,7 +232,7 @@ Guía completa en el [manual de usuario](docs/manual_usuario.md).
 
 ## 6. Interfaz de usuario
 
-Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en **Streamlit Community Cloud**.
+Aplicación web ([`app/`](app/)) con el mismo modelo evaluado, publicada en **Streamlit Community Cloud**: **[document-scanner-project-uees.streamlit.app](https://document-scanner-project-uees.streamlit.app)**.
 
 ![Resultado de una lectura en la aplicación](app/assets/capturas/resultado.png)
 
