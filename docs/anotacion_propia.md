@@ -1,8 +1,10 @@
-# Muestra propia y campos no cubiertos
+# Prueba externa con facturas reales: protocolo
+
+> **Estado:** planificada en la Semana 1 y **no realizada**. Ninguna cifra del proyecto incluye facturas propias; este documento deja el protocolo y el formato listos para quien la haga.
 
 Los seis campos permanecen en la salida del sistema, pero SROIE y WildReceipt no permiten evaluar por sí solos identificador fiscal y número de comprobante. Extraer un patrón no demuestra que sea el valor correcto.
 
-Para las etapas posteriores reservar 30–50 documentos propios de al menos tres emisores como **prueba final**, conforme a Semana 1. Si se necesita ajustar reglas para esos campos, usar documentos de desarrollo distintos; no consumir el conjunto final.
+La prueba consiste en reunir 30–50 facturas reales de al menos tres emisores como **prueba final**, conforme a la Semana 1. Si se necesita ajustar reglas para esos campos, usar documentos de desarrollo distintos; no consumir el conjunto final.
 
 Crear una tabla de referencia revisada por dos integrantes con columnas:
 

@@ -52,7 +52,7 @@ Desarrollar, en seis semanas y con un equipo de dos personas, un sistema que ext
 | OE1 | Construir un módulo de preprocesamiento y OCR que transcriba facturas y recibos y conserve la posición de cada palabra. | CER del OCR medido sobre SROIE y WildReceipt. |
 | OE2 | Implementar la extracción de los seis campos con reglas y combinación de varias lecturas del OCR. | Exactitud y F1 por campo. |
 | OE3 | Implementar reglas de validación configurables: cuadre de montos, formato de fecha y estructura del identificador fiscal. | Pruebas unitarias con casos válidos e inválidos. |
-| OE4 | Evaluar el sistema en documentos que no se usaron para ajustarlo (test reservado y muestra propia). | Reporte de métricas del test final. |
+| OE4 | Evaluar el sistema en documentos que no se usaron para ajustarlo (test reservado y muestra propia). | Reporte de métricas del test final. La muestra propia no se reunió (sección 5.3); se evaluó con documentos públicos nunca revisados. |
 | OE5 | Documentar resultados, limitaciones y consideraciones éticas, y dejar una interfaz de uso. | Carpeta `docs/` y `app/` del repositorio. |
 
 ### 2.3 Métricas y umbrales de éxito
@@ -84,7 +84,7 @@ Métricas secundarias: precisión y recall por campo, exactitud por documento (t
 - Extracción de los **seis campos** clave con reglas, agrupación espacial de palabras, resumen contable observado y consenso entre 10 lecturas del OCR (más un rescate adaptativo).
 - **Validaciones configurables**: cuadre de montos, fechas válidas y patrón del identificador fiscal.
 - Salida estructurada en **JSON y CSV** con el texto de origen, la posición y las alertas de cada campo.
-- Evaluación con métricas por campo sobre **SROIE** y **WildReceipt**, y diseño de una muestra propia de 30–50 comprobantes para el test final.
+- Evaluación con métricas por campo sobre **SROIE** y **WildReceipt**, y diseño de una muestra propia de 30–50 comprobantes para el test final (se definió el protocolo, pero la muestra no se reunió).
 - Interfaz de usuario para cargar un documento y ver los resultados.
 - Documentación técnica, ética y manual de usuario.
 
@@ -148,7 +148,7 @@ gantt
 | SROIE (ICDAR 2019) — 626 train + 347 test | Desarrollo y evaluación de `date` y `total` | Gratis, uso académico |
 | WildReceipt — 1.267 train + 472 test (descargados) | Desarrollo y evaluación de `date`, `subtotal`, `tax`, `total` | Gratis, uso académico |
 | DocILE y CORD | Referencia metodológica (no se usan para evaluar) | Gratis |
-| Muestra propia (30–50 comprobantes, ≥ 3 emisores) | Test final de los seis campos, incluidos `tax_id` y `document_number` | Gratis; requiere anonimización |
+| Muestra propia (30–50 comprobantes, ≥ 3 emisores) | Planificada para el test final de los seis campos; **no se reunió** (sección 5.3) | Gratis; requiere anonimización |
 | Ejemplos sintéticos (`samples/`) | Comprobar la instalación | Gratis |
 
 ### 6.2 Hardware
@@ -186,7 +186,7 @@ Probabilidad e impacto: A = alta, M = media, B = baja.
 
 | # | Riesgo | Prob. | Impacto | Mitigación | Estado al cierre |
 |---|---|:-:|:-:|---|---|
-| R1 | Los datasets públicos no representan las facturas reales del equipo (formatos ecuatorianos, RUC, IVA). | A | A | Reservar una muestra propia de 30–50 comprobantes solo para el test final. | Abierto: formato de anotación y evaluación externa listos en 05; falta reunir la muestra completa. |
+| R1 | Los datasets públicos no representan las facturas reales del equipo (formatos ecuatorianos, RUC, IVA). | A | A | Reservar una muestra propia de 30–50 comprobantes solo para el test final. | Ocurrió: la muestra no se reunió, así que `tax_id`, `document_number` y el desempeño con facturas ecuatorianas no están medidos. Queda listo el código para evaluarla (notebook 05). |
 | R2 | Las reglas se ajustan demasiado a los documentos que vimos (sobreajuste de reglas). | A | A | Separar optimización, control y test; inventario por hash de los documentos ya vistos; configuración congelada antes de leer. | Ocurrió en parte: 1.461 documentos revisados, incluido casi todo el test oficial. Se reporta así y se mide además con documentos nunca revisados (notebook 06). |
 | R3 | Errores del OCR se propagan a la extracción. | A | A | Preprocesamiento, 10 lecturas con distintas configuraciones y pesos, rescate adaptativo y consenso; alertas cuando algo no cuadra. | Mitigado parcialmente. |
 | R4 | No alcanzar la meta de 70 %. | M | A | Iterar sobre datos de desarrollo y reportar el resultado real del test sin cambiar el modelo para forzar la meta. | Evaluación final: 81,1 % (IC95 75,0–86,9 %) en 100 documentos del test, ya revisados en el desarrollo. |

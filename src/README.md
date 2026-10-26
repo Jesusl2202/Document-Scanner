@@ -36,7 +36,7 @@ print(lector.acerca_de())                       # información para la sección 
 ```bash
 python -m src.model factura.pdf --salida outputs/factura          # leer un documento
 python -m src.evaluate test --datos data/raw --por-base 50          # evaluar en el test oficial
-python -m src.evaluate externo --anotaciones muestra_propia.zip     # prueba externa anotada
+python -m src.evaluate externo --anotaciones facturas_anotadas.zip   # prueba externa con facturas anotadas a mano
 python -m src.evaluate importar optimizacion_resultados.zip evaluacion_<fecha>.zip
 python -m src.evaluate reporte                                       # regenerar results/reports/
 python -m src.train --datos data/raw --salida outputs/optimizacion  # optimizar la configuración

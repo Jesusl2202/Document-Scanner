@@ -51,7 +51,7 @@ Los notebooks de [`notebooks/`](../../notebooks/) llaman a `prepare()` (todos) y
 - `annotated`: hay un valor de referencia utilizable.
 - `unannotated`: el dataset no anota ese campo para el documento (no equivale a ausencia).
 - `ambiguous`: hay varios valores distintos; se guardan en `candidates` y el campo se excluye de las métricas.
-- `absent`: ausencia confirmada (solo aplicable a la muestra propia).
+- `absent`: ausencia confirmada (previsto para facturas anotadas a mano; no aparece en SROIE ni WildReceipt).
 
 `manifest_metadata.json` registra la semilla (`42`), `validation_fraction` (`0.2`), las rutas de origen, el total de documentos y una nota sobre el método de partición.
 

@@ -122,7 +122,7 @@ def evaluar_test(config: dict[str, Any], carpeta_datos: str | Path, carpeta_sali
 
 
 def evaluar_externo(config: dict[str, Any], anotaciones: str | Path, carpeta_salida: str | Path) -> dict[str, Any]:
-    """Evalúa la muestra propia anotada (ZIP o carpeta con ``anotaciones.jsonl`` e ``imagenes/``).
+    """Evalúa facturas externas anotadas a mano (ZIP o carpeta con ``anotaciones.jsonl`` e ``imagenes/``).
 
     Excluye las imágenes que ya se usaron en el desarrollo (por SHA-256).
     """
@@ -350,7 +350,7 @@ def main(argumentos: list[str] | None = None) -> int:
     test.add_argument("--por-base", type=int, default=None, help="Documentos por dataset")
     test.add_argument("--semilla", type=int, default=None)
     test.add_argument("--salida", default=None, help="Carpeta nueva (por defecto outputs/evaluacion_<fecha>)")
-    externo = sub.add_parser("externo", help="Evaluar la muestra propia anotada")
+    externo = sub.add_parser("externo", help="Evaluar facturas externas anotadas a mano")
     externo.add_argument("--anotaciones", required=True, help="ZIP o carpeta con anotaciones.jsonl e imagenes/")
     externo.add_argument("--salida", default=None)
     importar = sub.add_parser("importar", help="Copiar a results/ los ZIP de los notebooks")
