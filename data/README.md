@@ -22,7 +22,6 @@ Las imágenes de los datasets **no están en el repositorio**: se descargan con 
 |---|---|---|---|
 | **SROIE** (ICDAR 2019) | Desarrollo y evaluación | 626 train + 347 test (cifras oficiales) | `date`, `total` |
 | **WildReceipt** | Desarrollo y evaluación | 1 268 train + 472 test | `date`, `subtotal`, `tax`, `total` |
-| **Muestra propia (RIDE)** | Prueba final de generalización | 30–50 documentos, ≥ 3 emisores | los seis campos |
 | **Ejemplos sintéticos** (`samples/`) | Comprobar la instalación | 1 imagen + 1 PDF | los seis campos (no es evidencia de precisión) |
 
 Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del emisor), `date`, `document_number`, `subtotal`, `tax` y `total`. **Ninguna de las dos bases públicas anota `tax_id` ni `document_number`**, por lo que su precisión solo puede acreditarse con la muestra propia (ver [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Los campos sin anotación quedan fuera de las métricas; no se cuentan como acierto ni como error.
@@ -42,11 +41,11 @@ Los seis campos que el sistema extrae son: `tax_id` (identificador fiscal del em
 - **Formato esperado por el adaptador:** `class_list.txt` (código → etiqueta), `train.txt` y `test.txt` (una línea JSON por imagen con `file_name`, `width`, `height` y `annotations` con `box`, `text`, `label`) e `image_files/`.
 - **Etiquetas usadas:** `Date_value` → `date`, `Subtotal_value` → `subtotal`, `Tax_value` → `tax`, `Total_value` → `total`. Si un documento trae varios valores distintos para un campo, se marca `ambiguous` y **no** se suman impuestos ni se elige un total arbitrario.
 
-## 3. Muestra propia (RIDE)
+## 3. Prueba externa con facturas reales (planificada, no realizada)
 
-Protocolo para una prueba externa con 30–50 comprobantes reales de al menos tres emisores, separada de los documentos que sirven para ajustar reglas. Es la única fuente que puede evaluar `tax_id` y `document_number`. Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
+En la Semana 1 se planificó una muestra propia de 30–50 facturas ecuatorianas (RIDE) de al menos tres emisores, separada de los documentos que sirven para ajustar reglas, porque es la única forma de evaluar `tax_id` y `document_number`. **No se reunió** (motivos en la [planificación](../docs/planificacion.md#53-desviaciones-y-por-qué-ocurrieron)): ninguna cifra del proyecto la incluye. Queda definido el protocolo para hacerla: Cada documento se revisa a mano por dos integrantes y cada campo recibe un estado: `annotated`, `absent`, `unannotated` o `ambiguous` (columnas y criterios en [`docs/anotacion_propia.md`](../docs/anotacion_propia.md)). Solo se incluyen comprobantes **impresos o digitales**: los que tienen campos escritos a mano quedan fuera del alcance.
 
-**Evaluación:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) la evalúa como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`), separada de las métricas de SROIE y WildReceipt. Las cifras publicadas del proyecto no incluyen esta prueba: la evidencia de generalización viene de documentos de SROIE y WildReceipt que nunca se revisaron (sección 6). Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
+**Evaluación:** el notebook [`05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb) y `python -m src.evaluate externo` ya la evalúan como **prueba externa** a partir de un ZIP con `anotaciones.jsonl` e `imagenes/` (`experiments.load_external_test`), separada de las métricas de SROIE y WildReceipt. La evidencia de generalización del proyecto viene de documentos de SROIE y WildReceipt que nunca se revisaron (sección 6). Los documentos reales **no se publican** sin anonimización y autorización de sus emisores.
 
 ## 4. Modelos preentrenados (no son datasets)
 
@@ -65,7 +64,7 @@ Tesseract y sus repositorios de pesos se distribuyen con licencia Apache 2.0.
 |---|---|
 | SROIE | No se verificó una licencia de redistribución. Revisar las condiciones del reto ICDAR 2019 y de la página de Kaggle antes de compartir imágenes. |
 | WildReceipt | La documentación de MMOCR no declara licencia para los datos, y las imágenes provienen de búsquedas en internet. La licencia del software MMOCR no implica una licencia sobre las imágenes. |
-| Muestra propia | Datos privados; requieren anonimización y autorización antes de cualquier publicación. |
+| Facturas reales (prueba externa futura) | Datos privados; requieren anonimización y autorización antes de cualquier publicación. |
 | Código del equipo | MIT ([`LICENSE`](../LICENSE)). Cubre solo el código y la documentación del equipo, no los datasets. |
 
 Por esta razón el repositorio **no redistribuye** imágenes, anotaciones ni textos de los datasets: cada persona los descarga de su fuente original. El script `download_data.py` guarda en `<dataset>_download.json` la URL, el SHA-256, el tamaño en bytes y la fecha de descarga, y aclara que el hash registra la descarga pero no implica permiso de redistribución.
@@ -90,7 +89,7 @@ Consecuencia: el test oficial **ya no es inédito**. El notebook 05 sigue tomand
 - **Sin agrupación por emisor:** la partición train/validation se hace por hash de imagen, no por comercio; plantillas del mismo emisor pueden aparecer en ambas y favorecer la validación. Por la misma razón, los documentos nunca revisados del notebook 06 pueden ser de comercios cuyos recibos sí se revisaron: son imágenes nuevas, no necesariamente formatos nuevos.
 - **Duplicados:** solo se detectan por SHA-256; imágenes casi idénticas pasan desapercibidas.
 - **Cobertura de anotación ≠ exactitud:** que un campo esté anotado no dice nada sobre si el extractor lo lee bien; `coverage.csv` mide cobertura de etiquetas.
-- **Sesgo de origen:** ninguna de las dos bases públicas se construyó con comprobantes ecuatorianos y el OCR se ejecuta con el modelo inglés (`eng`). El proyecto apunta también a comprobantes ecuatorianos (RUC, IVA), que solo la muestra propia representa. Los resultados en las bases públicas no garantizan el mismo desempeño en esos documentos.
+- **Sesgo de origen:** ninguna de las dos bases públicas se construyó con comprobantes ecuatorianos y el OCR se ejecuta con el modelo inglés (`eng`). El proyecto apunta también a comprobantes ecuatorianos (RUC, IVA), que ninguna base evaluada representa porque la muestra propia no se reunió. Los resultados en las bases públicas no garantizan el mismo desempeño en esos documentos.
 - **Solo texto impreso:** ninguna de las bases contiene comprobantes llenados a mano; el sistema no se evaluó (ni se recomienda) con campos manuscritos.
 - **Datos personales:** los recibos pueden mostrar nombres de comercios, direcciones, teléfonos o fragmentos de tarjetas. Por eso no se publican imágenes ni textos transcritos.
 

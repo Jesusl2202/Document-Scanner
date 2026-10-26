@@ -128,7 +128,7 @@ Sin revisión humana, el sistema **sí aumentaría** la desigualdad: los negocio
 - **Reportar por dataset y por campo**, para que un promedio alto no esconda un grupo de documentos que funciona mal.
 - **Indicaciones antes de subir** en la app (foto recta, completa, con buena luz y de cerca), porque las pruebas de estrés muestran que la rotación y el desenfoque son las causas más dañinas.
 - **Mejoras técnicas pendientes de evaluar:** enderezar la imagen antes del OCR (la rotación de 6° es el escenario que más valores equivocados produce) y avisar cuando una imagen es demasiado pequeña o borrosa.
-- **Muestra propia** de 30–50 comprobantes de al menos tres emisores para medir el desempeño en facturas reales del contexto local ([protocolo](anotacion_propia.md)).
+- **Pendiente: una prueba con facturas ecuatorianas reales.** La muestra propia de 30–50 comprobantes planificada en la Semana 1 no se reunió, así que el desempeño con facturas locales no está medido. El protocolo y el código para hacerla están listos ([protocolo](anotacion_propia.md)).
 - **Reglas configurables por país**: orden de fecha, separador decimal y patrón del identificador fiscal.
 
 ## 3. Privacidad
@@ -140,7 +140,6 @@ Sin revisión humana, el sistema **sí aumentaría** la desigualdad: los negocio
 | Momento | Qué datos personales pueden aparecer |
 |---|---|
 | **Datasets públicos** (SROIE, WildReceipt) | Nombres de comercios y de algunos cajeros, direcciones, teléfonos, fragmentos de tarjetas. |
-| **Muestra propia** del equipo | Facturas reales: nombre y cédula/RUC del comprador, dirección, correo, lo que se compró. |
 | **Uso del sistema** por un usuario | Cualquier factura que el usuario suba, con todos los datos anteriores. |
 
 Además, el sistema guarda en `resultado.json` el **texto completo** leído por el OCR y la posición de cada palabra, no solo los seis campos. Ese archivo contiene todos los datos personales que aparecían en la factura.
@@ -157,14 +156,14 @@ Además, el sistema guarda en `resultado.json` el **texto completo** leído por 
 | **El inventario de documentos vistos solo guarda hashes**, no imágenes ni texto. | `data/processed/documentos_revisados.csv` |
 | **Los ejemplos del repositorio son sintéticos**, con datos inventados (`RUC 1234567890`). | `samples/` |
 | **El notebook de evaluación separa los documentos propios**: los guarda en `documento_privado/` y los **excluye del ZIP** de resultados, junto con la caché de OCR y las predicciones con texto. De la prueba externa solo se exportan métricas. | [`notebooks/05_evaluacion.ipynb`](../notebooks/05_evaluacion.ipynb), secciones 8–10 |
-| **Anotación propia con anonimización**: no se publican números ni documentos privados sin revisar anonimización y autorización. | [`docs/anotacion_propia.md`](anotacion_propia.md) |
+| **Protocolo de prueba externa con anonimización**: si se evalúan facturas reales, no se publican números ni documentos privados sin revisar anonimización y autorización. | [`docs/anotacion_propia.md`](anotacion_propia.md) |
 
 **Recomendaciones para quien use el sistema:**
 
 1. Tratar `resultado.json`, `campos.csv` y la carpeta de caché como **información confidencial**; borrarlos cuando ya no se necesiten.
 2. Si se usa **Google Colab**, tener en cuenta que el archivo se sube a una máquina de Google durante la sesión. Para facturas de terceros es preferible la ejecución local.
 3. No subir facturas de otras personas sin una razón legítima (por ejemplo, la contabilidad del propio negocio).
-4. Para la muestra propia: tapar o borrar nombres, cédulas, direcciones y datos de tarjetas que no sean los seis campos evaluados, y conservar solo lo necesario.
+4. Si se arma una prueba con facturas reales: tapar o borrar nombres, cédulas, direcciones y datos de tarjetas que no sean los seis campos evaluados, y conservar solo lo necesario.
 
 ### 3.3 Cumplimiento normativo
 
@@ -296,7 +295,7 @@ El sistema es un **prototipo académico**. Los valores que entrega son **sugeren
 1. Publicar cada evaluación tal como sale, aunque quede por debajo de la meta, con su intervalo de confianza y sus resultados por tipo de imagen, como se hizo con la evaluación final y con los documentos nunca revisados ([reporte](../results/reports/reporte_resultados.md)). Antes de un uso real, medir la **prueba externa** con facturas ecuatorianas anotadas ([protocolo](anotacion_propia.md)).
 2. Revisar periódicamente los casos con alertas y los errores reportados por usuarios para encontrar formatos nuevos.
 3. Antes de cambiar una regla, medirla en documentos de **desarrollo**, nunca en el test, y registrar el cambio en Git.
-4. Ampliar la muestra propia con facturas de nuevos emisores para revisar si el desempeño se mantiene.
+4. Reunir y anotar facturas ecuatorianas reales de varios emisores (la prueba externa que quedó pendiente) y repetirla con emisores nuevos para revisar si el desempeño se mantiene.
 
 ### 7.4 Plan de respuesta a incidentes
 

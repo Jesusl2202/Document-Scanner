@@ -35,7 +35,6 @@ El sistema extrae seis campos de cada documento: `tax_id` (identificador fiscal)
 |---|---|---|---|---|
 | **SROIE** (Huang et al., 2019) | Recibos **escaneados** de comercios de Malasia, del reto ICDAR 2019. Cada imagen trae cajas de texto con su transcripción y cuatro entidades: empresa, fecha, dirección y total. | [Kaggle `urbikn/sroie-datasetv2`](https://www.kaggle.com/datasets/urbikn/sroie-datasetv2) | Uso académico; no encontramos una licencia explícita de redistribución. | Desarrollo y evaluación de `date` y `total`. |
 | **WildReceipt** (Sun et al., 2021) | Recibos **fotografiados** en condiciones reales (pliegues, ángulos, poca luz), con 25 categorías de información clave. | [MMOCR `wildreceipt.tar`](https://download.openmmlab.com/mmocr/data/wildreceipt.tar) | Publicado para investigación; la licencia de MMOCR no cubre las imágenes. | Desarrollo y evaluación de `date`, `subtotal`, `tax` y `total`. |
-| **Muestra propia** | 30–50 comprobantes reales de al menos tres emisores, anotados por los dos integrantes. | Recolección del equipo | Privada; no se publica. | Test final de los seis campos, incluidos `tax_id` y `document_number`. |
 | **Ejemplos sintéticos** | Una imagen y un PDF generados por el equipo (`samples/`). | `scripts/make_demo.py` | Propios | Probar la instalación; no son evidencia de precisión. |
 
 Por las condiciones de licencia, **el repositorio no redistribuye imágenes** de SROIE ni de WildReceipt. Cada persona las descarga de la fuente original con `scripts/download_data.py`, que guarda la URL, el SHA-256 y la fecha de descarga.
@@ -55,7 +54,7 @@ Después de pasar por los adaptadores (`src/lector_facturas/datasets.py`), cada 
 | `gold` | diccionario | Para cada uno de los seis campos: `status` y `value` |
 | `issues` | lista | Incidencias encontradas al cargar el documento |
 
-El `status` de cada campo puede ser `annotated` (hay un valor de referencia), `unannotated` (el dataset no lo anota), `ambiguous` (hay varios valores distintos) o `absent` (ausencia confirmada, solo en la muestra propia).
+El `status` de cada campo puede ser `annotated` (hay un valor de referencia), `unannotated` (el dataset no lo anota), `ambiguous` (hay varios valores distintos) o `absent` (ausencia confirmada; previsto para facturas anotadas a mano, no aparece en las bases públicas).
 
 ### 1.4 Mapeo de etiquetas al esquema del proyecto
 
@@ -152,7 +151,7 @@ Un recibo típico tiene entre 30 y 63 regiones de texto, pero hay recibos largos
 
 Este fue el hallazgo más importante del EDA: **ninguno de los dos datasets anota el identificador fiscal ni el número de comprobante**. SROIE solo permite evaluar fecha y total; WildReceipt suma subtotal e impuesto, aunque con menos cobertura (60–69 %).
 
-**Qué decidimos:** medir cada campo solo donde tiene etiqueta y reservar la muestra propia para `tax_id` y `document_number`. Un campo sin etiqueta no cuenta como acierto ni como error.
+**Qué decidimos:** medir cada campo solo donde tiene etiqueta. Un campo sin etiqueta no cuenta como acierto ni como error. Para `tax_id` y `document_number` se planificó una muestra propia de facturas ecuatorianas que no se reunió, así que su exactitud sigue sin medirse.
 
 ### 4.4 Desbalance entre texto útil y texto de relleno
 
@@ -249,7 +248,7 @@ Distinguimos tres situaciones que es fácil confundir:
 |---|---|---|
 | **No anotado** | SROIE no trae subtotal | Se excluye de las métricas. No se interpreta como "el recibo no tiene subtotal". |
 | **Ambiguo** | WildReceipt marca dos valores distintos como `Total_value` (61 casos en total, 89 en impuesto) | Se excluye de las métricas. No sumamos impuestos ni escogemos un total al azar. |
-| **Ausente** | Comprobante propio sin número de comprobante | Solo en la muestra propia, confirmado por dos revisores. |
+| **Ausente** | Factura sin número de comprobante | Previsto para facturas anotadas a mano, confirmado por dos revisores; no aparece en SROIE ni WildReceipt. |
 
 Si el extractor **no devuelve** un valor para un campo que sí está anotado, eso cuenta como error (falso negativo). Los documentos que fallan al procesarse siguen en el denominador.
 
