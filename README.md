@@ -342,4 +342,4 @@ Agradecemos a los docentes del programa por la guía del proyecto integrador y a
 ## 12. Videos
 
 - 🎬 **Video pitch (5 min):** (https://youtu.be/u1XMMjmgVQY)
-- 🎬 **Video de respuestas a las preguntas:** próximamente
+- 🎬 **Video de respuestas a las preguntas:** (https://youtu.be/liPlYUdg4jY)
