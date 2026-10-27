@@ -140,6 +140,8 @@ El sistema tolera ruido leve, sombras y la pérdida del pie del comprobante; fal
 | Red MLP sobre líneas | 1 vista | 57,4 % (IC95 56,1–58,8 %, 5 semillas) |
 | **M3 · resumen contable (final)** | 10 vistas | **81,1 %** |
 
+M0 aparece aquí con 51,9 % y con 51,6 % en la comparación con la línea base porque esta comparación usa 99 de los 100 documentos de la muestra.
+
 Con la misma lectura, aprender a ubicar los campos mejora poco a las reglas (+4,5 puntos): el límite lo pone el OCR, porque en una sola lectura solo entre el 51 % y el 82 % de los documentos tiene el valor correcto escrito en alguna línea. Por eso el proyecto invirtió en **leer mejor** (10 vistas y consenso) y no en un clasificador. El diagnóstico de la red (curvas por época, de aprendizaje y de validación, cinco semillas) muestra sobreajuste sin regularización y un comportamiento adecuado con *early stopping*.
 
 ### Desarrollo del modelo
@@ -341,5 +343,5 @@ Agradecemos a los docentes del programa por la guía del proyecto integrador y a
 
 ## 12. Videos
 
-- 🎬 **Video pitch (5 min):** (https://youtu.be/u1XMMjmgVQY)
-- 🎬 **Video de respuestas a las preguntas:** (https://youtu.be/liPlYUdg4jY)
+- 🎬 **Video pitch (5 min):** [Ver en YouTube](https://youtu.be/u1XMMjmgVQY)
+- 🎬 **Video de respuestas a las preguntas:** [Ver en YouTube](https://youtu.be/liPlYUdg4jY)
